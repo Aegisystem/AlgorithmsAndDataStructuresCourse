@@ -395,16 +395,13 @@ for it in range(500):
       <div id="perm-out" class="stack"></div>
     </div>
     <div class="stack">
-      <pre class="code sm">import sys
-input = sys.stdin.readline
-
-def main():
+      <pre class="code sm">def main():
     n = int(input())
     if n == 2 or n == 3:
-        sys.stdout.write("NO SOLUTION\n")
+        print("NO SOLUTION")
         return
     p = list(range(2, n + 1, 2)) + list(range(1, n + 1, 2))
-    sys.stdout.write(" ".join(map(str, p)) + "\n")
+    print(*p)
 
 main()</pre>
       <p class="small">Dos pares seguidos difieren en 2. Lo mismo dos impares. En la unión, el último par (n o n − 1) y el 1 difieren en más de 1 cuando n ≥ 4.</p>

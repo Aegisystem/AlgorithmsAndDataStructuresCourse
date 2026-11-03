@@ -73,7 +73,7 @@
     <tr><td>0–15</td><td>Qué es la programación competitiva y formatos de competencia</td></tr>
     <tr><td>15–35</td><td>El juez en línea, veredictos y el grupo del curso</td></tr>
     <tr><td>35–50</td><td>Partes de un enunciado</td></tr>
-    <tr><td>50–65</td><td>Plantilla del curso, formatos de entrada y errores de salida</td></tr>
+    <tr><td>50–65</td><td>Leer la entrada, escribir la salida y errores de formato</td></tr>
     <tr><td>65–90</td><td>Cuatro problemas resueltos en vivo (los de la práctica)</td></tr>
   </table>
   <p class="muted small">En la sesión 2 de esta semana cada estudiante resuelve un contest corto en el juez.</p>
@@ -282,33 +282,28 @@ Salida:  3 10 5 16 8 4 2 1</pre></div>
 <section class="slide section">
   <div class="eyebrow">Parte 4</div>
   <h2>Entrada y salida en Python</h2>
-  <p>La plantilla del curso y los errores de formato más comunes.</p>
+  <p>Cómo leer la entrada, cómo escribir la salida y los errores de formato más comunes.</p>
 </section>
 
 <!-- 15 -->
 <section class="slide">
-  <div class="eyebrow">Plantilla</div>
-  <h2>Plantilla base del curso</h2>
+  <div class="eyebrow">Entrada y salida</div>
+  <h2>Leer y escribir en Python</h2>
   <div class="cols c-60">
-    <pre class="code lg">import sys
-input = sys.stdin.readline
-
-def main():
+    <pre class="code lg">def main():
     n = int(input())
     a = list(map(int, input().split()))
-    ans = []
-    # ...
-    sys.stdout.write("\n".join(map(str, ans)) + "\n")
+    print(sum(a))
 
 main()</pre>
     <ul class="small">
-      <li class="frag">La línea 2 hace que <code>input()</code> lea con <code>sys.stdin.readline</code>. Por qué conviene se ve en la semana 4.</li>
-      <li class="frag">La línea leída termina en <code>"\n"</code>. <code>int()</code> y <code>split()</code> lo ignoran. Para leer un string hay que usar <code>input().strip()</code>.</li>
+      <li class="frag"><code>input()</code> lee una línea de la entrada y la devuelve como string.</li>
+      <li class="frag"><code>int()</code> convierte el string en número. <code>split()</code> separa la línea por espacios.</li>
+      <li class="frag"><code>print()</code> escribe y agrega un salto de línea. <code>print(*a)</code> imprime una lista separada por espacios.</li>
       <li class="frag">Todo el código va dentro de <code>main()</code>.</li>
-      <li class="frag">Las respuestas se guardan en una lista y se escriben juntas al final.</li>
     </ul>
   </div>
-  <aside class="notes"><p>Pedir que guarden esta plantilla como archivo base. Todas las soluciones del curso la usan.</p></aside>
+  <aside class="notes"><p>Pedir que guarden este esquema como archivo base. En la semana 4 se ve una forma más rápida de leer y escribir, que hace falta cuando la entrada tiene 10⁵ líneas o más.</p></aside>
 </section>
 
 <!-- 17 -->
@@ -323,16 +318,16 @@ n = int(input())
 n, k = map(int, input().split())
 a = list(map(int, input().split()))
 
-# un string (quitar el salto de línea)
-s = input().strip()</pre>
+# un string
+s = input()</pre>
     <pre class="code sm"># t casos de prueba
 t = int(input())
 for _ in range(t):
     n = int(input())
     a = list(map(int, input().split()))
-    ans.append(sum(a))</pre>
+    print(sum(a))</pre>
   </div>
-  <p class="small warn-line">Error frecuente: leer un string con <code>sys.stdin.readline</code> y olvidar el <code>.strip()</code>. Entonces <code>len(s)</code> cuenta el <code>"\n"</code> y <code>s[::-1]</code> empieza con un salto de línea.</p>
+  <p class="small warn-line">Error frecuente: <code>n, k = input().split()</code> deja n y k como strings. Hay que convertirlos: <code>n, k = map(int, input().split())</code>.</p>
 </section>
 
 <!-- 18 -->
@@ -368,10 +363,7 @@ for _ in range(t):
       <svg id="weird-plot" viewBox="0 0 640 170" style="width:100%;height:170px" role="img" aria-label="Valores de n en cada paso"></svg>
     </div>
     <div class="stack">
-      <pre class="code sm">import sys
-input = sys.stdin.readline
-
-def main():
+      <pre class="code sm">def main():
     n = int(input())
     out = [n]
     while n != 1:
@@ -380,7 +372,7 @@ def main():
         else:
             n = 3 * n + 1
         out.append(n)
-    sys.stdout.write(" ".join(map(str, out)) + "\n")
+    print(*out)
 
 main()</pre>
       <p class="small">Usar <code>//</code> y no <code>/</code>: <code>n / 2</code> da un <code>float</code> y se imprime <code>5.0</code>.</p>
@@ -410,14 +402,11 @@ main()</pre>
       </div>
     </div>
     <div class="stack">
-      <pre class="code sm">import sys
-input = sys.stdin.readline
-
-def main():
+      <pre class="code sm">def main():
     n = int(input())
     a = list(map(int, input().split()))
     total = n * (n + 1) // 2
-    sys.stdout.write(str(total - sum(a)) + "\n")
+    print(total - sum(a))
 
 main()</pre>
       <p class="small frag">Hace una sola pasada sobre los datos: O(n). Ordenar y buscar el hueco también funciona, pero cuesta O(n log n).</p>
@@ -436,11 +425,8 @@ main()</pre>
       <div class="cells" id="rep-cells" style="margin-top:22px"></div>
       <div class="caption" id="rep-cap"></div>
     </div>
-    <pre class="code sm">import sys
-input = sys.stdin.readline
-
-def main():
-    s = input().strip()
+    <pre class="code sm">def main():
+    s = input()
     best = cur = 1
     for i in range(1, len(s)):
         if s[i] == s[i - 1]:
@@ -449,11 +435,11 @@ def main():
                 best = cur
         else:
             cur = 1
-    sys.stdout.write(str(best) + "\n")
+    print(best)
 
 main()</pre>
   </div>
-  <aside class="notes"><p>Aquí sí importa el <code>.strip()</code>: sin él, el <code>"\n"</code> final cuenta como un carácter más (no cambia la respuesta en este problema, pero sí en otros).</p></aside>
+  <aside class="notes"><p>Probar con ATTCGGGA y con un string de un solo carácter.</p></aside>
 </section>
 
 <!-- 23 -->
@@ -478,7 +464,9 @@ main()</pre>
             moves += mx - x
         else:
             mx = x
-    print(moves)</pre>
+    print(moves)
+
+main()</pre>
     </div>
   </div>
   <aside class="notes"><p>Preguntar por qué subir al mínimo necesario es óptimo: subir más solo obliga a subir más a los siguientes. Es la primera idea greedy del curso.</p></aside>
@@ -516,7 +504,7 @@ main()</pre>
   <h2>Antes de enviar</h2>
   <ol>
     <li>Leer las restricciones y el formato de entrada y salida.</li>
-    <li>Usar la plantilla: <code>sys.stdin.readline</code>, código en <code>main()</code>, salida con <code>join</code>.</li>
+    <li>Escribir el código dentro de <code>main()</code>, leer con <code>input()</code> e imprimir con <code>print()</code>.</li>
     <li>Probar con los ejemplos del enunciado.</li>
     <li>Probar casos borde: n = 1, el valor máximo, todos iguales.</li>
     <li>Quitar los <code>print</code> de depuración.</li>
@@ -537,10 +525,8 @@ main()</pre>
     { n: "n = 2·10⁵", big: true }, { n: "n = 2·10⁵", big: true }
   ];
   const SUBS = [
-    { name: "1. Solución con la plantilla", code:
-`import sys
-input = sys.stdin.readline
-def main():
+    { name: "1. Solución correcta", code:
+`def main():
     n = int(input())
     s = 0
     for _ in range(n):

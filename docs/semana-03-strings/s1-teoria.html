@@ -365,16 +365,16 @@ def a_base(n, b):
       <h3>71A · Way Too Long Words</h3>
       <p class="small">Si una palabra tiene más de 10 letras, se escribe primera letra + cantidad de letras del medio + última letra.</p>
       <pre class="code sm">for _ in range(int(input())):
-    w = input().strip()
+    w = input()
     if len(w) > 10:
         w = w[0] + str(len(w) - 2) + w[-1]
-    ans.append(w)</pre>
+    print(w)</pre>
       <p class="tiny muted">"localization" → "l10n"</p>
     </div>
     <div class="stack">
       <h3>118A · String Task</h3>
       <p class="small">Quitar las vocales (incluida la y), poner un punto antes de cada consonante y pasar a minúsculas.</p>
-      <pre class="code sm">s = input().strip().lower()
+      <pre class="code sm">s = input().lower()
 res = []
 for c in s:
     if c not in "aoyeui":
@@ -392,8 +392,8 @@ print("".join(res))</pre>
     <div class="stack">
       <h3>112A · Petya and Strings</h3>
       <p class="small">Comparar dos strings sin distinguir mayúsculas. Imprimir −1, 0 o 1.</p>
-      <pre class="code sm">a = input().strip().lower()
-b = input().strip().lower()
+      <pre class="code sm">a = input().lower()
+b = input().lower()
 if a < b:
     print(-1)
 elif a > b:
@@ -404,7 +404,7 @@ else:
     <div class="stack">
       <h3>236A · Boy or Girl</h3>
       <p class="small">Si el nombre de usuario tiene una cantidad par de letras distintas, es mujer; si es impar, es hombre.</p>
-      <pre class="code sm">s = input().strip()
+      <pre class="code sm">s = input()
 if len(set(s)) % 2 == 0:
     print("CHAT WITH HER!")
 else:
@@ -424,7 +424,7 @@ else:
       <div class="cells" id="pr-out" style="margin-top:18px"></div>
     </div>
     <div class="stack">
-      <pre class="code sm">s = input().strip()
+      <pre class="code sm">s = input()
 cnt = [0] * 26
 for c in s:
     cnt[ord(c) - 65] += 1
@@ -459,7 +459,7 @@ else:
   <div class="eyebrow">Resumen</div>
   <h2>Reglas para strings en Python</h2>
   <ol>
-    <li>Leer strings con <code>input().strip()</code>.</li>
+    <li>Leer un string con <code>input()</code> y varias palabras con <code>input().split()</code>.</li>
     <li>Construir respuestas con una lista y <code>"".join</code>.</li>
     <li>Recordar que los métodos y los slices son O(n).</li>
     <li>Contar con un arreglo de 26 o con <code>Counter</code>.</li>

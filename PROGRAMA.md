@@ -44,18 +44,16 @@ Programa de asignatura (enfoque de programación competitiva en Python) · 16 se
 ### Plantilla base del curso
 
 ```python
-import sys
-input = sys.stdin.readline
-
 def main():
     n = int(input())
     a = list(map(int, input().split()))
-    ans = []
     # ...
-    sys.stdout.write("\n".join(map(str, ans)) + "\n")
+    print(sum(a))
 
 main()  # todo el código va dentro de main()
 ```
+
+Los ejemplos de las clases leen con `input()` y escriben con `print()`. La lectura y escritura rápidas (`sys.stdin.readline` y una sola escritura con `join`) se enseñan en la semana 4, para entradas de 10⁵ líneas o más.
 
 ---
 

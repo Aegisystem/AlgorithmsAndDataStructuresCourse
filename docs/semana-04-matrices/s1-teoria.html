@@ -100,11 +100,11 @@ n, m = map(int, input().split())
 M = [list(map(int, input().split())) for _ in range(n)]
 
 # n filas de caracteres '#' y '.'
-g = [input().strip() for _ in range(n)]
+g = [input() for _ in range(n)]
 g[i][j]          # carácter de la fila i, columna j
 
 # si hay que modificar la grilla
-g = [list(input().strip()) for _ in range(n)]</pre>
+g = [list(input()) for _ in range(n)]</pre>
       <p class="small">Una fila leída como string no se puede modificar. Para cambiar celdas se lee como lista.</p>
     </div>
     <div class="stack">
@@ -296,10 +296,7 @@ vis = bytearray(n * m) # visitados, 1 byte por celda</pre>
       <div class="caption" id="bm-cap"></div>
     </div>
     <div class="stack">
-      <pre class="code sm">import sys
-input = sys.stdin.readline
-
-def main():
+      <pre class="code sm">def main():
     for i in range(5):
         fila = input().split()
         for j in range(5):
@@ -352,8 +349,9 @@ for _ in range(t):
     print(v)</pre>
     </div>
     <div class="stack">
-      <span class="small muted">Con la plantilla del curso</span>
-      <pre class="code sm">input = sys.stdin.readline
+      <span class="small muted">Con lectura y escritura rápidas</span>
+      <pre class="code sm">import sys
+input = sys.stdin.readline
 t = int(input())
 ans = []
 for _ in range(t):
@@ -365,7 +363,7 @@ sys.stdout.write("\n".join(map(str, ans)) + "\n")</pre>
   </div>
   <div class="stack" style="max-width:1000px">
     <div class="timebar"><span><code>input()</code> + <code>print</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.14 s</span></div>
-    <div class="timebar"><span>plantilla</span><div class="tb" style="width:29%"></div><span class="tv">0.04 s</span></div>
+    <div class="timebar"><span>rápida</span><div class="tb" style="width:29%"></div><span class="tv">0.04 s</span></div>
   </div>
   <p class="small muted">El cálculo es el mismo en los dos. Cambia solo la forma de leer y escribir. Medido con PyPy 3.11, Apple M4, con 10⁵ consultas aleatorias. El juez suele ser más lento.</p>
   <aside class="notes"><p>Number Spiral es el primer problema del curso con 10⁵ líneas de entrada y 10⁵ de salida. Si se puede, correr las dos versiones en vivo con un archivo generado (el generador está en <code>soluciones/probar.py</code>).</p></aside>
@@ -373,7 +371,7 @@ sys.stdout.write("\n".join(map(str, ans)) + "\n")</pre>
 
 <section class="slide">
   <div class="eyebrow">Entrada y salida rápida</div>
-  <h2>Por qué la plantilla es más rápida</h2>
+  <h2>Por qué es más rápida</h2>
   <div class="cols">
     <div class="stack">
       <ul class="small">
@@ -419,7 +417,7 @@ t = int(data[0])
                 if 0 &lt;= ni &lt; h and 0 &lt;= nj &lt; w and g[ni][nj] == "#":
                     c += 1
         fila.append(str(c))
-    ans.append("".join(fila))</pre>
+    print("".join(fila))</pre>
     </div>
     <div class="stack">
       <h3>ABC107 B · Grid Compression</h3>
@@ -457,7 +455,7 @@ g = ["".join(f) for f in zip(*cols)]    # volver a filas</pre>
     <div class="box soft stack small">
       <h3>Qué repasar</h3>
       <ul>
-        <li>Plantilla de entrada y salida.</li>
+        <li>Leer la entrada y escribir la salida con el formato pedido.</li>
         <li>Tabla de restricciones contra complejidad.</li>
         <li>Slicing, <code>join</code>, frecuencias.</li>
         <li>Crear matrices, vecinos y límites.</li>
@@ -472,7 +470,7 @@ g = ["".join(f) for f in zip(*cols)]    # volver a filas</pre>
   <h2>Reglas para matrices en Python</h2>
   <ol>
     <li>Crear con <code>[[0] * m for _ in range(n)]</code>.</li>
-    <li>Leer grillas con <code>input().strip()</code>, y como lista si hay que modificarlas.</li>
+    <li>Leer grillas con <code>input()</code>, y como lista si hay que modificarlas.</li>
     <li>Revisar los límites antes de acceder a una celda vecina.</li>
     <li>Transponer con <code>zip(*M)</code> y rotar con <code>zip(*M[::-1])</code>.</li>
     <li>Guardar la fila en una variable dentro de los bucles internos.</li>
