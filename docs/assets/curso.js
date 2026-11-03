@@ -115,8 +115,18 @@
       const n = $("aside.notes", slides[cur]);
       notes.innerHTML = "<h4>Notas del docente · diapositiva " + (cur + 1) + "</h4>" + (n ? n.innerHTML : "<p>Sin notas.</p>");
       if (location.hash !== "#" + (cur + 1)) history.replaceState(null, "", "#" + (cur + 1));
+      fitProblem(slides[cur]);
       document.dispatchEvent(new CustomEvent("slidechange", { detail: { index: cur, slide: slides[cur] } }));
     }
+    // un enunciado largo reduce su letra hasta caber en la diapositiva
+    function fitProblem(sl) {
+      const pr = $(".prob", sl);
+      if (!pr) return;
+      let k = 1;
+      pr.style.setProperty("--k", k);
+      while (k > 0.6 && pr.scrollHeight > pr.clientHeight + 1) { k -= 0.03; pr.style.setProperty("--k", k); }
+    }
+    if (document.fonts) document.fonts.ready.then(() => fitProblem(slides[cur]));
     function next() {
       const hidden = frags(slides[cur]).filter((f) => !f.classList.contains("shown"));
       if (hidden.length) hidden[0].classList.add("shown");

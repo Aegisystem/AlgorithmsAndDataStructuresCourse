@@ -215,6 +215,19 @@ aside.notes { display: none; }
 .help-panel.open { display: block; }
 .help-panel table td { padding: 2px 8px; }
 
+/* diapositiva de enunciado: el problema va solo, en letra grande, antes de la solución */
+.prob { display: grid; grid-template-columns: 3fr 2fr; gap: 44px; align-items: start; flex: 1; min-height: 0; }
+.prob > * { min-width: 0; }
+.prob-text { display: grid; gap: calc(22px * var(--k, 1)); align-content: start; }
+.prob-text p { font-size: calc(33px * var(--k, 1)); line-height: 1.45; max-width: none; }
+.prob-io { display: grid; grid-template-columns: auto 1fr; gap: 14px 22px; margin: 0; align-items: baseline; }
+.prob-io dt { font-family: var(--font-mono); font-size: 17px; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); }
+.prob-io dd { margin: 0; font-size: calc(27px * var(--k, 1)); }
+.prob-ex { display: grid; gap: 8px; align-content: start; }
+.prob-ex .ex-lab { font-family: var(--font-mono); font-size: 16px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.prob-ex pre { margin: 0 0 10px; font-family: var(--font-mono); font-size: calc(28px * var(--k, 1)); line-height: 1.4; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 18px; overflow: auto; }
+.prob-link { font-size: 17px; color: var(--muted); }
+
 /* modo presentación: sin márgenes, sin sombra y sin la barra de páginas */
 body.presenting { background: var(--stage); }
 body.presenting .slide { box-shadow: none; border-radius: 0; }

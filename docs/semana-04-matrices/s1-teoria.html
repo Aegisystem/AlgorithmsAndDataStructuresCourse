@@ -287,7 +287,29 @@ vis = bytearray(n * m) # visitados, 1 byte por celda</pre>
 </section>
 
 <section class="slide">
-  <div class="eyebrow">Codeforces 263A · Beautiful Matrix</div>
+  <div class="eyebrow">Problema · Codeforces 263A</div>
+  <h2>Beautiful Matrix</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una matriz de 5 × 5 tiene 24 ceros y un solo uno. En cada movimiento se pueden intercambiar dos filas vecinas o dos columnas vecinas.</p>
+      <p>Hay que encontrar el mínimo de movimientos para dejar el uno en el centro (fila 3, columna 3).</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Cinco líneas con cinco números cada una.</dd><dt>Salida</dt><dd>El mínimo de movimientos.</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>0 0 0 0 0
+0 0 0 0 1
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/263/A">https://codeforces.com/problemset/problem/263/A</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · Codeforces 263A · Beautiful Matrix</div>
   <h2>Llevar el 1 al centro</h2>
   <div class="cols">
     <div class="stack">
@@ -311,7 +333,34 @@ main()</pre>
 </section>
 
 <section class="slide">
-  <div class="eyebrow">CSES 1071 · Number Spiral</div>
+  <div class="eyebrow">Problema · CSES 1071</div>
+  <h2>Number Spiral</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una espiral infinita de números llena una grilla, empezando por 1 en la esquina superior izquierda. Hay que encontrar el número de la fila y, columna x.</p>
+      <pre class="code" data-lang="none" style="font-size:22px; justify-self:start"> 1  2  9 10 25
+ 4  3  8 11 24
+ 5  6  7 12 23
+16 15 14 13 22
+17 18 19 20 21</pre>
+      <dl class="prob-io"><dt>Entrada</dt><dd>t en la primera línea y luego t pruebas, cada una con y y x.</dd><dt>Salida</dt><dd>Para cada prueba, el número en esa posición.</dd><dt>Restricciones</dt><dd>1 ≤ t ≤ 10⁵; 1 ≤ y, x ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+2 3
+1 1
+4 2</pre>
+      <div class="ex-lab">Salida</div><pre>8
+1
+15</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1071">https://cses.fi/problemset/task/1071</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1071 · Number Spiral</div>
   <h2>El valor en la fila y, columna x</h2>
   <div class="cols c-40">
     <div class="stack">
@@ -398,7 +447,53 @@ t = int(data[0])
 </section>
 
 <section class="slide">
-  <div class="eyebrow">AtCoder · grillas</div>
+  <div class="eyebrow">Problema · AtCoder ABC075 B</div>
+  <h2>Minesweeper</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una grilla de H × W tiene bombas (#) y casillas vacías (.). Hay que cambiar cada . por la cantidad de bombas entre sus 8 vecinos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>H y W en la primera línea y luego las H filas.</dd><dt>Salida</dt><dd>La grilla con los números.</dd><dt>Restricciones</dt><dd>1 ≤ H, W ≤ 50</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3 5
+.....
+.#.#.
+.....</pre>
+      <div class="ex-lab">Salida</div><pre>11211
+1#2#1
+11211</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/abc075/tasks/abc075_b">https://atcoder.jp/contests/abc075/tasks/abc075_b</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · AtCoder ABC107 B</div>
+  <h2>Grid Compression</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una grilla de H × W tiene casillas negras (#) y blancas (.). Mientras haya una fila o una columna toda blanca, se borra.</p>
+      <p>Hay que imprimir la grilla final.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>H y W en la primera línea y luego las H filas.</dd><dt>Salida</dt><dd>La grilla final, sin H ni W.</dd><dt>Restricciones</dt><dd>1 ≤ H, W ≤ 100; hay al menos una casilla negra</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4 4
+##.#
+....
+##.#
+.#.#</pre>
+      <div class="ex-lab">Salida</div><pre>###
+###
+.##</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/abc107/tasks/abc107_b">https://atcoder.jp/contests/abc107/tasks/abc107_b</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · AtCoder · grillas</div>
   <h2>Dos problemas B de grillas</h2>
   <div class="cols">
     <div class="stack">

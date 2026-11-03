@@ -353,7 +353,25 @@ for _ in range(t):
 
 <!-- 20 -->
 <section class="slide">
-  <div class="eyebrow">CSES 1068 · Weird Algorithm</div>
+  <div class="eyebrow">Problema · CSES 1068</div>
+  <h2>Weird Algorithm</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Un algoritmo recibe un entero positivo n. Si n es par, lo divide entre 2. Si es impar, lo multiplica por 3 y le suma 1. Repite hasta que n vale 1.</p>
+      <p>Hay que imprimir todos los valores que toma n.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un entero n.</dd><dt>Salida</dt><dd>Los valores de n, en una línea y separados por espacios.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3</pre>
+      <div class="ex-lab">Salida</div><pre>3 10 5 16 8 4 2 1</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1068">https://cses.fi/problemset/task/1068</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1068 · Weird Algorithm</div>
   <h2>Simular el algoritmo paso a paso</h2>
   <div class="cols c-60 fill">
     <div class="stack" id="weird">
@@ -383,7 +401,25 @@ main()</pre>
 
 <!-- 21 -->
 <section class="slide">
-  <div class="eyebrow">CSES 1083 · Missing Number</div>
+  <div class="eyebrow">Problema · CSES 1083</div>
+  <h2>Missing Number</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se tienen los números de 1 a n, pero falta uno. Hay que encontrar el que falta.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n en la primera línea. En la segunda, los n − 1 números, todos distintos.</dd><dt>Salida</dt><dd>El número que falta.</dd><dt>Restricciones</dt><dd>2 ≤ n ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+2 3 1 5</pre>
+      <div class="ex-lab">Salida</div><pre>4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1083">https://cses.fi/problemset/task/1083</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1083 · Missing Number</div>
   <h2>Encontrar el número que falta</h2>
   <div class="cols">
     <div class="stack">
@@ -417,7 +453,25 @@ main()</pre>
 
 <!-- 22 -->
 <section class="slide">
-  <div class="eyebrow">CSES 1069 · Repetitions</div>
+  <div class="eyebrow">Problema · CSES 1069</div>
+  <h2>Repetitions</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se da una secuencia de ADN: un string con las letras A, C, G y T.</p>
+      <p>Hay que encontrar la repetición más larga, es decir, la mayor cantidad de caracteres iguales seguidos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un string de n caracteres.</dd><dt>Salida</dt><dd>La longitud de la repetición más larga.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>ATTCGGGA</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1069">https://cses.fi/problemset/task/1069</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1069 · Repetitions</div>
   <h2>La racha más larga de un mismo carácter</h2>
   <div class="cols c-60 fill">
     <div class="stack" id="rep">
@@ -444,7 +498,26 @@ main()</pre>
 
 <!-- 23 -->
 <section class="slide">
-  <div class="eyebrow">CSES 1094 · Increasing Array</div>
+  <div class="eyebrow">Problema · CSES 1094</div>
+  <h2>Increasing Array</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se da un arreglo de n enteros. En cada movimiento se puede sumar 1 a cualquier elemento.</p>
+      <p>Hay que encontrar el mínimo de movimientos para que cada elemento sea mayor o igual que el anterior.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n en la primera línea y los n enteros en la segunda.</dd><dt>Salida</dt><dd>El mínimo de movimientos.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵, 1 ≤ xᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+3 2 5 1 7</pre>
+      <div class="ex-lab">Salida</div><pre>5</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1094">https://cses.fi/problemset/task/1094</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1094 · Increasing Array</div>
   <h2>Mínimo de movimientos para que no decrezca</h2>
   <div class="cols c-60 fill">
     <div class="stack" id="inc">

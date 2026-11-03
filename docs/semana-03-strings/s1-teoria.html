@@ -358,7 +358,51 @@ def a_base(n, b):
 </section>
 
 <section class="slide">
-  <div class="eyebrow">Codeforces 71A y 118A</div>
+  <div class="eyebrow">Problema · Codeforces 71A</div>
+  <h2>Way Too Long Words</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una palabra con más de 10 letras es demasiado larga. Se abrevia así: primera letra, cantidad de letras entre la primera y la última, última letra.</p>
+      <p>Las palabras de 10 letras o menos quedan igual.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n en la primera línea y luego n palabras en minúsculas, una por línea.</dd><dt>Salida</dt><dd>Cada palabra, abreviada si hace falta, una por línea.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 100; cada palabra tiene de 1 a 100 letras</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4
+word
+localization
+internationalization
+pneumonoultramicroscopicsilicovolcanoconiosis</pre>
+      <div class="ex-lab">Salida</div><pre>word
+l10n
+i18n
+p43s</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/71/A">https://codeforces.com/problemset/problem/71/A</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · Codeforces 118A</div>
+  <h2>String Task</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se da un string de letras mayúsculas y minúsculas. Hay que quitar las vocales (A, O, Y, E, U, I), poner un punto antes de cada consonante y pasar todo a minúsculas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un string.</dd><dt>Salida</dt><dd>El string resultante.</dd><dt>Restricciones</dt><dd>Longitud de 1 a 100</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada 1</div><pre>tour</pre>
+      <div class="ex-lab">Salida 1</div><pre>.t.r</pre>
+      <div class="ex-lab">Entrada 2</div><pre>Codeforces</pre>
+      <div class="ex-lab">Salida 2</div><pre>.c.d.f.r.c.s</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/118/A">https://codeforces.com/problemset/problem/118/A</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · Codeforces 71A y 118A</div>
   <h2>Abreviar palabras y procesar letras</h2>
   <div class="cols">
     <div class="stack">
@@ -386,7 +430,47 @@ print("".join(res))</pre>
 </section>
 
 <section class="slide">
-  <div class="eyebrow">Codeforces 112A y 236A</div>
+  <div class="eyebrow">Problema · Codeforces 112A</div>
+  <h2>Petya and Strings</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se dan dos strings de la misma longitud. Hay que compararlos en orden lexicográfico sin distinguir mayúsculas de minúsculas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Dos strings, uno por línea.</dd><dt>Salida</dt><dd>−1 si el primero es menor, 1 si es mayor y 0 si son iguales.</dd><dt>Restricciones</dt><dd>Longitud de 1 a 100, solo letras</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada 1</div><pre>aaaa
+aaaA</pre>
+      <div class="ex-lab">Salida 1</div><pre>0</pre>
+      <div class="ex-lab">Entrada 2</div><pre>abs
+Abz</pre>
+      <div class="ex-lab">Salida 2</div><pre>-1</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/112/A">https://codeforces.com/problemset/problem/112/A</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · Codeforces 236A</div>
+  <h2>Boy or Girl</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Un nombre de usuario se clasifica por la cantidad de letras <b>distintas</b> que tiene. Si es par, se imprime CHAT WITH HER!; si es impar, IGNORE HIM!</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un nombre de usuario en minúsculas.</dd><dt>Salida</dt><dd>CHAT WITH HER! o IGNORE HIM!</dd><dt>Restricciones</dt><dd>Hasta 100 letras</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada 1</div><pre>wjmzbmr</pre>
+      <div class="ex-lab">Salida 1</div><pre>CHAT WITH HER!</pre>
+      <div class="ex-lab">Entrada 2</div><pre>xiaodao</pre>
+      <div class="ex-lab">Salida 2</div><pre>IGNORE HIM!</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/236/A">https://codeforces.com/problemset/problem/236/A</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · Codeforces 112A y 236A</div>
   <h2>Comparar sin mayúsculas y contar distintos</h2>
   <div class="cols">
     <div class="stack">
@@ -414,7 +498,24 @@ else:
 </section>
 
 <section class="slide">
-  <div class="eyebrow">CSES 1755 · Palindrome Reorder</div>
+  <div class="eyebrow">Problema · CSES 1755</div>
+  <h2>Palindrome Reorder</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se da un string. Hay que reordenar sus letras para formar un palíndromo.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un string de n letras de la A a la Z.</dd><dt>Salida</dt><dd>Un palíndromo con esas letras, o NO SOLUTION si no se puede. Si hay varios, cualquiera sirve.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>AAAACACBA</pre>
+      <div class="ex-lab">Salida</div><pre>AACABACAA</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1755">https://cses.fi/problemset/task/1755</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1755 · Palindrome Reorder</div>
   <h2>Reordenar las letras para formar un palíndromo</h2>
   <div class="cols c-60 fill">
     <div class="stack" id="pr">
