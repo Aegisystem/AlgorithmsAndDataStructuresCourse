@@ -310,7 +310,18 @@ vis = bytearray(n * m)</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/263/A">https://codeforces.com/problemset/problem/263/A</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: contar filas y columnas desde 1 y comparar con 2 en lugar de 3. Caso a probar: el 1 ya está en el centro; la respuesta es 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 263A</div>
+  <h2>Beautiful Matrix</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si el 1 está en la fila i y la columna j, ¿cuántos intercambios de filas hacen falta? ¿Y de columnas?</p></div>
+    <div class="idea-a frag">Contando desde 0: |i − 2| intercambios de filas y |j − 2| de columnas.</div>
+    <div class="idea-a frag">La respuesta es la suma, que es la distancia Manhattan al centro.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -361,7 +372,18 @@ main()</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1071">https://cses.fi/problemset/task/1071</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: confundir fila y columna (la entrada da primero y, la fila) o invertir los casos par e impar. Probar los tres ejemplos y también (1, 2) = 2 y (2, 1) = 4.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1071</div>
+  <h2>Number Spiral</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿En qué número termina la capa z, es decir, las celdas con max(y, x) = z?</p></div>
+    <div class="idea-a frag">En z². La capa empieza en (z − 1)² + 1. Dentro de la capa, la posición depende de si z es par o impar.</div>
+    <div class="idea-a frag">Cada consulta es O(1). No se puede construir la grilla: tendría hasta 10¹⁸ celdas.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -470,7 +492,18 @@ t = int(data[0])
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/abc075/tasks/abc075_b">https://atcoder.jp/contests/abc075/tasks/abc075_b</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: no revisar los límites. En Python <code>g[-1]</code> no da error y lee la última fila, así que la respuesta sale mal sin aviso. Caso a probar: una grilla de 1 × 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · AtCoder ABC075 B</div>
+  <h2>Minesweeper</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Para cada casilla vacía, ¿qué hay que revisar y qué cuidado hay que tener en los bordes?</p></div>
+    <div class="idea-a frag">Revisar los 8 vecinos con dos bucles de −1 a 1. Antes de leer un vecino, comprobar que está dentro de la grilla.</div>
+    <div class="idea-a frag">Son a lo sumo 50 · 50 · 8 = 20 000 revisiones.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -494,7 +527,18 @@ t = int(data[0])
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/abc107/tasks/abc107_b">https://atcoder.jp/contests/abc107/tasks/abc107_b</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: borrar columnas mientras se recorre la grilla, lo que cambia los índices. Caso a probar: el ejemplo 3, donde queda una sola casilla.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · AtCoder ABC107 B</div>
+  <h2>Grid Compression</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Quitar las filas blancas es fácil. ¿Cómo se quitan las columnas blancas?</p></div>
+    <div class="idea-a frag">Transponiendo: con <code>zip(*g)</code> las columnas pasan a ser filas. Se filtran igual y se transpone otra vez.</div>
+    <div class="idea-a frag">Borrar una fila blanca no crea columnas blancas nuevas, así que basta una pasada por filas y otra por columnas.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">

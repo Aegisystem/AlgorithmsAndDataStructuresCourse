@@ -368,7 +368,18 @@ for _ in range(t):
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1068">https://cses.fi/problemset/task/1068</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: usar <code>/</code> en lugar de <code>//</code> e imprimir 5.0. Otro: imprimir un valor por línea. Caso a probar: n = 1, que imprime solo 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1068</div>
+  <h2>Weird Algorithm</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Cuántos valores puede llegar a imprimir el programa, y qué tan grandes pueden ser?</p></div>
+    <div class="idea-a frag">Basta con simular: aplicar la regla hasta que n valga 1 y guardar cada valor.</div>
+    <div class="idea-a frag">Con n ≤ 10⁶ se imprimen a lo sumo 525 valores (n = 837 799). Algunos valores pasan de 5·10¹⁰; en Python eso no es problema.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -416,7 +427,18 @@ main()</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1083">https://cses.fi/problemset/task/1083</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: ordenar y buscar la primera posición con <code>a[i] != i + 1</code>, y olvidar el caso en que falta n. Caso a probar: n = 2 con el número 2; la respuesta es 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1083</div>
+  <h2>Missing Number</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si sabemos cuánto suman los números de 1 a n, ¿cómo encontramos el que falta?</p></div>
+    <div class="idea-a frag">La suma de 1 a n es n(n + 1)/2. Si se le resta la suma de los números dados, queda el que falta.</div>
+    <div class="idea-a frag">Es una sola pasada sobre los datos: O(n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -468,7 +490,18 @@ main()</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1069">https://cses.fi/problemset/task/1069</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: actualizar el mejor solo cuando la racha se rompe; entonces se pierde la racha que termina al final (por ejemplo, AAA). Caso a probar: un string de un solo carácter.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1069</div>
+  <h2>Repetitions</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Recorriendo el string de izquierda a derecha, ¿qué hay que recordar en cada posición?</p></div>
+    <div class="idea-a frag">Dos números: el largo de la racha actual y el mejor largo visto. Si el carácter es igual al anterior, la racha crece; si no, vuelve a 1.</div>
+    <div class="idea-a frag">Es una sola pasada: O(n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -514,7 +547,18 @@ main()</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1094">https://cses.fi/problemset/task/1094</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: comparar con el valor original del anterior y no con el valor ya subido. Con 3 1 2 la respuesta es 3, no 2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1094</div>
+  <h2>Increasing Array</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si a[i] es menor que el anterior, ¿hasta dónde conviene subirlo? ¿Sirve subirlo más?</p></div>
+    <div class="idea-a frag">Hasta igualar al anterior y no más. Subirlo más solo obliga a subir también a los siguientes.</div>
+    <div class="idea-a frag">Se recorre una vez guardando el máximo hasta ahora: O(n). La respuesta puede llegar a unos 2·10¹⁴.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">

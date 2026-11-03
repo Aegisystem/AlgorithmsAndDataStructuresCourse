@@ -379,7 +379,17 @@ i18n</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/71/A">https://codeforces.com/problemset/problem/71/A</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: usar ≥ 10 en lugar de &gt; 10; una palabra de exactamente 10 letras queda igual. Caso a probar: una palabra de una letra.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 71A</div>
+  <h2>Way Too Long Words</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Qué número va en el medio de la abreviatura de una palabra de L letras?</p></div>
+    <div class="idea-a frag">L − 2: se quitan la primera y la última letra. localization tiene 12 letras, así que queda l10n.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -398,7 +408,18 @@ i18n</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/118/A">https://codeforces.com/problemset/problem/118/A</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: olvidar que en este problema la y cuenta como vocal.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 118A</div>
+  <h2>String Task</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿En qué orden conviene hacer los tres pasos?</p></div>
+    <div class="idea-a frag">Primero pasar todo a minúsculas. Así basta comparar con las vocales en minúscula: "aoyeui".</div>
+    <div class="idea-a frag">El resultado se arma en una lista y se une con <code>join</code>.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -453,7 +474,17 @@ Abz</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/112/A">https://codeforces.com/problemset/problem/112/A</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: comparar sin <code>lower()</code>. "A" &lt; "a" porque las mayúsculas tienen códigos menores. Caso a probar: dos strings iguales salvo por mayúsculas; la respuesta es 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 112A</div>
+  <h2>Petya and Strings</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Cómo se comparan dos strings sin que importen las mayúsculas?</p></div>
+    <div class="idea-a frag">Se pasan los dos a minúsculas con <code>lower()</code> y se comparan con &lt; y &gt;. Python compara strings en orden lexicográfico.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -472,7 +503,17 @@ Abz</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/236/A">https://codeforces.com/problemset/problem/236/A</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: usar <code>len(s)</code>, que cuenta las letras repetidas. wjmzbmr tiene 7 letras, pero solo 6 distintas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 236A</div>
+  <h2>Boy or Girl</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Cómo se cuentan las letras distintas de un string?</p></div>
+    <div class="idea-a frag">Con <code>len(set(s))</code>: el set guarda cada letra una sola vez. Después se mira si ese número es par.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
@@ -523,7 +564,18 @@ main()</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1755">https://cses.fi/problemset/task/1755</a></p>
-  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano antes de pasar a la solución.</p></aside>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: poner al centro todas las copias de la letra impar y además incluir su mitad a los lados; sobran letras. Casos a probar: un string de una letra, y ABC, que da NO SOLUTION.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1755</div>
+  <h2>Palindrome Reorder</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>En un palíndromo, ¿cuántas letras pueden aparecer una cantidad impar de veces?</p></div>
+    <div class="idea-a frag">A lo sumo una, la del centro. Si hay dos o más letras con cantidad impar, no hay solución.</div>
+    <div class="idea-a frag">Se arma la mitad izquierda con la mitad de cada letra, se pone la letra impar al centro y se copia la mitad al revés: O(n + 26).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
 </section>
 
 <section class="slide">
