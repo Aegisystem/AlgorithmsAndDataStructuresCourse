@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clases del curso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="assets/curso.css">
+<style>
+  body { overflow: auto; font-size: 18px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding-block: 48px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+  h1 { font-family: var(--font-display); font-size: clamp(32px, 6vw, 52px); line-height: 1.05; margin: 0; text-wrap: balance; }
+  .weeks { display: grid; gap: 12px; }
+  .week { display: grid; grid-template-columns: 64px 1fr auto; gap: 16px; align-items: center; border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; background: var(--stage); text-decoration: none; color: var(--ink); }
+  .week:hover { border-color: var(--accent); }
+  .week .n { font-family: var(--font-mono); font-size: 28px; color: var(--accent); }
+  .week h2 { font-family: var(--font-display); font-size: 24px; margin: 0; }
+  .week p { margin: 2px 0 0; color: var(--muted); font-size: 16px; }
+  .week .s2 { font-family: var(--font-mono); font-size: 13px; color: var(--muted); text-align: right; }
+  .keys { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 16px; color: var(--muted); }
+  @media (max-width: 560px) { .week { grid-template-columns: 44px 1fr; } .week .s2 { grid-column: 2; text-align: left; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="eyebrow">Algoritmia y Estructuras de Datos Avanzadas · Bloque 1</div>
+    <h1>Clases de teoría, semanas 1 a 4</h1>
+  </div>
+  <div class="weeks">
+    <a class="week" href="semana-01-introduccion/s1-teoria.html"><span class="n">01</span><div><h2>Introducción y jueces</h2><p>Formatos de competencia, veredictos, enunciados, plantilla del curso</p></div><span class="s2">24 diapositivas<br>S2: práctica</span></a>
+    <a class="week" href="semana-02-complejidad/s1-teoria.html"><span class="n">02</span><div><h2>Complejidad y simulación</h2><p>Contar operaciones, tabla de restricciones, costos ocultos, Permutations</p></div><span class="s2">23 diapositivas<br>S2: práctica</span></a>
+    <a class="week" href="semana-03-strings/s1-teoria.html"><span class="n">03</span><div><h2>Strings</h2><p>Slicing, join, métodos, frecuencias, bases, orden lexicográfico</p></div><span class="s2">24 diapositivas<br>S2: práctica</span></a>
+    <a class="week" href="semana-04-matrices/s1-teoria.html"><span class="n">04</span><div><h2>Matrices</h2><p>Crear y leer, recorridos, vecinos, Number Spiral, entrada y salida rápida</p></div><span class="s2">24 diapositivas<br>S2: Contest 1</span></a>
+  </div>
+  <div class="keys">
+    <span><kbd>→</kbd> <kbd>espacio</kbd> avanzar</span><span><kbd>←</kbd> retroceder</span><span><kbd>N</kbd> mostrar u ocultar notas</span>
+    <span><kbd>F</kbd> pantalla completa</span><span><kbd>P</kbd> modo presentación</span><span><kbd>?</kbd> ayuda</span>
+  </div>
+</div>
+</body>
+</html>

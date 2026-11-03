@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 3 · Strings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .slicer .cell { width: 50px; height: 50px; font-size: 22px; }
+  .slicer .cells { margin: 26px 0; }
+  .expr { font-family: var(--font-mono); font-size: 30px; }
+  .expr .res { color: var(--ac); }
+  .sl-ctl { display: grid; grid-template-columns: 90px 1fr 60px; gap: 6px 12px; align-items: center; font-family: var(--font-mono); font-size: 18px; max-width: 520px; }
+  .ruler { display: grid; grid-template-columns: repeat(13, 1fr); gap: 4px; }
+  .ruler div { border: 1px solid var(--line); border-radius: 6px; text-align: center; padding: 4px 0; background: var(--stage); }
+  .ruler b { display: block; font-family: var(--font-mono); font-size: 22px; }
+  .ruler span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .ruler div.hit { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
+  .ruler div.hit span { color: var(--mark-ink); }
+  .freq { display: flex; align-items: flex-end; gap: 3px; height: 150px; }
+  .freq .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 2px; }
+  .freq .fb { width: 100%; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 3px 3px 0 0; transition: height .2s; }
+  .freq .fb + .fb { background: var(--ac-soft); border-color: var(--ac); }
+  .freq .fb.cur { background: var(--mark); border-color: var(--tle); }
+  .freq .fb.bad { background: var(--wa-soft); border-color: var(--wa); }
+  .freq .fl { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .freq .fv { font-family: var(--font-mono); font-size: 11px; }
+  .meth { display: grid; grid-template-columns: repeat(5, auto); gap: 6px; justify-content: start; }
+  .meth button { font-family: var(--font-mono); font-size: 16px; }
+  .out { font-family: var(--font-mono); font-size: 24px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; min-height: 52px; white-space: pre-wrap; word-break: break-all; }
+  .divs { font-family: var(--font-mono); font-size: 21px; display: grid; gap: 4px; }
+  .divs .rem { color: var(--tle); font-weight: 700; }
+  .lex-row { display: flex; gap: 4px; }
+  .cmpq { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .cmpq button { font-family: var(--font-mono); font-size: 20px; text-align: left; }
+  .timebar { display: grid; grid-template-columns: 330px 1fr 120px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .copy-tri { display: grid; gap: 2px; }
+  .copy-tri .r { display: flex; gap: 2px; }
+  .copy-tri .r span { width: 24px; height: 24px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 2px; }
+  .copy-tri .r span.new { background: var(--mark); border-color: var(--tle); }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span class="hl"></span><span class="on"></span><span class="on"></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+    <span></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 3 · Sesión 1</div>
+  <h1>Strings</h1>
+  <div class="meta"><span>Objetivo: manipular strings sin pasar el límite de tiempo</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. Casi todo se puede mostrar también en la consola de Python en vivo. Las visualizaciones sirven para los índices negativos, el slicing con paso y la comparación lexicográfica, que son los puntos donde más se equivocan.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–20</td><td>Indexación, slicing y palíndromos</td></tr>
+    <tr><td>20–30</td><td>Inmutabilidad: construir con lista y <code>join</code></td></tr>
+    <tr><td>30–45</td><td>Métodos de strings</td></tr>
+    <tr><td>45–60</td><td><code>ord</code>/<code>chr</code>, frecuencias y anagramas</td></tr>
+    <tr><td>60–70</td><td>Números y strings: dígitos y bases</td></tr>
+    <tr><td>70–80</td><td>Comparación lexicográfica</td></tr>
+    <tr><td>80–90</td><td>Problemas de la práctica</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Índices y slicing</h2>
+  <p>Cada carácter tiene un índice positivo y uno negativo.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Slicing</div>
+  <h2><code style="background:none;padding:0">s[inicio:fin:paso]</code></h2>
+  <div class="cols c-60 slicer fill">
+    <div class="stack">
+      <div class="row small"><label for="sl-s">s =</label><input id="sl-s" type="text" value="programacion" maxlength="16" style="width:300px"></div>
+      <div class="cells" id="sl-cells"></div>
+      <div class="expr" id="sl-expr"></div>
+      <div class="sl-ctl">
+        <label for="sl-a">inicio</label><input type="range" id="sl-a"><span id="sl-av"></span>
+        <label for="sl-b">fin</label><input type="range" id="sl-b"><span id="sl-bv"></span>
+        <label for="sl-c">paso</label><input type="range" id="sl-c" min="-3" max="3" value="1"><span id="sl-cv"></span>
+      </div>
+      <div class="row tiny"><label><input type="checkbox" id="sl-na"> sin inicio</label><label><input type="checkbox" id="sl-nb"> sin fin</label></div>
+    </div>
+    <div class="stack small">
+      <ul>
+        <li><code>s[i]</code> es el carácter en la posición i. <code>s[-1]</code> es el último.</li>
+        <li><code>s[a:b]</code> va desde a hasta b − 1. El fin no se incluye.</li>
+        <li>Si falta el inicio o el fin, se toma desde el borde.</li>
+        <li><code>s[::-1]</code> recorre al revés: invierte el string.</li>
+        <li>Un slice crea un string nuevo: cuesta O(b − a).</li>
+        <li><code>s[20]</code> da <code>IndexError</code>, pero <code>s[2:20]</code> no da error.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar con el grupo: <code>s[2:5]</code>, <code>s[-3:]</code>, <code>s[::2]</code>, <code>s[::-1]</code>, <code>s[5:2:-1]</code>. Preguntar el resultado antes de mover los controles.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Palíndromos</div>
+  <h2>Un palíndromo se lee igual al revés</h2>
+  <div class="cols fill">
+    <div class="stack" id="pal">
+      <div class="row small"><label for="pal-s">s =</label><input id="pal-s" type="text" value="reconocer" maxlength="16" style="width:260px"><button id="pal-go">Cargar</button></div>
+      <div class="cells" id="pal-cells" style="margin-top:22px"></div>
+      <div class="caption" id="pal-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># forma corta: crea una copia invertida, O(n)
+es_pal = s == s[::-1]
+
+# dos punteros: no crea copias
+i, j = 0, len(s) - 1
+es_pal = True
+while i < j:
+    if s[i] != s[j]:
+        es_pal = False
+        break
+    i += 1
+    j -= 1</pre>
+      <p class="small">Las dos son O(n). La de dos punteros sirve cuando hay que saber <b>dónde</b> falla, por ejemplo para quitar un carácter.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Los strings son inmutables</h2>
+  <p>Un string no se puede modificar. Cada cambio crea uno nuevo.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Inmutabilidad</div>
+  <h2>Construir un string con una lista</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">s = "hola"
+s[0] = "H"    # TypeError: 'str' object does not
+              # support item assignment
+
+# cambiar un carácter: pasar por una lista
+t = list(s)
+t[0] = "H"
+s = "".join(t)          # "Hola"</pre>
+      <pre class="code sm"># construir una respuesta larga
+partes = []
+for c in s:
+    partes.append(c.upper())
+res = "".join(partes)   # O(n) en total</pre>
+    </div>
+    <div class="stack">
+      <p class="small"><code>s = s + c</code> copia los caracteres de <code>s</code> en un string nuevo. En un bucle de n vueltas, se copian 1 + 2 + … + n ≈ n²/2 caracteres.</p>
+      <div class="copy-tri" id="tri"></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medición</div>
+  <h2>2·10⁵ concatenaciones</h2>
+  <div class="stack" style="max-width:1080px; gap:14px">
+    <div class="timebar"><span><code>s = c + s</code> (al inicio)</span><div class="tb slow" style="width:100%"></div><span class="tv">0.44 s</span></div>
+    <div class="timebar"><span><code>s += c</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.44 s</span></div>
+    <div class="timebar"><span>lista + <code>"".join</code></span><div class="tb" style="width:0.5%"></div><span class="tv">0.002 s</span></div>
+  </div>
+  <p class="small">En PyPy, <code>s += c</code> copia el string completo en cada vuelta: es O(n²). Con 10⁶ concatenaciones tardó <b>11.7 s</b>; con <code>join</code>, 0.015 s.</p>
+  <p class="tiny muted">PyPy 3.11, Apple M4.</p>
+  <aside class="notes"><p>Con el intérprete normal de Python a veces <code>s += c</code> es rápido por una optimización interna, y por eso hay estudiantes que no ven el problema al probar en su computador. En PyPy no existe esa optimización. Regla del curso: lista y <code>join</code>.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Métodos de strings</h2>
+  <p>Funciones que ya vienen en Python y recorren el string en C.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Métodos</div>
+  <h2>Probar los métodos</h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <div class="row small"><label for="m-s">s =</label><input id="m-s" type="text" value="  Hola mundo, hola Python  " style="width:420px"></div>
+      <div class="row small"><label for="m-a">arg 1</label><input id="m-a" type="text" value="ola" style="width:140px"><label for="m-b">arg 2</label><input id="m-b" type="text" value="OLA" style="width:140px"></div>
+      <div class="meth" id="m-btns"></div>
+      <div class="expr small" id="m-expr" style="font-size:20px"></div>
+      <div class="out" id="m-out"></div>
+    </div>
+    <table class="t small" style="font-size:17px">
+      <tr><th>Método</th><th>Devuelve</th></tr>
+      <tr><td><code>split()</code></td><td>lista de palabras</td></tr>
+      <tr><td><code>strip()</code></td><td>sin espacios en los bordes</td></tr>
+      <tr><td><code>count(t)</code></td><td>apariciones sin solaparse</td></tr>
+      <tr><td><code>find(t)</code></td><td>primer índice o −1</td></tr>
+      <tr><td><code>replace(a, b)</code></td><td>string con a cambiado por b</td></tr>
+      <tr><td><code>startswith(t)</code></td><td><code>True</code> o <code>False</code></td></tr>
+      <tr><td><code>upper()</code> / <code>lower()</code></td><td>mayúsculas / minúsculas</td></tr>
+      <tr><td><code>isdigit()</code></td><td>¿todos son dígitos?</td></tr>
+    </table>
+  </div>
+  <aside class="notes"><p>Todos estos métodos son O(n). Si se llaman dentro de un bucle de n vueltas, el total es O(n²). Ejemplo típico: <code>s.count(c)</code> para cada letra c de s.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Caracteres y frecuencias</h2>
+  <p>Cada carácter es un número. Eso permite usarlo como índice.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">ord y chr</div>
+  <h2>Cada carácter tiene un código</h2>
+  <div class="stack">
+    <div class="ruler" id="ruler"></div>
+    <div class="cols">
+      <div class="stack small">
+        <pre class="code sm">ord("a")              # 97
+chr(98)               # "b"
+ord(c) - ord("a")     # posición de c: 0..25
+chr(ord("a") + i)     # letra número i
+ord("A")              # 65: mayúsculas antes</pre>
+      </div>
+      <div class="stack small">
+        <div class="row"><label for="cz-s">texto</label><input id="cz-s" type="text" value="hola" maxlength="20" style="width:180px"><label for="cz-k">desplazar</label><input id="cz-k" type="number" value="3" min="-25" max="25" style="width:70px"></div>
+        <div class="out" id="cz-out"></div>
+        <p class="tiny muted">Cifrado César: <code>chr((ord(c) - 97 + k) % 26 + 97)</code>. El <code>% 26</code> hace que después de la z siga la a.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Frecuencias</div>
+  <h2>Contar letras con un arreglo de 26</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="fq">
+      <div class="row small"><label for="fq-s">s =</label><input id="fq-s" type="text" value="banana" maxlength="20" style="width:240px"><button id="fq-go">Cargar</button></div>
+      <div class="cells" id="fq-cells" style="margin-top:20px"></div>
+      <div class="freq" id="fq-bars"></div>
+      <div class="caption" id="fq-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">cnt = [0] * 26
+for c in s:
+    cnt[ord(c) - 97] += 1
+
+# con la biblioteca
+from collections import Counter
+cnt = Counter(s)   # {'a': 3, 'n': 2, 'b': 1}</pre>
+      <p class="small">El arreglo de 26 sirve cuando las letras son minúsculas. <code>Counter</code> sirve para cualquier carácter o palabra.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Anagramas</div>
+  <h2>Dos palabras son anagramas si tienen las mismas frecuencias</h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <div class="row small"><label for="an-a">a =</label><input id="an-a" type="text" value="roma" maxlength="20" style="width:180px"><label for="an-b">b =</label><input id="an-b" type="text" value="amor" maxlength="20" style="width:180px"></div>
+      <div class="freq" id="an-bars" style="height:200px"></div>
+      <div class="caption" id="an-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># O(n log n)
+sorted(a) == sorted(b)
+
+# O(n)
+Counter(a) == Counter(b)</pre>
+      <p class="small">Cada letra tiene dos barras: la de <b>a</b> a la izquierda (azul) y la de <b>b</b> a la derecha (verde). Las letras en rojo tienen frecuencias distintas.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Números y strings</h2>
+  <p>Dígitos, sumas de dígitos y cambios de base.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Bases</div>
+  <h2>De decimal a binario, dividiendo entre 2</h2>
+  <div class="cols fill">
+    <div class="stack" id="bs">
+      <div class="row small"><label for="bs-n">n =</label><input id="bs-n" type="number" value="13" min="0" max="100000" style="width:120px">
+        <label for="bs-b">base</label><select id="bs-b"><option>2</option><option>3</option><option>8</option><option>16</option></select><button id="bs-go">Cargar</button></div>
+      <div class="divs" id="bs-divs"></div>
+      <div class="expr" id="bs-res" style="font-size:24px"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">bin(13)          # '0b1101'
+bin(13)[2:]      # '1101'
+int("1101", 2)   # 13
+int("ff", 16)    # 255
+
+# suma de dígitos
+sum(map(int, str(n)))
+
+# a una base b cualquiera
+def a_base(n, b):
+    if n == 0:
+        return "0"
+    d = []
+    while n > 0:
+        d.append(str(n % b))
+        n //= b
+    return "".join(reversed(d))</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Los residuos se leen de abajo hacia arriba. <code>a_base</code> funciona para bases hasta 10; para base 16 hay que usar letras para los dígitos de 10 a 15.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 6</div>
+  <h2>Comparación lexicográfica</h2>
+  <p>El orden del diccionario, carácter por carácter.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Orden lexicográfico</div>
+  <h2>Gana el primer carácter distinto</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="lx">
+      <div class="row small"><label for="lx-a">a =</label><input id="lx-a" type="text" value="casa" maxlength="12" style="width:170px"><label for="lx-b">b =</label><input id="lx-b" type="text" value="cama" maxlength="12" style="width:170px"><button id="lx-go">Comparar</button></div>
+      <div class="lex-row cells" id="lx-ra" style="margin-top:22px"></div>
+      <div class="lex-row cells" id="lx-rb" style="margin-top:18px"></div>
+      <div class="caption" id="lx-cap"></div>
+    </div>
+    <div class="stack">
+      <p class="small">¿Cuál es menor? Haga clic para ver la respuesta.</p>
+      <div class="cmpq" id="cmpq"></div>
+      <p class="tiny muted">Si un string es prefijo del otro, el más corto es menor. Las mayúsculas (65–90) van antes que las minúsculas (97–122).</p>
+    </div>
+  </div>
+  <aside class="notes"><p><code>"10" &lt; "9"</code> es <code>True</code> porque compara el carácter "1" con "9". Para comparar números leídos como texto hay que convertirlos con <code>int</code>. Esto conecta con CF 112A, donde hay que pasar todo a minúsculas antes de comparar.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 7</div>
+  <h2>Problemas de la práctica</h2>
+  <p>Cuatro problemas A de Codeforces y Palindrome Reorder de CSES.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Codeforces 71A y 118A</div>
+  <h2>Abreviar palabras y procesar letras</h2>
+  <div class="cols">
+    <div class="stack">
+      <h3>71A · Way Too Long Words</h3>
+      <p class="small">Si una palabra tiene más de 10 letras, se escribe primera letra + cantidad de letras del medio + última letra.</p>
+      <pre class="code sm">for _ in range(int(input())):
+    w = input().strip()
+    if len(w) > 10:
+        w = w[0] + str(len(w) - 2) + w[-1]
+    ans.append(w)</pre>
+      <p class="tiny muted">"localization" → "l10n"</p>
+    </div>
+    <div class="stack">
+      <h3>118A · String Task</h3>
+      <p class="small">Quitar las vocales (incluida la y), poner un punto antes de cada consonante y pasar a minúsculas.</p>
+      <pre class="code sm">s = input().strip().lower()
+res = []
+for c in s:
+    if c not in "aoyeui":
+        res.append("." + c)
+print("".join(res))</pre>
+      <p class="tiny muted">"Codeforces" → ".c.d.f.r.c.s"</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Codeforces 112A y 236A</div>
+  <h2>Comparar sin mayúsculas y contar distintos</h2>
+  <div class="cols">
+    <div class="stack">
+      <h3>112A · Petya and Strings</h3>
+      <p class="small">Comparar dos strings sin distinguir mayúsculas. Imprimir −1, 0 o 1.</p>
+      <pre class="code sm">a = input().strip().lower()
+b = input().strip().lower()
+if a < b:
+    print(-1)
+elif a > b:
+    print(1)
+else:
+    print(0)</pre>
+    </div>
+    <div class="stack">
+      <h3>236A · Boy or Girl</h3>
+      <p class="small">Si el nombre de usuario tiene una cantidad par de letras distintas, es mujer; si es impar, es hombre.</p>
+      <pre class="code sm">s = input().strip()
+if len(set(s)) % 2 == 0:
+    print("CHAT WITH HER!")
+else:
+    print("IGNORE HIM!")</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">CSES 1755 · Palindrome Reorder</div>
+  <h2>Reordenar las letras para formar un palíndromo</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="pr">
+      <div class="row small"><label for="pr-s">s =</label><input id="pr-s" type="text" value="AAAACACBA" maxlength="24" style="width:260px"><button id="pr-go">Construir</button></div>
+      <div class="freq" id="pr-bars" style="height:110px"></div>
+      <div class="caption" id="pr-cap"></div>
+      <div class="cells" id="pr-out" style="margin-top:18px"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">s = input().strip()
+cnt = [0] * 26
+for c in s:
+    cnt[ord(c) - 65] += 1
+impares = [i for i in range(26) if cnt[i] % 2]
+if len(impares) > 1:
+    print("NO SOLUTION")
+else:
+    mitad = []
+    for i in range(26):
+        mitad.append(chr(65 + i) * (cnt[i] // 2))
+    mitad = "".join(mitad)
+    centro = chr(65 + impares[0]) if impares else ""
+    print(mitad + centro + mitad[::-1])</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Un palíndromo tiene a lo sumo una letra con frecuencia impar (la del centro). Con n ≤ 10⁶ la solución es O(n + 26). Cualquier palíndromo válido es aceptado.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://codeforces.com/problemset/problem/71/A">CF 71A · Way Too Long Words</a></li>
+    <li><a href="https://codeforces.com/problemset/problem/118/A">CF 118A · String Task</a></li>
+    <li><a href="https://codeforces.com/problemset/problem/112/A">CF 112A · Petya and Strings</a></li>
+    <li><a href="https://codeforces.com/problemset/problem/236/A">CF 236A · Boy or Girl</a></li>
+    <li><a href="https://cses.fi/problemset/task/1755">CSES 1755 · Palindrome Reorder</a> (reto)</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para strings en Python</h2>
+  <ol>
+    <li>Leer strings con <code>input().strip()</code>.</li>
+    <li>Construir respuestas con una lista y <code>"".join</code>.</li>
+    <li>Recordar que los métodos y los slices son O(n).</li>
+    <li>Contar con un arreglo de 26 o con <code>Counter</code>.</li>
+    <li>Comparar números como <code>int</code>, no como texto.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const py = (v) => typeof v === "string" ? "'" + v.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'" : Array.isArray(v) ? "[" + v.map(py).join(", ") + "]" : v === true ? "True" : v === false ? "False" : String(v);
+
+  // ---------- slicing ----------
+  function pyRange(n, a, b, c) {
+    // índices que produce s[a:b:c] con la semántica de Python
+    const norm = (x, def, lo, hi) => {
+      if (x === null) return def;
+      if (x < 0) x += n;
+      return Math.max(lo, Math.min(hi, x));
+    };
+    const out = [];
+    if (c > 0) { const s = norm(a, 0, 0, n), e = norm(b, n, 0, n); for (let i = s; i < e; i += c) out.push(i); }
+    else { const s = norm(a, n - 1, -1, n - 1), e = norm(b, -1, -1, n - 1); for (let i = s; i > e; i += c) out.push(i); }
+    return out;
+  }
+  function slicer() {
+    const s = $("#sl-s").value || "a", n = s.length;
+    const A = $("#sl-a"), B = $("#sl-b"), C = $("#sl-c");
+    A.min = B.min = -n; A.max = B.max = n;
+    let c = +C.value; if (c === 0) { c = 1; C.value = 1; }
+    const a = $("#sl-na").checked ? null : +A.value, b = $("#sl-nb").checked ? null : +B.value;
+    $("#sl-av").textContent = a === null ? "vacío" : a; $("#sl-bv").textContent = b === null ? "vacío" : b; $("#sl-cv").textContent = c;
+    const idx = pyRange(n, a, b, c), set = new Set(idx);
+    const el = $("#sl-cells"); el.innerHTML = "";
+    for (let i = 0; i < n; i++) el.append(h("div", { class: "cell" + (set.has(i) ? (i === idx[0] ? " cur" : " sel") : " dim") }, h("span", { class: "idx", text: i }), s[i], h("span", { class: "idx2", text: i - n })));
+    const res = idx.map((i) => s[i]).join("");
+    $("#sl-expr").innerHTML = "s[" + (a === null ? "" : a) + ":" + (b === null ? "" : b) + (c !== 1 ? ":" + c : "") + "] = <span class=\"res\">" + py(res).replace(/</g, "&lt;") + "</span>";
+  }
+  ["sl-s", "sl-a", "sl-b", "sl-c", "sl-na", "sl-nb"].forEach((id) => $("#" + id).addEventListener("input", slicer));
+  $("#sl-a").value = 0; $("#sl-b").value = 7; $("#sl-a").min = -12; $("#sl-a").max = 12; $("#sl-b").min = -12; $("#sl-b").max = 12; $("#sl-a").value = 0; $("#sl-b").value = 7;
+  slicer();
+
+  // ---------- palíndromo ----------
+  const palBox = h("div"); $("#pal").append(palBox);
+  let palStep = null;
+  function palLoad() {
+    const s = ($("#pal-s").value || "a").slice(0, 16);
+    const fr = []; let i = 0, j = s.length - 1;
+    while (true) {
+      if (i >= j) { fr.push({ s, i, j, end: "ok" }); break; }
+      const eq = s[i] === s[j];
+      fr.push({ s, i, j, eq });
+      if (!eq) { fr.push({ s, i, j, end: "bad" }); break; }
+      i++; j--;
+    }
+    if (palStep) palStep.setFrames(fr); else palStep = stepper(palBox, fr, (f) => {
+      const el = $("#pal-cells"); el.innerHTML = "";
+      for (let k = 0; k < f.s.length; k++) {
+        let cls = "cell";
+        if (k === f.i || k === f.j) cls += f.end === "bad" || f.eq === false ? " bad" : " cur";
+        else if (k < f.i || k > f.j) cls += " ok";
+        el.append(h("div", { class: cls }, h("span", { class: "idx", text: k === f.i ? "i" : k === f.j ? "j" : "" }), f.s[k]));
+      }
+      $("#pal-cap").innerHTML = f.end === "ok" ? "Los punteros se cruzaron: <b>es palíndromo</b>." : f.end === "bad" ? "s[" + f.i + "] ≠ s[" + f.j + "]: <b>no es palíndromo</b>." :
+        "s[" + f.i + "] = '" + f.s[f.i] + "', s[" + f.j + "] = '" + f.s[f.j] + "' → " + (f.eq ? "iguales, avanzar" : "distintos");
+    }, { delay: 600 });
+  }
+  $("#pal-go").onclick = palLoad; palLoad();
+
+  // ---------- triángulo de copias ----------
+  const tri = $("#tri");
+  for (let r = 1; r <= 8; r++) { const row = h("div", { class: "r" }); for (let k = 0; k < r; k++) row.append(h("span", { class: k === r - 1 ? "new" : "" })); tri.append(row); }
+  tri.append(h("div", { class: "tiny muted", text: "Fila k: se copian k caracteres. Total para n = 8: 36." }));
+
+  // ---------- métodos ----------
+  const METHODS = [
+    ["split()", (s) => s.trim().split(/\s+/).filter(Boolean)],
+    ["strip()", (s) => s.trim()],
+    ["count(a)", (s, a) => { if (!a) return s.length + 1; let c = 0, i = 0; while ((i = s.indexOf(a, i)) !== -1) { c++; i += a.length; } return c; }],
+    ["find(a)", (s, a) => s.indexOf(a)],
+    ["replace(a, b)", (s, a, b) => a ? s.split(a).join(b) : s],
+    ["startswith(a)", (s, a) => s.startsWith(a)],
+    ["upper()", (s) => s.toUpperCase()],
+    ["lower()", (s) => s.toLowerCase()],
+    ["isdigit()", (s) => s.length > 0 && /^[0-9]+$/.test(s)],
+    ["[::-1]", (s) => s.split("").reverse().join("")]
+  ];
+  let mSel = 0;
+  function runM() {
+    const s = $("#m-s").value, a = $("#m-a").value, b = $("#m-b").value, [name, f] = METHODS[mSel];
+    Array.from($("#m-btns").children).forEach((x, j) => x.classList.toggle("on", j === mSel));
+    const call = name.startsWith("[") ? "s" + name : "s." + name.replace("(a, b)", "(" + py(a) + ", " + py(b) + ")").replace("(a)", "(" + py(a) + ")");
+    $("#m-expr").textContent = ">>> " + call;
+    $("#m-out").textContent = py(f(s, a, b));
+  }
+  METHODS.forEach((m, i) => $("#m-btns").append(h("button", { text: m[0], onclick: () => { mSel = i; runM(); } })));
+  ["m-s", "m-a", "m-b"].forEach((id) => $("#" + id).addEventListener("input", runM));
+  runM();
+
+  // ---------- regla ord/chr y César ----------
+  function ruler(hits) {
+    const r = $("#ruler"); r.innerHTML = "";
+    for (let i = 0; i < 26; i++) { const c = String.fromCharCode(97 + i); r.append(h("div", { class: hits.has(c) ? "hit" : "" }, h("b", { text: c }), h("span", { text: (97 + i) + " · " + i }))); }
+  }
+  function cesar() {
+    const s = ($("#cz-s").value || "").toLowerCase(), k = parseInt($("#cz-k").value, 10) || 0;
+    const out = s.split("").map((c) => /[a-z]/.test(c) ? String.fromCharCode(((c.charCodeAt(0) - 97 + k) % 26 + 26) % 26 + 97) : c).join("");
+    $("#cz-out").textContent = py(s) + " → " + py(out);
+    ruler(new Set(s.replace(/[^a-z]/g, "").split("")));
+  }
+  ["cz-s", "cz-k"].forEach((id) => $("#" + id).addEventListener("input", cesar));
+  cesar();
+
+  // ---------- frecuencias ----------
+  function freqBars(el, counts, opts) {
+    el.innerHTML = "";
+    const max = Math.max(1, ...counts.flat());
+    for (let i = 0; i < 26; i++) {
+      const col = h("div", { class: "col" });
+      const vals = Array.isArray(counts[i]) ? counts[i] : [counts[i]];
+      const pair = h("div", { style: { display: "flex", gap: "1px", width: "100%", alignItems: "flex-end", height: "100%" } });
+      vals.forEach((v) => pair.append(h("div", { class: "fb" + (opts.cur === i ? " cur" : "") + (opts.bad && opts.bad.has(i) ? " bad" : ""), style: { height: (v / max) * 85 + "%", minHeight: v ? "4px" : "0", flex: "1" }, title: v })));
+      col.append(h("span", { class: "fv", text: vals.some((v) => v) ? vals.join("·") : "" }), pair, h("span", { class: "fl", text: String.fromCharCode(97 + i) }));
+      el.append(col);
+    }
+  }
+  const fqBox = h("div"); $("#fq").append(fqBox);
+  let fqStep = null;
+  function fqLoad() {
+    const s = ($("#fq-s").value || "a").toLowerCase().replace(/[^a-z]/g, "").slice(0, 20) || "a";
+    const fr = [{ s, k: -1, cnt: Array(26).fill(0) }], cnt = Array(26).fill(0);
+    for (let k = 0; k < s.length; k++) { cnt[s.charCodeAt(k) - 97]++; fr.push({ s, k, cnt: cnt.slice() }); }
+    if (fqStep) fqStep.setFrames(fr); else fqStep = stepper(fqBox, fr, (f) => {
+      const el = $("#fq-cells"); el.innerHTML = "";
+      for (let k = 0; k < f.s.length; k++) el.append(h("div", { class: "cell" + (k === f.k ? " cur" : k < f.k ? " sel" : "") }, h("span", { class: "idx", text: k }), f.s[k]));
+      const ci = f.k >= 0 ? f.s.charCodeAt(f.k) - 97 : -1;
+      freqBars($("#fq-bars"), f.cnt, { cur: ci });
+      $("#fq-cap").innerHTML = f.k < 0 ? "cnt = [0] * 26" : "c = '" + f.s[f.k] + "' → ord(c) − 97 = " + ci + " → cnt[" + ci + "] = <b>" + f.cnt[ci] + "</b>";
+    }, { delay: 500 });
+  }
+  $("#fq-go").onclick = fqLoad; fqLoad();
+
+  // ---------- anagramas ----------
+  function anag() {
+    const a = $("#an-a").value.toLowerCase().replace(/[^a-z]/g, ""), b = $("#an-b").value.toLowerCase().replace(/[^a-z]/g, "");
+    const ca = Array(26).fill(0), cb = Array(26).fill(0);
+    for (const c of a) ca[c.charCodeAt(0) - 97]++;
+    for (const c of b) cb[c.charCodeAt(0) - 97]++;
+    const bad = new Set(); for (let i = 0; i < 26; i++) if (ca[i] !== cb[i]) bad.add(i);
+    freqBars($("#an-bars"), ca.map((v, i) => [v, cb[i]]), { bad });
+    $("#an-cap").innerHTML = bad.size ? "<b>No son anagramas.</b> Difieren en: " + Array.from(bad).map((i) => String.fromCharCode(97 + i)).join(", ") : "<b>Son anagramas.</b> Las 26 frecuencias coinciden.";
+  }
+  ["an-a", "an-b"].forEach((id) => $("#" + id).addEventListener("input", anag));
+  anag();
+
+  // ---------- bases ----------
+  const bsBox = h("div"); $("#bs").append(bsBox);
+  let bsStep = null;
+  const DIG = "0123456789abcdef";
+  function bsLoad() {
+    let n = Math.max(0, Math.min(100000, parseInt($("#bs-n").value, 10) || 0)), b = +$("#bs-b").value;
+    const rows = [], n0 = n;
+    if (n === 0) rows.push([0, 0, 0]);
+    while (n > 0) { rows.push([n, Math.floor(n / b), n % b]); n = Math.floor(n / b); }
+    const fr = rows.map((_, k) => ({ k, rows, b, n0 }));
+    fr.push({ k: rows.length, rows, b, n0, done: true });
+    if (bsStep) bsStep.setFrames(fr); else bsStep = stepper(bsBox, fr, (f) => {
+      const el = $("#bs-divs"); el.innerHTML = "";
+      f.rows.slice(0, Math.min(f.k + 1, f.rows.length)).forEach(([x, q, r]) => el.append(h("div", { html: x + " // " + f.b + " = " + q + "   residuo <span class=\"rem\">" + DIG[r] + "</span>" })));
+      const digits = f.rows.slice(0, Math.min(f.k + 1, f.rows.length)).map((r) => DIG[r[2]]).reverse().join("");
+      $("#bs-res").innerHTML = f.done ? f.n0 + " en base " + f.b + " = <b>" + digits + "</b> (residuos de abajo hacia arriba)" : "residuos hasta ahora: " + digits;
+    }, { delay: 700 });
+  }
+  $("#bs-go").onclick = bsLoad; bsLoad();
+
+  // ---------- lexicográfico ----------
+  const lxBox = h("div"); $("#lx").append(lxBox);
+  let lxStep = null;
+  function lxLoad() {
+    const a = $("#lx-a").value, b = $("#lx-b").value, fr = [];
+    let i = 0;
+    while (i < a.length && i < b.length && a[i] === b[i]) { fr.push({ i, st: "eq" }); i++; }
+    if (i < a.length && i < b.length) fr.push({ i, st: "diff" });
+    else fr.push({ i, st: "prefix" });
+    fr.forEach((f) => { f.a = a; f.b = b; });
+    if (lxStep) lxStep.setFrames(fr); else lxStep = stepper(lxBox, fr, (f) => {
+      const row = (el, s) => { el.innerHTML = ""; for (let k = 0; k < Math.max(f.a.length, f.b.length); k++) {
+        const c = s[k];
+        let cls = "cell" + (c === undefined ? " dim" : k < f.i ? " ok" : k === f.i ? (f.st === "eq" ? " cur" : f.st === "diff" ? " bad" : " cur") : "");
+        el.append(h("div", { class: cls }, h("span", { class: el.id === "lx-ra" ? "idx" : "idx2", text: c === undefined ? "" : c.charCodeAt(0) }), c === undefined ? "" : c));
+      } };
+      row($("#lx-ra"), f.a); row($("#lx-rb"), f.b);
+      let cap;
+      if (f.st === "eq") cap = "Posición " + f.i + ": '" + f.a[f.i] + "' = '" + f.b[f.i] + "', seguir.";
+      else if (f.st === "diff") { const lt = f.a[f.i] < f.b[f.i]; cap = "Posición " + f.i + ": " + f.a.charCodeAt(f.i) + " " + (lt ? "<" : ">") + " " + f.b.charCodeAt(f.i) + " → <b>" + py(f.a) + (lt ? " < " : " > ") + py(f.b) + "</b>"; }
+      else cap = f.a.length === f.b.length ? "<b>Son iguales.</b>" : "Uno es prefijo del otro: el más corto es menor → <b>" + (f.a.length < f.b.length ? py(f.a) + " < " + py(f.b) : py(f.a) + " > " + py(f.b)) + "</b>";
+      $("#lx-cap").innerHTML = cap;
+    }, { delay: 700 });
+  }
+  $("#lx-go").onclick = lxLoad; lxLoad();
+  [["abc", "abd"], ["ab", "abc"], ["Zorro", "abeja"], ["10", "9"]].forEach(([x, y]) => {
+    const btn = h("button", { text: py(x) + " vs " + py(y) });
+    btn.onclick = () => { btn.textContent = (x < y ? py(x) + " < " + py(y) : py(x) + " > " + py(y)); btn.classList.add("on"); $("#lx-a").value = x; $("#lx-b").value = y; lxLoad(); };
+    $("#cmpq").append(btn);
+  });
+
+  // ---------- Palindrome Reorder ----------
+  function prRun() {
+    const s = ($("#pr-s").value || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 24);
+    const cnt = Array(26).fill(0); for (const c of s) cnt[c.charCodeAt(0) - 65]++;
+    const odd = []; for (let i = 0; i < 26; i++) if (cnt[i] % 2) odd.push(i);
+    freqBars($("#pr-bars"), cnt, { bad: new Set(odd) });
+    $("#pr-bars").querySelectorAll(".fl").forEach((x, i) => (x.textContent = String.fromCharCode(65 + i)));
+    const out = $("#pr-out"); out.innerHTML = "";
+    if (odd.length > 1) { $("#pr-cap").innerHTML = odd.length + " letras con frecuencia impar (en rojo): <b>NO SOLUTION</b>"; return; }
+    let half = ""; for (let i = 0; i < 26; i++) half += String.fromCharCode(65 + i).repeat(cnt[i] >> 1);
+    const mid = odd.length ? String.fromCharCode(65 + odd[0]).repeat(cnt[odd[0]] % 2) : "";
+    const res = half + mid + half.split("").reverse().join("");
+    $("#pr-cap").innerHTML = (odd.length ? "Una letra impar (" + String.fromCharCode(65 + odd[0]) + ") va al centro." : "Todas las frecuencias son pares.") + " Mitad + centro + mitad invertida:";
+    for (let k = 0; k < res.length; k++) {
+      const zone = k < half.length ? " sel" : k < half.length + mid.length ? " cur" : " ok";
+      out.append(h("div", { class: "cell" + zone }, res[k]));
+    }
+  }
+  $("#pr-go").onclick = prRun; prRun();
+})();
+</script>
+</body>
+</html>

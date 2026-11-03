@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 4 · Matrices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .mx .cell { width: 44px; height: 44px; font-size: 17px; cursor: pointer; }
+  .mx.small .cell { width: 36px; height: 36px; font-size: 15px; }
+  .mx .cell.ghost { border-style: dashed; background: transparent; color: var(--wa); cursor: default; }
+  .mx .cell.none { visibility: hidden; }
+  .mx .cell.n4 { background: var(--ac-soft); border-color: var(--ac); }
+  .mx .cell.out { background: var(--wa-soft); border-color: var(--wa); border-style: dashed; }
+  .mx .cell .o { position: absolute; top: 2px; right: 4px; font-size: 10px; color: var(--muted); }
+  .alias { display: grid; grid-template-columns: auto auto; gap: 8px 14px; align-items: center; }
+  .alias .rowlab { font-family: var(--font-mono); font-size: 15px; color: var(--muted); }
+  .alias .ptr { font-family: var(--font-mono); font-size: 13px; color: var(--tle); }
+  textarea { font-family: var(--font-mono); font-size: 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--stage); color: var(--ink); padding: 8px 10px; resize: none; }
+  .tf-btns { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; justify-content: start; }
+  .mult { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .mult .op { font-size: 30px; color: var(--muted); }
+  .mult .cell { cursor: default; }
+  .strip { display: flex; gap: 3px; flex-wrap: wrap; }
+  .strip .cell { width: 38px; height: 38px; font-size: 14px; }
+  .formula { font-family: var(--font-mono); font-size: 22px; }
+  .timebar { display: grid; grid-template-columns: 210px 1fr 80px; gap: 10px; align-items: center; font-size: 20px; }
+  .timebar .tb { height: 26px; background: var(--ac); border-radius: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 18px; text-align: right; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+    <span></span><span></span><span></span><span></span><span></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="hl"></span><span></span><span></span><span class="on"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 4 · Sesión 1</div>
+  <h1>Matrices y grillas</h1>
+  <div class="meta"><span>Objetivo: trabajar con listas 2D y grillas, que se usan otra vez en prefijas 2D y en grafos</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 de esta semana es el Contest 1 (semanas 1 a 4). Dejar 5 minutos al final para explicar el formato del contest.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–15</td><td>Crear y leer matrices</td></tr>
+    <tr><td>15–30</td><td>Recorridos: filas, columnas, diagonales y espiral</td></tr>
+    <tr><td>30–40</td><td>Transpuesta, rotación y reflejos</td></tr>
+    <tr><td>40–60</td><td>Vecinos con <code>dx, dy</code> y límites</td></tr>
+    <tr><td>60–70</td><td>Multiplicación de matrices y aplanar</td></tr>
+    <tr><td>70–80</td><td>Beautiful Matrix y Number Spiral</td></tr>
+    <tr><td>80–85</td><td>Entrada y salida rápida, con Number Spiral como caso</td></tr>
+    <tr><td>85–90</td><td>Formato del Contest 1</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Crear y leer matrices</h2>
+  <p>Una matriz en Python es una lista de listas.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Crear una matriz</div>
+  <h2>Por qué <code style="background:none;padding:0">[[0]*m]*n</code> falla</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">M = [[0] * m] * n      # n referencias a la MISMA fila</pre>
+      <div class="alias" id="al-bad"></div>
+      <p class="small">Haga clic en una celda. Las n filas son la misma lista, así que el cambio aparece en todas.</p>
+    </div>
+    <div class="stack">
+      <pre class="code sm">M = [[0] * m for _ in range(n)]   # n filas distintas</pre>
+      <div class="alias" id="al-good"></div>
+      <p class="small">Cada vuelta del <code>for</code> crea una lista nueva. El cambio aparece en una sola celda.</p>
+    </div>
+  </div>
+  <div class="row"><button id="al-reset">Reiniciar</button><span class="small muted" id="al-cap"></span></div>
+  <aside class="notes"><p><code>[0] * m</code> sí está bien porque los enteros no se modifican: <code>M[i][j] = 1</code> reemplaza el valor en la fila. El problema es multiplicar la lista de filas. Se puede comprobar con <code>M[0] is M[1]</code>. Python Tutor (pythontutor.com) dibuja esto con flechas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Leer matrices</div>
+  <h2>Matrices de números y grillas de caracteres</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># n filas de m números
+n, m = map(int, input().split())
+M = [list(map(int, input().split())) for _ in range(n)]
+
+# n filas de caracteres '#' y '.'
+g = [input().strip() for _ in range(n)]
+g[i][j]          # carácter de la fila i, columna j
+
+# si hay que modificar la grilla
+g = [list(input().strip()) for _ in range(n)]</pre>
+      <p class="small">Una fila leída como string no se puede modificar. Para cambiar celdas se lee como lista.</p>
+    </div>
+    <div class="stack">
+      <label class="small muted" for="rd-txt">Entrada (edítela)</label>
+      <textarea id="rd-txt" rows="6" cols="22">4 6
+..#...
+.##..#
+......
+#..##.</textarea>
+      <div class="grid mx small" id="rd-grid"></div>
+      <div class="caption" id="rd-cap"></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Recorridos</h2>
+  <p>El orden en que se visitan las celdas.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Recorridos</div>
+  <h2>Seis formas de recorrer una matriz</h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <div class="row" id="tr-btns"></div>
+      <pre class="code sm" id="tr-code" data-lang="none"></pre>
+    </div>
+    <div class="stack" id="tr">
+      <div class="grid mx" id="tr-grid"></div>
+      <div class="caption" id="tr-cap"></div>
+    </div>
+  </div>
+  <aside class="notes"><p>El número en cada celda es el orden de visita. Preguntar al grupo cómo cambia el código para recorrer de abajo hacia arriba. La espiral es la más difícil: usa cuatro límites que se van cerrando.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Diagonales</div>
+  <h2>Cada diagonal tiene un valor constante</h2>
+  <div class="cols c-40">
+    <div class="stack">
+      <div class="grid mx" id="dg-grid"></div>
+      <p class="small muted">Haga clic en una celda.</p>
+    </div>
+    <div class="stack">
+      <div class="caption" id="dg-cap" style="font-size:22px"></div>
+      <ul class="small">
+        <li>En la diagonal que baja a la derecha, <code>i − j</code> es constante. La principal es <code>i − j = 0</code>.</li>
+        <li>En la diagonal que baja a la izquierda, <code>i + j</code> es constante. La secundaria es <code>i + j = n − 1</code>.</li>
+        <li>Hay <code>n + m − 1</code> diagonales de cada tipo.</li>
+        <li>Para agruparlas: <code>diag[i - j + m - 1]</code> y <code>anti[i + j]</code>.</li>
+      </ul>
+      <p class="small">En el problema de las N reinas (semana 11) se usan estos índices para saber si dos reinas se atacan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Transformaciones</h2>
+  <p>Transpuesta, rotaciones y reflejos con <code style="background:none;color:inherit">zip</code> y slicing.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Transformaciones</div>
+  <h2>Transponer, rotar y reflejar</h2>
+  <div class="cols c-40 fill">
+    <div class="stack">
+      <div class="tf-btns" id="tf-btns"></div>
+      <pre class="code sm" id="tf-code" data-lang="none"></pre>
+      <p class="small" id="tf-cap"></p>
+    </div>
+    <div class="stack center">
+      <div class="grid mx" id="tf-grid"></div>
+      <span class="small muted" id="tf-dim"></span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><code>zip(*M)</code> entrega tuplas. Para seguir con listas: <code>[list(f) for f in zip(*M)]</code>.</p>
+    <p>Rotar 90° a la derecha = invertir el orden de las filas y transponer. Una matriz n × m queda m × n.</p>
+  </aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Vecinos</h2>
+  <p>Moverse a las celdas de al lado sin salirse de la grilla.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Vecinos</div>
+  <h2>Vecinos con <code style="background:none;padding:0">dx, dy</code></h2>
+  <div class="cols fill">
+    <div class="stack">
+      <div class="row"><button id="nb-4" class="on">4 direcciones</button><button id="nb-8">8 direcciones</button></div>
+      <div class="grid mx" id="nb-grid"></div>
+      <div class="caption" id="nb-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">DX = [-1, 1, 0, 0]         # arriba, abajo,
+DY = [0, 0, -1, 1]         # izquierda, derecha
+
+for d in range(4):
+    ni, nj = i + DX[d], j + DY[d]
+    if 0 &lt;= ni &lt; n and 0 &lt;= nj &lt; m and g[ni][nj] != '#':
+        # (ni, nj) es un vecino válido
+        ...
+
+# 8 direcciones: todos los (di, dj) salvo (0, 0)
+for di in (-1, 0, 1):
+    for dj in (-1, 0, 1):
+        if di == 0 and dj == 0:
+            continue
+        ...</pre>
+      <p class="small">Primero se revisan los límites y después la celda. Si se revisa la celda primero, <code>g[-1]</code> no da error: lee la última fila.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Hacer clic en una esquina para mostrar los vecinos que quedan fuera (en rojo). El error de <code>g[-1]</code> es frecuente en Python porque no avisa. Las celdas rellenas son paredes.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Multiplicación y aplanado</h2>
+  <p>Producto de matrices en O(n³) y matrices guardadas en una sola lista.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Multiplicación</div>
+  <h2>Fila de A por columna de B</h2>
+  <div class="stack fill" id="mm">
+    <div class="mult">
+      <div class="grid mx" id="mm-a"></div><span class="op">×</span>
+      <div class="grid mx" id="mm-b"></div><span class="op">=</span>
+      <div class="grid mx" id="mm-c"></div>
+    </div>
+    <div class="caption formula" id="mm-cap"></div>
+    <div class="cols">
+      <pre class="code sm"># A es n×m, B es m×p, C es n×p
+C = [[0] * p for _ in range(n)]
+for i in range(n):
+    for j in range(p):
+        s = 0
+        for k in range(m):
+            s += A[i][k] * B[k][j]
+        C[i][j] = s</pre>
+      <div class="stack small">
+        <p>Tres bucles anidados: O(n · m · p). Con matrices n × n es O(n³).</p>
+        <p>Con n = 500 son 1.25·10⁸ multiplicaciones. Con PyPy tardó 0.19 s en un Apple M4; en el juez queda más cerca del límite.</p>
+        <p class="muted">Extensión: elevando una matriz 2 × 2 a la potencia k se calcula el k-ésimo Fibonacci en O(log k). Se retoma como reto en la semana 8.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Aplanar</div>
+  <h2>Una matriz en una sola lista</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <div class="grid mx" id="fl-grid"></div>
+      <div class="strip" id="fl-strip" style="margin-top:18px"></div>
+      <div class="caption formula" id="fl-cap"></div>
+    </div>
+    <div class="stack small">
+      <pre class="code sm">k = i * m + j          # (i, j) → k
+i, j = divmod(k, m)    # k → (i, j)
+vis = bytearray(n * m) # visitados, 1 byte por celda</pre>
+      <p>Cada celda queda representada por un solo entero. En BFS (semana 12) la cola guarda enteros en lugar de tuplas <code>(i, j)</code>.</p>
+      <p>En PyPy también es más rápido: sumar los 4 vecinos de 10⁶ celdas tardó 0.005 s con <code>M[i][j]</code> y 0.002 s aplanado.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Medido con PyPy 3.11, Apple M4. Guardar la fila en una variable (<code>row = M[i]</code>) también bajó a 0.002 s. Sirve para representar estados con un entero y para usar <code>bytearray</code>. En PyPy la lista plana suele ser más rápida.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 6</div>
+  <h2>Problemas</h2>
+  <p>Beautiful Matrix, Number Spiral y grillas de AtCoder.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Codeforces 263A · Beautiful Matrix</div>
+  <h2>Llevar el 1 al centro</h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="small">Una matriz 5 × 5 tiene un solo 1. Cada movimiento intercambia dos filas vecinas o dos columnas vecinas. ¿Cuántos movimientos hacen falta para llevar el 1 al centro?</p>
+      <div class="grid mx" id="bm-grid"></div>
+      <div class="caption" id="bm-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">import sys
+input = sys.stdin.readline
+
+def main():
+    for i in range(5):
+        fila = input().split()
+        for j in range(5):
+            if fila[j] == "1":
+                print(abs(i - 2) + abs(j - 2))
+
+main()</pre>
+      <p class="small">Es la distancia Manhattan al centro (2, 2): cada movimiento cambia la fila o la columna en 1.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Haga clic en cualquier celda para mover el 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">CSES 1071 · Number Spiral</div>
+  <h2>El valor en la fila y, columna x</h2>
+  <div class="cols c-40">
+    <div class="stack">
+      <div class="grid mx small" id="ns-grid"></div>
+      <p class="tiny muted">Haga clic en una celda. Las capas se colorean por paridad.</p>
+    </div>
+    <div class="stack">
+      <div class="caption" id="ns-cap" style="font-size:20px; min-height: 3em"></div>
+      <pre class="code sm">def valor(y, x):
+    z = max(y, x)              # capa
+    if z % 2 == 0:
+        if y == z:
+            return z * z - x + 1
+        return (z - 1) ** 2 + y
+    else:
+        if x == z:
+            return z * z - y + 1
+        return (z - 1) ** 2 + x</pre>
+      <p class="small">y, x ≤ 10⁹ y hasta 10⁵ consultas: no se puede construir la grilla. Cada consulta es O(1). El resultado llega a 10¹⁸ y Python no se desborda.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>La capa z termina en z². En las capas pares el recorrido baja por la columna z y luego va a la izquierda por la fila z; en las impares es al revés. Mostrar la fila 2, columna 3 (valor 8) y la fila 4, columna 2 (valor 15), que son ejemplos del enunciado.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Entrada y salida rápida</div>
+  <h2>Number Spiral con 10⁵ consultas</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="small muted">Con <code>input()</code> y <code>print</code></span>
+      <pre class="code sm">t = int(input())
+for _ in range(t):
+    y, x = map(int, input().split())
+    # ... calcular v ...
+    print(v)</pre>
+    </div>
+    <div class="stack">
+      <span class="small muted">Con la plantilla del curso</span>
+      <pre class="code sm">input = sys.stdin.readline
+t = int(input())
+ans = []
+for _ in range(t):
+    y, x = map(int, input().split())
+    # ... calcular v ...
+    ans.append(v)
+sys.stdout.write("\n".join(map(str, ans)) + "\n")</pre>
+    </div>
+  </div>
+  <div class="stack" style="max-width:1000px">
+    <div class="timebar"><span><code>input()</code> + <code>print</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.14 s</span></div>
+    <div class="timebar"><span>plantilla</span><div class="tb" style="width:29%"></div><span class="tv">0.04 s</span></div>
+  </div>
+  <p class="small muted">El cálculo es el mismo en los dos. Cambia solo la forma de leer y escribir. Medido con PyPy 3.11, Apple M4, con 10⁵ consultas aleatorias. El juez suele ser más lento.</p>
+  <aside class="notes"><p>Number Spiral es el primer problema del curso con 10⁵ líneas de entrada y 10⁵ de salida. Si se puede, correr las dos versiones en vivo con un archivo generado (el generador está en <code>soluciones/probar.py</code>).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Entrada y salida rápida</div>
+  <h2>Por qué la plantilla es más rápida</h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="small">
+        <li><code>input()</code> hace trabajo extra en cada llamada: entre otras cosas, vacía la salida pendiente antes de leer. <code>sys.stdin.readline</code> lee la línea directamente.</li>
+        <li><code>print</code> hace una escritura por cada línea. <code>join</code> arma un solo string y <code>sys.stdout.write</code> lo escribe una vez.</li>
+        <li>La diferencia se nota desde unas 10⁵ líneas. Con pocas líneas da lo mismo.</li>
+      </ul>
+      <pre class="code sm"># leer toda la entrada de una vez
+data = sys.stdin.buffer.read().split()
+t = int(data[0])
+# data[1], data[2], ... son bytes; int() los convierte</pre>
+    </div>
+    <div class="stack">
+      <h3 class="small muted">Leer 10⁶ enteros, uno por línea</h3>
+      <div class="timebar"><span><code>input()</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.13 s</span></div>
+      <div class="timebar"><span><code>readline</code></span><div class="tb" style="width:55%"></div><span class="tv">0.07 s</span></div>
+      <h3 class="small muted" style="margin-top:10px">Escribir 10⁶ enteros, uno por línea</h3>
+      <div class="timebar"><span><code>print</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.025 s</span></div>
+      <div class="timebar"><span><code>join</code> + <code>write</code></span><div class="tb" style="width:56%"></div><span class="tv">0.014 s</span></div>
+      <p class="tiny muted">PyPy 3.11, Apple M4, salida a <code>/dev/null</code>.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Leer todo con <code>sys.stdin.buffer.read().split()</code> es la forma más rápida. Sirve cuando no importa dónde termina cada línea; con grillas de caracteres conviene seguir leyendo por líneas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">AtCoder · grillas</div>
+  <h2>Dos problemas B de grillas</h2>
+  <div class="cols">
+    <div class="stack">
+      <h3>ABC075 B · Minesweeper</h3>
+      <p class="small">Cambiar cada <code>.</code> por la cantidad de <code>#</code> entre sus 8 vecinos.</p>
+      <pre class="code sm">for i in range(h):
+    fila = []
+    for j in range(w):
+        if g[i][j] == "#":
+            fila.append("#")
+            continue
+        c = 0
+        for di in (-1, 0, 1):
+            for dj in (-1, 0, 1):
+                ni, nj = i + di, j + dj
+                if 0 &lt;= ni &lt; h and 0 &lt;= nj &lt; w and g[ni][nj] == "#":
+                    c += 1
+        fila.append(str(c))
+    ans.append("".join(fila))</pre>
+    </div>
+    <div class="stack">
+      <h3>ABC107 B · Grid Compression</h3>
+      <p class="small">Quitar las filas y columnas que solo tienen <code>.</code>.</p>
+      <pre class="code sm">g = [f for f in g if "#" in f]        # filas
+cols = [c for c in zip(*g) if "#" in c] # columnas
+g = ["".join(f) for f in zip(*cols)]    # volver a filas</pre>
+      <p class="small">Las columnas se filtran transponiendo con <code>zip(*g)</code>, filtrando y transponiendo otra vez.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tarea</div>
+  <h2>Problemas de matrices</h2>
+  <ul>
+    <li><a href="https://codeforces.com/problemset/problem/263/A">CF 263A · Beautiful Matrix</a></li>
+    <li><a href="https://cses.fi/problemset/task/1071">CSES 1071 · Number Spiral</a></li>
+    <li><a href="https://atcoder.jp/contests/abc075/tasks/abc075_b">ABC075 B · Minesweeper</a></li>
+    <li><a href="https://atcoder.jp/contests/abc107/tasks/abc107_b">ABC107 B · Grid Compression</a></li>
+  </ul>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Contest 1</h2>
+  <div class="cols">
+    <ul>
+      <li>Cubre las semanas 1 a 4.</li>
+      <li>Dura 90 minutos y es presencial.</li>
+      <li>Tiene de 4 a 6 problemas, ordenados de menor a mayor dificultad.</li>
+      <li>Vale el 5 % de la nota.</li>
+      <li>Se hace en el grupo del curso: <span class="mono">[enlace pendiente]</span>.</li>
+    </ul>
+    <div class="box soft stack small">
+      <h3>Qué repasar</h3>
+      <ul>
+        <li>Plantilla de entrada y salida.</li>
+        <li>Tabla de restricciones contra complejidad.</li>
+        <li>Slicing, <code>join</code>, frecuencias.</li>
+        <li>Crear matrices, vecinos y límites.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Definir antes de la clase los problemas del contest y el enlace. Conviene que ninguno sea de los resueltos en clase.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para matrices en Python</h2>
+  <ol>
+    <li>Crear con <code>[[0] * m for _ in range(n)]</code>.</li>
+    <li>Leer grillas con <code>input().strip()</code>, y como lista si hay que modificarlas.</li>
+    <li>Revisar los límites antes de acceder a una celda vecina.</li>
+    <li>Transponer con <code>zip(*M)</code> y rotar con <code>zip(*M[::-1])</code>.</li>
+    <li>Guardar la fila en una variable dentro de los bucles internos.</li>
+    <li>Con 10⁵ líneas o más, leer con <code>sys.stdin.readline</code> y escribir una sola vez con <code>join</code>.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+
+  // ---------- alias ----------
+  const AN = 3, AM = 4;
+  let shared, rows;
+  function alReset() { shared = Array(AM).fill(0); rows = Array.from({ length: AN }, () => Array(AM).fill(0)); alDraw(); $("#al-cap").textContent = ""; }
+  function alDraw(hit) {
+    const bad = $("#al-bad"), good = $("#al-good");
+    bad.innerHTML = good.innerHTML = "";
+    for (let i = 0; i < AN; i++) {
+      const rb = h("div", { class: "row", style: { gap: "4px" } });
+      for (let j = 0; j < AM; j++) rb.append(cell("" + (shared[j] ? " cur" : ""), shared[j], { onclick: () => { shared[j] = 1; alDraw([i, j]); $("#al-cap").textContent = "M[" + i + "][" + j + "] = 1"; } }));
+      bad.append(h("span", { class: "rowlab", html: "M[" + i + "] <span class='ptr'>→ fila A</span>" }), rb);
+      const rg = h("div", { class: "row", style: { gap: "4px" } });
+      for (let j = 0; j < AM; j++) rg.append(cell(rows[i][j] ? " ok" : "", rows[i][j], { onclick: () => { rows[i][j] = 1; alDraw(); $("#al-cap").textContent = "M[" + i + "][" + j + "] = 1"; } }));
+      good.append(h("span", { class: "rowlab", html: "M[" + i + "] <span class='ptr'>→ fila " + "ABC"[i] + "</span>" }), rg);
+    }
+  }
+  $("#al-reset").onclick = alReset; alReset();
+
+  // ---------- lectura de grilla ----------
+  function rdDraw() {
+    const lines = $("#rd-txt").value.split("\n");
+    const [n, m] = (lines[0] || "").trim().split(/\s+/).map(Number);
+    const g = lines.slice(1, 1 + (n || 0)).map((l) => l.trim());
+    const el = $("#rd-grid"); el.innerHTML = "";
+    if (!n || !m || n > 10 || m > 14) { $("#rd-cap").textContent = "La primera línea debe ser n m (n ≤ 10, m ≤ 14)."; return; }
+    el.style.gridTemplateColumns = "repeat(" + m + ", 36px)";
+    let c = 0;
+    for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
+      const ch = (g[i] || "")[j] || "?";
+      if (ch === "#") c++;
+      el.append(cell(ch === "#" ? "wall" : "", ch, { title: "g[" + i + "][" + j + "]" }));
+    }
+    $("#rd-cap").innerHTML = "n = " + n + ", m = " + m + " · celdas con # : <b>" + c + "</b>";
+  }
+  $("#rd-txt").addEventListener("input", rdDraw); rdDraw();
+
+  // ---------- recorridos ----------
+  const TN = 5, TM = 6;
+  const TRAV = {
+    "Por filas": { code: "for i in range(n):\n    for j in range(m):\n        visitar(i, j)", f: () => { const r = []; for (let i = 0; i < TN; i++) for (let j = 0; j < TM; j++) r.push([i, j]); return r; } },
+    "Por columnas": { code: "for j in range(m):\n    for i in range(n):\n        visitar(i, j)", f: () => { const r = []; for (let j = 0; j < TM; j++) for (let i = 0; i < TN; i++) r.push([i, j]); return r; } },
+    "Diagonal principal": { code: "for i in range(min(n, m)):\n    visitar(i, i)", f: () => { const r = []; for (let i = 0; i < Math.min(TN, TM); i++) r.push([i, i]); return r; } },
+    "Diagonal secundaria": { code: "# matriz n×m: j = m - 1 - i\nfor i in range(min(n, m)):\n    visitar(i, m - 1 - i)", f: () => { const r = []; for (let i = 0; i < Math.min(TN, TM); i++) r.push([i, TM - 1 - i]); return r; } },
+    "Serpiente": { code: "for i in range(n):\n    cols = range(m) if i % 2 == 0 \\\n           else range(m - 1, -1, -1)\n    for j in cols:\n        visitar(i, j)", f: () => { const r = []; for (let i = 0; i < TN; i++) for (let k = 0; k < TM; k++) r.push([i, i % 2 ? TM - 1 - k : k]); return r; } },
+    "Espiral": { code: "top, bot, izq, der = 0, n - 1, 0, m - 1\nwhile top <= bot and izq <= der:\n    for j in range(izq, der + 1): visitar(top, j)\n    top += 1\n    for i in range(top, bot + 1): visitar(i, der)\n    der -= 1\n    if top <= bot:\n        for j in range(der, izq - 1, -1): visitar(bot, j)\n        bot -= 1\n    if izq <= der:\n        for i in range(bot, top - 1, -1): visitar(i, izq)\n        izq += 1", f: () => {
+      const r = []; let t = 0, b = TN - 1, l = 0, d = TM - 1;
+      while (t <= b && l <= d) {
+        for (let j = l; j <= d; j++) r.push([t, j]); t++;
+        for (let i = t; i <= b; i++) r.push([i, d]); d--;
+        if (t <= b) { for (let j = d; j >= l; j--) r.push([b, j]); b--; }
+        if (l <= d) { for (let i = b; i >= t; i--) r.push([i, l]); l++; }
+      }
+      return r; } }
+  };
+  let trStep = null;
+  const trBox = h("div"); $("#tr").append(trBox);
+  function trLoad(name) {
+    Array.from($("#tr-btns").children).forEach((b) => b.classList.toggle("on", b.textContent === name));
+    const c = $("#tr-code"); c.textContent = TRAV[name].code;
+    if (window.hljs) c.innerHTML = hljs.highlight(TRAV[name].code, { language: "python" }).value;
+    const order = TRAV[name].f(), fr = [{ k: -1, order }];
+    order.forEach((_, k) => fr.push({ k, order }));
+    const render = (f) => {
+      const g = $("#tr-grid"); g.innerHTML = ""; g.style.gridTemplateColumns = "repeat(" + TM + ", 44px)";
+      const pos = {}; f.order.forEach(([i, j], k) => (pos[i + "," + j] = k));
+      for (let i = 0; i < TN; i++) for (let j = 0; j < TM; j++) {
+        const k = pos[i + "," + j];
+        const cls = k === undefined ? "dim" : k === f.k ? "cur" : k < f.k ? "sel" : "";
+        g.append(cell(cls, k !== undefined && k <= f.k ? k + 1 : "", { title: "(" + i + ", " + j + ")" }));
+      }
+      $("#tr-cap").innerHTML = f.k < 0 ? "Matriz de " + TN + " × " + TM + "." : "Visita " + (f.k + 1) + ": <b>(" + f.order[f.k].join(", ") + ")</b>";
+    };
+    if (trStep) trStep.setFrames(fr); else trStep = stepper(trBox, fr, render, { delay: 250 });
+  }
+  Object.keys(TRAV).forEach((k) => $("#tr-btns").append(h("button", { text: k, onclick: () => trLoad(k) })));
+  trLoad("Espiral");
+
+  // ---------- diagonales ----------
+  const DN = 5, DM = 6;
+  function dgDraw(si, sj) {
+    const g = $("#dg-grid"); g.innerHTML = ""; g.style.gridTemplateColumns = "repeat(" + DM + ", 44px)";
+    for (let i = 0; i < DN; i++) for (let j = 0; j < DM; j++) {
+      let cls = "";
+      if (i === si && j === sj) cls = "cur";
+      else if (i - j === si - sj) cls = "sel";
+      else if (i + j === si + sj) cls = "ok";
+      g.append(cell(cls, "", { title: "(" + i + ", " + j + ")", onclick: () => dgDraw(i, j) }));
+    }
+    $("#dg-cap").innerHTML = "Celda (" + si + ", " + sj + ")<br><span style='color:var(--accent)'>i − j = " + (si - sj) + "</span> · <span style='color:var(--ac)'>i + j = " + (si + sj) + "</span>";
+  }
+  dgDraw(2, 3);
+
+  // ---------- transformaciones ----------
+  const BASE = [["A", "B", "C", "D"], ["E", "F", "G", "H"], ["I", "J", "K", "L"]];
+  let TM_ = BASE.map((r) => r.slice());
+  const T = {
+    "Original": { code: "M", f: () => BASE.map((r) => r.slice()), cap: "Matriz de 3 × 4. La A marca la esquina superior izquierda.", reset: true },
+    "Transpuesta": { code: "[list(f) for f in zip(*M)]", f: (M) => M[0].map((_, j) => M.map((r) => r[j])), cap: "La fila i pasa a ser la columna i." },
+    "Rotar 90° derecha": { code: "[list(f) for f in zip(*M[::-1])]", f: (M) => M[0].map((_, j) => M.slice().reverse().map((r) => r[j])), cap: "Invertir las filas y transponer." },
+    "Rotar 90° izquierda": { code: "[list(f) for f in zip(*M)][::-1]", f: (M) => M[0].map((_, j) => M.map((r) => r[j])).reverse(), cap: "Transponer e invertir las filas." },
+    "Reflejo horizontal": { code: "[fila[::-1] for fila in M]", f: (M) => M.map((r) => r.slice().reverse()), cap: "Cada fila al revés (espejo izquierda-derecha)." },
+    "Reflejo vertical": { code: "M[::-1]", f: (M) => M.slice().reverse().map((r) => r.slice()), cap: "Las filas en orden inverso (espejo arriba-abajo)." }
+  };
+  function tfDraw(name) {
+    const g = $("#tf-grid"); g.innerHTML = ""; g.style.gridTemplateColumns = "repeat(" + TM_[0].length + ", 44px)";
+    TM_.forEach((r) => r.forEach((v) => g.append(cell(v === "A" ? "cur" : "", v))));
+    $("#tf-dim").textContent = TM_.length + " × " + TM_[0].length;
+    if (name) {
+      Array.from($("#tf-btns").children).forEach((b) => b.classList.toggle("on", b.textContent === name));
+      const c = $("#tf-code"); c.textContent = "M = " + T[name].code;
+      if (window.hljs) c.innerHTML = hljs.highlight(c.textContent, { language: "python" }).value;
+      $("#tf-cap").textContent = T[name].cap + (T[name].reset ? "" : " Se aplica sobre la matriz actual.");
+    }
+  }
+  Object.keys(T).forEach((k) => $("#tf-btns").append(h("button", { text: k, onclick: () => { TM_ = T[k].reset ? T[k].f() : T[k].f(TM_); tfDraw(k); } })));
+  tfDraw("Original");
+
+  // ---------- vecinos ----------
+  const NN = 5, NM = 7, WALLS = new Set(["1,2", "2,4", "3,1", "0,5"]);
+  let nb8 = false, nsel = [2, 3];
+  function nbDraw() {
+    const g = $("#nb-grid"); g.innerHTML = ""; g.style.gridTemplateColumns = "repeat(" + (NM + 2) + ", 44px)";
+    const [si, sj] = nsel, dirs = [];
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) if ((di || dj) && (nb8 || !(di && dj))) dirs.push([si + di, sj + dj]);
+    const dset = new Set(dirs.map((d) => d.join(",")));
+    let ok = 0, out = 0, wall = 0;
+    for (let i = -1; i <= NN; i++) for (let j = -1; j <= NM; j++) {
+      const inside = i >= 0 && i < NN && j >= 0 && j < NM, key = i + "," + j, isN = dset.has(key);
+      if (!inside) { g.append(cell(isN ? "out" : "none", isN ? "✕" : "")); if (isN) out++; continue; }
+      const isW = WALLS.has(key);
+      let cls = isW ? "wall" : "";
+      if (i === si && j === sj) cls = "cur";
+      else if (isN) { if (isW) { wall++; cls = "wall bad"; } else { ok++; cls = "n4"; } }
+      g.append(cell(cls, "", { title: "(" + i + ", " + j + ")", onclick: isW ? null : () => { nsel = [i, j]; nbDraw(); } }));
+    }
+    $("#nb-cap").innerHTML = "Celda (" + si + ", " + sj + "): <b>" + ok + "</b> vecinos válidos" + (out ? ", " + out + " fuera de la grilla" : "") + (wall ? ", " + wall + " pared" + (wall > 1 ? "es" : "") : "");
+  }
+  $("#nb-4").onclick = () => { nb8 = false; $("#nb-4").classList.add("on"); $("#nb-8").classList.remove("on"); nbDraw(); };
+  $("#nb-8").onclick = () => { nb8 = true; $("#nb-8").classList.add("on"); $("#nb-4").classList.remove("on"); nbDraw(); };
+  nbDraw();
+
+  // ---------- multiplicación ----------
+  const A = [[1, 2, 3], [4, 5, 6]], B = [[7, 8], [9, 10], [11, 12]];
+  const fr = [{ i: -1 }];
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) for (let k = 0; k < 3; k++) fr.push({ i, j, k });
+  const mmBox = h("div"); $("#mm").append(mmBox);
+  stepper(mmBox, fr, (f) => {
+    const C = [[null, null], [null, null]];
+    let partial = 0, terms = [];
+    for (let s = 1; s < fr.length; s++) {
+      const g = fr[s]; if (s > fr.indexOf(f)) break;
+      if (C[g.i][g.j] === null) C[g.i][g.j] = 0;
+      C[g.i][g.j] += A[g.i][g.k] * B[g.k][g.j];
+    }
+    if (f.i >= 0) for (let k = 0; k <= f.k; k++) terms.push(A[f.i][k] + "·" + B[k][f.j]);
+    const draw = (el, M, hl) => { el.innerHTML = ""; el.style.gridTemplateColumns = "repeat(" + M[0].length + ", 44px)"; M.forEach((r, i) => r.forEach((v, j) => el.append(cell(hl(i, j), v === null ? "" : v)))); };
+    draw($("#mm-a"), A, (i, k) => f.i === i ? (k === f.k ? "cur" : "sel") : "");
+    draw($("#mm-b"), B, (k, j) => f.j === j ? (k === f.k ? "cur" : "sel") : "");
+    draw($("#mm-c"), C, (i, j) => f.i === i && f.j === j ? "cur" : C[i][j] !== null ? "ok" : "");
+    $("#mm-cap").textContent = f.i < 0 ? "C[i][j] = suma de A[i][k] · B[k][j]" : "C[" + f.i + "][" + f.j + "] = " + terms.join(" + ") + " = " + C[f.i][f.j];
+  }, { delay: 600 });
+
+  // ---------- aplanar ----------
+  const FN = 3, FM = 5;
+  function flDraw(k) {
+    const g = $("#fl-grid"), s = $("#fl-strip"); g.innerHTML = s.innerHTML = ""; g.style.gridTemplateColumns = "repeat(" + FM + ", 44px)";
+    for (let i = 0; i < FN; i++) for (let j = 0; j < FM; j++) {
+      const kk = i * FM + j;
+      g.append(cell(kk === k ? "cur" : Math.floor(kk / FM) === Math.floor(k / FM) ? "sel" : "", i + "," + j, { onclick: () => flDraw(kk), onmouseenter: () => flDraw(kk) }));
+    }
+    for (let kk = 0; kk < FN * FM; kk++) s.append(h("div", { class: "cell " + (kk === k ? "cur" : Math.floor(kk / FM) === Math.floor(k / FM) ? "sel" : ""), onmouseenter: () => flDraw(kk) }, h("span", { class: "idx", text: kk }), Math.floor(kk / FM) + "," + (kk % FM)));
+    const i = Math.floor(k / FM), j = k % FM;
+    $("#fl-cap").textContent = "(" + i + ", " + j + ") → k = " + i + "·" + FM + " + " + j + " = " + k;
+  }
+  flDraw(7);
+
+  // ---------- Beautiful Matrix ----------
+  function bmDraw(bi, bj) {
+    const g = $("#bm-grid"); g.innerHTML = ""; g.style.gridTemplateColumns = "repeat(5, 44px)";
+    for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) {
+      let cls = i === bi && j === bj ? "cur" : i === 2 && j === 2 ? "ok" : (i === bi && (j - bj) * (j - 2) <= 0) || (j === 2 && (i - bi) * (i - 2) <= 0) ? "sel" : "";
+      g.append(cell(cls, i === bi && j === bj ? 1 : 0, { onclick: () => bmDraw(i, j) }));
+    }
+    $("#bm-cap").innerHTML = "1 en (" + bi + ", " + bj + "): |" + bi + " − 2| + |" + bj + " − 2| = <b>" + (Math.abs(bi - 2) + Math.abs(bj - 2)) + "</b> movimientos";
+  }
+  bmDraw(1, 4);
+
+  // ---------- Number Spiral ----------
+  const val = (y, x) => { const z = Math.max(y, x); if (z % 2 === 0) return y === z ? z * z - x + 1 : (z - 1) * (z - 1) + y; return x === z ? z * z - y + 1 : (z - 1) * (z - 1) + x; };
+  const SN = 6;
+  function nsDraw(sy, sx) {
+    const g = $("#ns-grid"); g.innerHTML = ""; g.style.gridTemplateColumns = "repeat(" + SN + ", 36px)";
+    const sz = Math.max(sy, sx);
+    for (let y = 1; y <= SN; y++) for (let x = 1; x <= SN; x++) {
+      const z = Math.max(y, x);
+      const cls = y === sy && x === sx ? "cur" : z === sz ? "sel" : z % 2 ? "" : "ok";
+      g.append(cell(cls, val(y, x), { title: "fila " + y + ", columna " + x, onclick: () => nsDraw(y, x) }));
+    }
+    const z = sz, par = z % 2 === 0;
+    let exp;
+    if (par) exp = sy === z ? "y = z → z² − x + 1 = " + z * z + " − " + sx + " + 1" : "y < z → (z − 1)² + y = " + (z - 1) * (z - 1) + " + " + sy;
+    else exp = sx === z ? "x = z → z² − y + 1 = " + z * z + " − " + sy + " + 1" : "x < z → (z − 1)² + x = " + (z - 1) * (z - 1) + " + " + sx;
+    $("#ns-cap").innerHTML = "fila y = " + sy + ", columna x = " + sx + " · capa z = " + z + " (" + (par ? "par" : "impar") + ")<br>" + exp + " = <b>" + val(sy, sx) + "</b>";
+  }
+  nsDraw(2, 3);
+})();
+</script>
+</body>
+</html>

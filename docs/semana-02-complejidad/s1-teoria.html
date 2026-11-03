@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 2 · Complejidad y simulación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .calc-sel button { font-size: 20px; min-width: 70px; }
+  .calc-rows { display: grid; gap: 8px; margin-top: 4px; }
+  .crow { display: grid; grid-template-columns: 150px 1fr 170px; gap: 16px; align-items: center; }
+  .cname { font-size: 22px; background: none !important; padding: 0 !important; }
+  .ctrack { position: relative; height: 34px; background: var(--soft); border-radius: 4px; }
+  .ctrack.bare { background: none; height: 22px; }
+  .cbar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width .3s; }
+  .cbar.ok { background: var(--ac); }
+  .cbar.slow { background: var(--tle); }
+  .cops { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 17px; color: var(--ink); white-space: nowrap; }
+  .climit { position: absolute; top: -5px; bottom: -5px; width: 0; border-left: 3px dashed var(--ink); }
+  .climit-lab { position: absolute; top: 0; transform: translateX(-50%); font-family: var(--font-mono); font-size: 15px; color: var(--ink); white-space: nowrap; }
+  .cops:not(.in) { background: var(--stage); padding: 0 4px; border-radius: 3px; }
+  .cops.in { color: #fff; font-weight: 700; }
+  .ctime { font-size: 20px; justify-self: start; }
+  .calc-rows.con-cpp .crow { grid-template-columns: 150px 1fr 130px 130px; }
+  .crow.head span { font-family: var(--font-mono); font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .climit.cpp { border-left-color: var(--accent); }
+  .calc-rows.con-cpp .climit-lab { transform: translateX(calc(-100% - 6px)); }
+  .calc-rows.con-cpp .climit-lab.cpp { transform: translateX(6px); color: var(--accent); }
+  .timebar { display: grid; grid-template-columns: 330px 1fr 120px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+
+  .opgrid { display: grid; gap: 3px; }
+  .opgrid .cell { width: 34px; height: 34px; font-size: 13px; }
+  .counter { font-family: var(--font-mono); font-size: 22px; }
+  .quiz { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .qcard { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--stage); cursor: pointer; text-align: left; display: grid; gap: 6px; min-height: 120px; align-content: start; }
+  .qcard .q { font-family: var(--font-mono); font-size: 24px; }
+  .qcard .a { font-size: 18px; color: var(--muted); }
+  .qcard.open { border-color: var(--accent); }
+  .qcard.open .a { color: var(--ink); }
+  .hash-row { display: flex; align-items: center; gap: 10px; }
+  .bucket { width: 92px; height: 40px; border: 1px dashed var(--line); border-radius: 6px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 16px; }
+  .bucket.cur { border-style: solid; border-color: var(--tle); background: var(--mark); color: var(--mark-ink); }
+  .bucket .bi { font-size: 11px; color: var(--muted); }
+  .perm .cell { width: 44px; height: 44px; }
+  .gaps { display: flex; gap: 4px; padding-left: 24px; }
+  .gaps span { width: 44px; text-align: center; font-family: var(--font-mono); font-size: 15px; }
+  .gaps span.bad { color: var(--wa); font-weight: 700; }
+  .gaps span.ok { color: var(--ac); }
+  .permlist { display: grid; grid-template-columns: repeat(4, auto); gap: 6px 18px; font-family: var(--font-mono); font-size: 18px; justify-content: start; }
+  .permlist .ok { color: var(--ac); font-weight: 700; }
+  .permlist .bad { color: var(--muted); text-decoration: line-through; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span></span><span></span><span></span><span></span><span></span>
+    <span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="hl"></span><span></span><span></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 2 · Sesión 1</div>
+  <h1>Complejidad y simulación</h1>
+  <div class="meta"><span>Objetivo: estimar si una idea pasa el límite de tiempo antes de programarla</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La parte central es la tabla de restricciones contra complejidad (diapositivas 8 a 10). La calculadora de la diapositiva 6 sirve para responder preguntas del grupo en vivo.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–25</td><td>Contar operaciones y notación O</td></tr>
+    <tr><td>25–40</td><td>Tabla de restricciones contra complejidad</td></tr>
+    <tr><td>40–60</td><td>Costos ocultos en Python</td></tr>
+    <tr><td>60–70</td><td>Medir tiempos y generar casos grandes</td></tr>
+    <tr><td>70–90</td><td>Simulación y casos borde: Permutations</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Motivación</div>
+  <h2>Dos soluciones correctas, un solo AC</h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="small">Problema: dado un arreglo de n ≤ 2·10⁵ enteros, contar cuántos valores distintos tiene.</p>
+      <pre class="code sm"># Solución A
+vistos = []
+for x in a:
+    if x not in vistos:   # recorre la lista
+        vistos.append(x)
+print(len(vistos))</pre>
+      <pre class="code sm"># Solución B
+print(len(set(a)))</pre>
+    </div>
+    <div class="stack frag">
+      <div class="box"><h3>Solución A <span class="v tle">TLE</span></h3><p class="small">Cada <code>x not in vistos</code> recorre hasta n elementos. En total son hasta n² = 4·10¹⁰ comparaciones.</p></div>
+      <div class="box"><h3>Solución B <span class="v ac">AC</span></h3><p class="small">Insertar en un <code>set</code> cuesta O(1) en promedio. En total son unas 2·10⁵ operaciones.</p></div>
+      <p class="small">Las dos dan la respuesta correcta. Lo que cambia es la cantidad de operaciones.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Preguntar cuál pasa antes de mostrar los veredictos. Esta diapositiva conecta con los costos ocultos de la parte 3.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Contar operaciones</h2>
+  <p>Cuántas veces se ejecuta cada línea en función de n.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Contar operaciones</div>
+  <h2>Cada celda es una vuelta del bucle</h2>
+  <div class="cols c-40 fill">
+    <div class="stack">
+      <div class="row" id="ops-btns"></div>
+      <pre class="code sm" id="ops-code" data-lang="none"></pre>
+      <div class="counter" id="ops-count"></div>
+      <div class="caption" id="ops-cap"></div>
+    </div>
+    <div class="stack center" id="ops"><div class="opgrid" id="ops-grid"></div></div>
+  </div>
+  <aside class="notes">
+    <p>Con n = 8: el bucle simple hace 8 vueltas, el doble hace 64, el triangular 28 = 8·7/2 y el de duplicar hace 3 (i = 1, 2, 4; con i = 8 la condición i &lt; n ya es falsa).</p>
+    <p>Mensaje: la notación O se queda con el término que más crece y quita las constantes. n(n−1)/2 es O(n²).</p>
+  </aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Notación O</div>
+  <h2>Las complejidades más comunes</h2>
+  <table class="t">
+    <tr><th>Complejidad</th><th>Nombre</th><th>Ejemplo</th></tr>
+    <tr><td><code>O(1)</code></td><td>constante</td><td>acceder a <code>a[i]</code>, fórmula de Gauss</td></tr>
+    <tr><td><code>O(log n)</code></td><td>logarítmica</td><td>búsqueda binaria, dividir n entre 2 hasta llegar a 1</td></tr>
+    <tr><td><code>O(n)</code></td><td>lineal</td><td>recorrer el arreglo una vez, <code>sum(a)</code></td></tr>
+    <tr><td><code>O(n log n)</code></td><td></td><td>ordenar con <code>sort</code></td></tr>
+    <tr><td><code>O(n²)</code></td><td>cuadrática</td><td>revisar todos los pares (i, j)</td></tr>
+    <tr><td><code>O(2ⁿ)</code></td><td>exponencial</td><td>revisar todos los subconjuntos</td></tr>
+    <tr><td><code>O(n!)</code></td><td>factorial</td><td>revisar todas las permutaciones</td></tr>
+  </table>
+  <p class="small muted">Se escribe el término que más crece y sin constantes: 3n² + 5n + 7 operaciones es O(n²).</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Calculadora</div>
+  <h2>¿Cabe en 1 segundo?</h2>
+  <div class="row calc-sel"><span class="small muted">n =</span><span class="row" id="calc-n"></span></div>
+  <div class="calc-rows" id="calc-rows"></div>
+  <p class="small muted">Supuesto: en el juez, PyPy hace unas 10⁸ operaciones simples por segundo y C++ unas 10⁹. Son órdenes de magnitud. Desde n = 10⁶ se muestra también C++. Medido en un Apple M4, C++ fue entre 1 y 9 veces más rápido que PyPy según el código. La longitud de cada barra está en escala logarítmica.</p>
+  <aside class="notes"><p>Elegir n = 10³, 10⁵, 10⁶ y 10⁹ y preguntar qué complejidades pasan antes de mirar las barras.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Restricciones</div>
+  <h2>De la restricción a la complejidad</h2>
+  <div class="cols">
+    <table class="t" style="font-size:22px">
+      <tr><th>Restricción</th><th>Complejidad aceptable</th></tr>
+      <tr><td>n ≤ 10</td><td><code>O(n!)</code></td></tr>
+      <tr><td>n ≤ 20</td><td><code>O(2ⁿ)</code></td></tr>
+      <tr><td>n ≤ 500</td><td><code>O(n³)</code></td></tr>
+      <tr><td>n ≤ 5000</td><td><code>O(n²)</code></td></tr>
+      <tr><td>n ≤ 2·10⁵</td><td><code>O(n log n)</code></td></tr>
+      <tr><td>n ≤ 10⁶ o más</td><td><code>O(n)</code> u <code>O(log n)</code></td></tr>
+    </table>
+    <div class="stack">
+      <p class="small">La tabla viene de pedir unas 10⁸ operaciones como máximo. Para C++ es una regla con margen, porque hace entre 10⁸ y 10⁹ operaciones simples por segundo.</p>
+      <p class="small warn-line">PyPy hace unas 10⁸ en bucles simples, así que usa la tabla casi sin margen. Con muchas listas pequeñas, tuplas o diccionarios es más lento, así que conviene dejar margen.</p>
+      <p class="small">Uso práctico: leer las restricciones primero y descartar las ideas que no caben.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Esta tabla se pregunta en el parcial teórico 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Ejercicio</div>
+  <h2>¿Qué complejidad se necesita?</h2>
+  <p class="small muted">Haga clic en cada tarjeta para ver la respuesta.</p>
+  <div class="quiz" id="quiz"></div>
+  <aside class="notes"><p>Hacerlo en voz alta con el grupo. Pedir que justifiquen con la tabla.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Ejercicio</div>
+  <h2>¿Cuál es la complejidad de cada fragmento?</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">for i in range(n):
+    for j in range(5):
+        s += a[i] * j</pre>
+      <p class="small frag"><b>O(n)</b>. El bucle interno siempre da 5 vueltas.</p>
+      <pre class="code sm">i = n
+while i > 0:
+    i //= 2</pre>
+      <p class="small frag"><b>O(log n)</b>. i se divide entre 2 en cada vuelta.</p>
+    </div>
+    <div class="stack">
+      <pre class="code sm">for i in range(n):
+    if a[i] in b:      # b es una lista de tamaño n
+        c += 1</pre>
+      <p class="small frag"><b>O(n²)</b>. <code>in</code> sobre una lista recorre la lista.</p>
+      <pre class="code sm">a.sort()
+for i in range(n):
+    j = bisect_left(a, x - a[i])</pre>
+      <p class="small frag"><b>O(n log n)</b>. Ordenar es n log n y cada <code>bisect</code> es log n.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Costos ocultos en Python</h2>
+  <p>Operaciones que se escriben en una línea y recorren toda la lista.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">in sobre lista frente a set</div>
+  <h2>Buscar un valor: lista o set</h2>
+  <div class="cols fill">
+    <div class="stack">
+      <h3>Lista: revisa uno por uno</h3>
+      <div class="cells" id="find-list" style="margin-top:22px"></div>
+      <div class="counter small" id="find-lc"></div>
+    </div>
+    <div class="stack">
+      <h3>Set: calcula dónde está</h3>
+      <div class="hash-row small" id="find-hash"></div>
+      <div class="stack" id="find-buckets" style="gap:6px"></div>
+      <div class="counter small" id="find-sc"></div>
+    </div>
+  </div>
+  <div id="find-ctl"></div>
+  <aside class="notes"><p>El set usa una tabla hash: <code>hash(x)</code> da la posición donde guardar x. Por eso buscar cuesta O(1) en promedio. Aquí la "función hash" es x mod 7, solo para ilustrar.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">pop(0) frente a deque</div>
+  <h2>Sacar el primer elemento de una lista</h2>
+  <div class="cols fill">
+    <div class="stack">
+      <h3><code>a.pop(0)</code> mueve todo el resto</h3>
+      <div class="cells" id="pop-list" style="margin-top:22px"></div>
+      <div class="counter small" id="pop-lc"></div>
+    </div>
+    <div class="stack">
+      <h3><code>d.popleft()</code> solo mueve el inicio</h3>
+      <div class="cells" id="pop-deq" style="margin-top:22px"></div>
+      <div class="counter small" id="pop-dc"></div>
+    </div>
+  </div>
+  <div id="pop-ctl"></div>
+  <aside class="notes"><p>Una lista de Python guarda los elementos contiguos en memoria. Quitar el primero obliga a correr los demás una posición. <code>collections.deque</code> se ve en detalle en la semana 5.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tabla</div>
+  <h2>Costos ocultos más comunes</h2>
+  <div class="cols c-60">
+    <table class="t" style="font-size:21px">
+      <tr><th>Operación</th><th>Costo</th><th>Alternativa</th></tr>
+      <tr><td><code>x in lista</code></td><td>O(n)</td><td><code>x in conjunto</code>: O(1)</td></tr>
+      <tr><td><code>lista.pop(0)</code></td><td>O(n)</td><td><code>deque.popleft()</code>: O(1)</td></tr>
+      <tr><td><code>lista.insert(0, x)</code></td><td>O(n)</td><td><code>deque.appendleft(x)</code></td></tr>
+      <tr><td><code>lista.index(x)</code></td><td>O(n)</td><td>dict de valor a posición</td></tr>
+      <tr><td><code>lista.count(x)</code></td><td>O(n)</td><td><code>Counter</code> una sola vez</td></tr>
+      <tr><td><code>a[i:j]</code></td><td>O(j − i)</td><td>trabajar con índices</td></tr>
+      <tr><td><code>s = s + t</code> en un bucle</td><td>O(len) por vuelta</td><td>lista + <code>"".join</code></td></tr>
+      <tr><td><code>min(a)</code>, <code>sum(a)</code></td><td>O(n)</td><td>calcular una vez, fuera del bucle</td></tr>
+    </table>
+    <p class="small">Ninguna de estas operaciones es un problema si se hace una vez. El problema es hacerlas dentro de un bucle de n vueltas.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medición</div>
+  <h2>Cuánto cuestan en la práctica</h2>
+  <div class="stack" style="max-width:1080px; gap:14px">
+    <h3 class="small muted">10⁴ búsquedas en 10⁵ elementos</h3>
+    <div class="timebar"><span><code>x in lista</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.25 s</span></div>
+    <div class="timebar"><span><code>x in conjunto</code></span><div class="tb" style="width:0.5%"></div><span class="tv">0.0004 s</span></div>
+    <h3 class="small muted" style="margin-top:8px">Sacar 10⁵ elementos por el inicio</h3>
+    <div class="timebar"><span><code>lista.pop(0)</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.61 s</span></div>
+    <div class="timebar"><span><code>deque.popleft()</code></span><div class="tb" style="width:0.5%"></div><span class="tv">0.002 s</span></div>
+  </div>
+  <p class="small muted">PyPy 3.11, Apple M4. En cada par, las barras usan la misma escala.</p>
+  <aside class="notes"><p>Con 10⁵ <code>insert(0, x)</code> el tiempo fue 0.60 s. Preguntar: ¿cuántas comparaciones hace en total la búsqueda en lista? (hasta 10⁴ · 10⁵ = 10⁹).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Medir y probar</h2>
+  <p>Comprobar el tiempo en el computador antes de enviar.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medir tiempos</div>
+  <h2>Generar un caso grande y medir</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="small muted">gen.py: escribe un caso con n = 2·10⁵</span>
+      <pre class="code sm">import random
+n = 200000
+print(n)
+print(" ".join(str(random.randint(1, 10**9))
+               for _ in range(n)))</pre>
+      <pre class="code sm" data-lang="bash">pypy3 gen.py > grande.txt
+time pypy3 sol.py < grande.txt</pre>
+    </div>
+    <div class="stack">
+      <span class="small muted">Medir una parte del código</span>
+      <pre class="code sm">import time
+t0 = time.perf_counter()
+# ... código a medir ...
+t1 = time.perf_counter()
+print(f"{t1 - t0:.3f} s", file=sys.stderr)</pre>
+      <p class="small">Se escribe en <code>sys.stderr</code> para no mezclar la medición con la salida. Hay que borrarlo antes de enviar.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Hacerlo en vivo con la solución A y la B de la diapositiva 3.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Prueba aleatoria</div>
+  <h2>Comparar con una solución lenta</h2>
+  <div class="cols c-60">
+    <pre class="code sm">import random, subprocess
+
+for it in range(500):
+    n = random.randint(1, 8)
+    a = [random.randint(1, 10) for _ in range(n)]
+    caso = f"{n}\n{' '.join(map(str, a))}\n"
+    r1 = subprocess.run(["pypy3", "lenta.py"], input=caso,
+                        capture_output=True, text=True).stdout
+    r2 = subprocess.run(["pypy3", "rapida.py"], input=caso,
+                        capture_output=True, text=True).stdout
+    if r1 != r2:
+        print("Diferencia en:\n" + caso)
+        print("lenta:", r1, "rapida:", r2)
+        break</pre>
+    <ul class="small">
+      <li>La solución lenta prueba todo y es fácil de escribir bien.</li>
+      <li>Los casos son pequeños para que la lenta termine rápido.</li>
+      <li>Cuando hay diferencia, el caso que falla es corto y se puede revisar a mano.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Simulación</h2>
+  <p>Hacer exactamente lo que dice el enunciado y revisar los casos borde.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Simulación</div>
+  <h2>Cómo resolver un problema de simulación</h2>
+  <div class="cols">
+    <ol>
+      <li>Escribir los pasos del enunciado en orden, en español.</li>
+      <li>Elegir cómo guardar el estado (variables, listas).</li>
+      <li>Traducir cada paso a código.</li>
+      <li>Contar cuántos pasos hace la simulación y comparar con la tabla.</li>
+    </ol>
+    <div class="box soft stack small">
+      <h3>Casos borde que siempre hay que probar</h3>
+      <ul>
+        <li>n = 1 (y n = 0 si las restricciones lo permiten)</li>
+        <li>El valor máximo de n</li>
+        <li>Todos los elementos iguales</li>
+        <li>Arreglo ya ordenado y ordenado al revés</li>
+        <li>Valores máximos (10⁹, 10¹⁸)</li>
+        <li>Respuesta "imposible" o "NO"</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">CSES 1070 · Permutations</div>
+  <h2>Una permutación sin vecinos consecutivos</h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <p class="small">Construir una permutación de 1…n donde dos vecinos nunca difieran en 1. Si no existe, imprimir <code>NO SOLUTION</code>. Restricción: n ≤ 10⁶.</p>
+      <div class="row small"><label for="perm-n">n =</label><input id="perm-n" type="number" min="1" max="14" value="4" style="width:90px">
+        <button id="perm-brute">Probar todas</button><button id="perm-build">Pares y luego impares</button></div>
+      <div id="perm-out" class="stack"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">import sys
+input = sys.stdin.readline
+
+def main():
+    n = int(input())
+    if n == 2 or n == 3:
+        sys.stdout.write("NO SOLUTION\n")
+        return
+    p = list(range(2, n + 1, 2)) + list(range(1, n + 1, 2))
+    sys.stdout.write(" ".join(map(str, p)) + "\n")
+
+main()</pre>
+      <p class="small">Dos pares seguidos difieren en 2. Lo mismo dos impares. En la unión, el último par (n o n − 1) y el 1 difieren en más de 1 cuando n ≥ 4.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>Primero "Probar todas" con n = 3 y n = 4 para ver que n = 3 no tiene solución y n = 4 tiene dos (2 4 1 3 y 3 1 4 2). Luego mostrar la construcción.</p>
+    <p>Casos borde: n = 1 imprime "1". La búsqueda completa haría n! permutaciones: con n = 10⁶ es imposible, así que hace falta una construcción.</p>
+  </aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <div class="cols c3">
+    <div class="stack">
+      <h3>CSES</h3>
+      <ul><li><a href="https://cses.fi/problemset/task/1070">Permutations</a></li></ul>
+    </div>
+    <div class="stack">
+      <h3>Codeforces Div. 4</h3>
+      <ul>
+        <li><a href="https://codeforces.com/problemset/problem/1742/A">1742A · Sum</a></li>
+        <li><a href="https://codeforces.com/problemset/problem/1760/A">1760A · Medium Number</a></li>
+        <li><a href="https://codeforces.com/problemset/problem/1791/A">1791A · Codeforces Checking</a></li>
+      </ul>
+    </div>
+    <div class="stack">
+      <h3>AtCoder (problemas B)</h3>
+      <ul>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/abc081_b">ABC081 B · Shift only</a></li>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/abc087_b">ABC087 B · Coins</a></li>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/abc083_b">ABC083 B · Some Sums</a></li>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/abc088_b">ABC088 B · Card Game for Two</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="small muted">En Coins, la búsqueda completa hace hasta 51³ ≈ 1.3·10⁵ vueltas: cabe sin problema.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Antes de programar</h2>
+  <ol>
+    <li>Leer n en las restricciones y buscar la complejidad en la tabla.</li>
+    <li>Contar las operaciones de la idea, incluyendo los costos ocultos.</li>
+    <li>Si la idea no cabe, buscar otra antes de escribir código.</li>
+    <li>Probar con un caso grande generado y medir el tiempo.</li>
+    <li>Probar los casos borde.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+
+  // ---------- contar operaciones ----------
+  const N = 8;
+  const FRAGS = [
+    { name: "Simple", code: "for i in range(n):\n    hacer(i)", cells: () => { const r = []; for (let i = 0; i < N; i++) r.push([i, 0]); return r; }, rows: 1, formula: "n = 8", big: "O(n)" },
+    { name: "Doble", code: "for i in range(n):\n    for j in range(n):\n        hacer(i, j)", cells: () => { const r = []; for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) r.push([i, j]); return r; }, rows: N, formula: "n² = 64", big: "O(n²)" },
+    { name: "Triangular", code: "for i in range(n):\n    for j in range(i + 1, n):\n        hacer(i, j)", cells: () => { const r = []; for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) r.push([i, j]); return r; }, rows: N, formula: "n(n−1)/2 = 28", big: "O(n²)" },
+    { name: "Duplicar", code: "i = 1\nwhile i < n:\n    hacer(i)\n    i *= 2", cells: () => [[0, 1], [0, 2], [0, 4]], rows: 1, formula: "log₂ n = 3", big: "O(log n)" }
+  ];
+  let opsStep = null, fi = 0;
+  const opsBox = h("div"); $("#ops").append(opsBox);
+  function opsRender(f, k) {
+    const fr = FRAGS[fi], g = $("#ops-grid");
+    g.innerHTML = "";
+    const cols = fi === 3 ? N : N, rows = fr.rows;
+    g.style.gridTemplateColumns = "repeat(" + cols + ", 34px)";
+    const done = new Set(f.done.map((c) => c.join(",")));
+    for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) {
+      const key = fi === 3 || fi === 0 ? (fi === 0 ? j + ",0" : "0," + j) : i + "," + j;
+      const isCur = f.cur && f.cur.join(",") === key;
+      let cls = "cell" + (isCur ? " cur" : done.has(key) ? " sel" : "");
+      const label = fi === 0 ? "i=" + j : fi === 3 ? j : i + "," + j;
+      g.append(h("div", { class: cls, text: fi === 1 || fi === 2 ? "" : label, title: label }));
+    }
+    $("#ops-count").textContent = "vueltas: " + f.done.length;
+    $("#ops-cap").innerHTML = k === f.total ? "Total: <b>" + fr.formula + "</b> → <b>" + fr.big + "</b>" : "";
+  }
+  function opsLoad(i) {
+    fi = i;
+    Array.from($("#ops-btns").children).forEach((b, j) => b.classList.toggle("on", j === i));
+    const c = $("#ops-code"); c.textContent = FRAGS[i].code;
+    if (window.hljs) c.innerHTML = hljs.highlight(FRAGS[i].code, { language: "python" }).value;
+    const cells = FRAGS[i].cells(), frames = [{ done: [], cur: null, total: cells.length }];
+    cells.forEach((cl, j) => frames.push({ done: cells.slice(0, j + 1), cur: cl, total: cells.length }));
+    frames.forEach((f) => (f.total = frames.length - 1));
+    if (opsStep) opsStep.setFrames(frames); else opsStep = stepper(opsBox, frames, opsRender, { delay: 250 });
+  }
+  FRAGS.forEach((f, i) => $("#ops-btns").append(h("button", { text: f.name, onclick: () => opsLoad(i) })));
+  opsLoad(0);
+
+  // ---------- calculadora ----------
+  const COMPS = [
+    { name: "O(log n)", f: (n) => Math.log2(Math.max(n, 2)) },
+    { name: "O(n)", f: (n) => n },
+    { name: "O(n log n)", f: (n) => n * Math.log2(Math.max(n, 2)) },
+    { name: "O(n²)", f: (n) => n * n },
+    { name: "O(n³)", f: (n) => n * n * n },
+    { name: "O(2ⁿ)", f: (n) => Math.pow(2, n) },
+    { name: "O(n!)", f: (n) => { let r = 1; for (let i = 2; i <= n && r < 1e300; i++) r *= i; return r; } }
+  ];
+  const sup = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+  const pow10 = (e) => "10" + String(e).split("").map((c) => sup[c]).join("");
+  function sci(x) {
+    if (!isFinite(x) || x > 1e300) return "más de " + pow10(300);
+    if (x < 1000) return String(Math.round(x));
+    const e = Math.floor(Math.log10(x)), m = x / Math.pow(10, e);
+    return (m < 1.05 ? "" : m.toFixed(1) + "·") + pow10(e);
+  }
+  function secs(s) {
+    if (s < 0.001) return "< 1 ms";
+    if (s < 1) return Math.round(s * 1000) + " ms";
+    if (s < 120) return s.toFixed(s < 10 ? 1 : 0) + " s";
+    if (s < 7200) return Math.round(s / 60) + " min";
+    if (s < 86400 * 2) return Math.round(s / 3600) + " h";
+    if (s < 86400 * 365) return Math.round(s / 86400) + " días";
+    return "años";
+  }
+  const NS = [[10, "10"], [20, "20"], [1000, "10³"], [10000, "10⁴"], [100000, "10⁵"], [1000000, "10⁶"], [10000000, "10⁷"], [100000000, "10⁸"], [1000000000, "10⁹"]];
+  const ENG = [["PyPy", 1e8]];
+  let cn = 4, ce = 0;
+  const MAXE = 14;   // la barra llena representa 10¹⁴ operaciones
+  function calc() {
+    const n = NS[cn][0], rate = ENG[ce][1], CPP = 1e9;
+    const conCpp = n >= 1e6;   // en los n grandes se compara con C++
+    Array.from($("#calc-n").children).forEach((b, i) => b.classList.toggle("on", i === cn));
+    const rows = $("#calc-rows"); rows.innerHTML = "";
+    rows.classList.toggle("con-cpp", conCpp);
+    const lim = (Math.log10(rate) / MAXE) * 100, limC = (Math.log10(CPP) / MAXE) * 100;
+    const pill = (s) => h("span", { class: "v " + (s <= 1 ? "ac" : "tle") + " ctime", text: secs(s) });
+    if (conCpp) rows.append(h("div", { class: "crow head" }, h("span"), h("span"), h("span", { text: "PyPy" }), h("span", { text: "C++" })));
+    COMPS.forEach((c) => {
+      const ops = c.f(n), s = ops / rate, ok = s <= 1;
+      const w = Math.max(1.5, Math.min(100, (Math.log10(Math.max(ops, 1)) / MAXE) * 100));
+      rows.append(h("div", { class: "crow" },
+        h("code", { class: "cname", text: c.name }),
+        h("div", { class: "ctrack" },
+          h("div", { class: "cbar " + (ok ? "ok" : "slow"), style: { width: w + "%" } }),
+          w > 62 ? h("span", { class: "cops in", style: { right: "calc(" + (100 - w) + "% + 10px)" }, text: sci(ops) + " op." })
+                 : h("span", { class: "cops", style: { left: "calc(" + w + "% + 10px)" }, text: sci(ops) + " op." }),
+          h("div", { class: "climit", style: { left: lim + "%" } }),
+          conCpp ? h("div", { class: "climit cpp", style: { left: limC + "%" } }) : null),
+        pill(s),
+        conCpp ? pill(ops / CPP) : null));
+    });
+    rows.append(h("div", { class: "crow" }, h("span"), h("div", { class: "ctrack bare" },
+      h("span", { class: "climit-lab", style: { left: lim + "%" }, text: conCpp ? "1 s PyPy" : "1 segundo" }),
+      conCpp ? h("span", { class: "climit-lab cpp", style: { left: limC + "%" }, text: "1 s C++" }) : null)));
+  }
+  NS.forEach((x, i) => $("#calc-n").append(h("button", { text: x[1], onclick: () => { cn = i; calc(); } })));
+  calc();
+
+  // ---------- quiz de restricciones ----------
+  const QUIZ = [
+    ["n ≤ 8", "O(n!) cabe: 8! = 40 320. Se pueden probar todas las permutaciones."],
+    ["n ≤ 18", "O(2ⁿ) cabe: 2¹⁸ ≈ 2.6·10⁵. Se pueden probar todos los subconjuntos."],
+    ["n ≤ 300", "O(n³) = 2.7·10⁷. Pasa."],
+    ["n ≤ 3000", "O(n²) = 9·10⁶. Pasa con margen."],
+    ["n ≤ 2·10⁵", "O(n log n): ordenar, búsqueda binaria, estructuras con log n."],
+    ["n ≤ 10¹⁸", "Ni siquiera O(n) cabe. Se necesita una fórmula O(1) o un O(log n)."]
+  ];
+  QUIZ.forEach(([q, a]) => {
+    const c = h("button", { class: "qcard" }, h("span", { class: "q", text: q }), h("span", { class: "a", text: "¿?" }));
+    c.onclick = () => { c.classList.toggle("open"); c.querySelector(".a").textContent = c.classList.contains("open") ? a : "¿?"; };
+    $("#quiz").append(c);
+  });
+
+  // ---------- in lista vs set ----------
+  const LIST = [12, 5, 31, 8, 19, 26, 3, 40, 17];
+  const TARGET = 17, M = 7;
+  const findFrames = [];
+  const pos = LIST.indexOf(TARGET);
+  for (let i = 0; i <= pos; i++) findFrames.push({ li: i, sstep: Math.min(i, 2) });
+  function findRender(f) {
+    const el = $("#find-list"); el.innerHTML = "";
+    LIST.forEach((v, j) => el.append(h("div", { class: "cell" + (j === f.li ? (v === TARGET ? " ok" : " cur") : j < f.li ? " dim" : "") }, h("span", { class: "idx", text: j }), v)));
+    $("#find-lc").textContent = "buscar " + TARGET + " · comparaciones: " + (f.li + 1) + (LIST[f.li] === TARGET ? " · encontrado" : "");
+    $("#find-hash").innerHTML = f.sstep >= 1 ? "<code>hash(17) mod 7 = 3</code> → ir a la casilla 3" : "<code>hash(17) mod 7 = ?</code>";
+    const b = $("#find-buckets"); b.innerHTML = "";
+    const buckets = Array.from({ length: M }, () => []);
+    LIST.forEach((v) => buckets[v % M].push(v));
+    const row = h("div", { class: "row", style: { gap: "6px" } });
+    buckets.forEach((bk, j) => row.append(h("div", { class: "bucket" + (f.sstep >= 1 && j === TARGET % M ? " cur" : "") }, h("div", null, h("div", { class: "bi", text: "casilla " + j }), bk.join(", ") || "·"))));
+    b.append(row);
+    $("#find-sc").textContent = f.sstep >= 2 ? "comparaciones: 1 o 2 · encontrado" : f.sstep === 1 ? "comparaciones: 0" : "";
+  }
+  stepper($("#find-ctl"), findFrames, findRender, { delay: 600 });
+
+  // ---------- pop(0) vs popleft ----------
+  const P0 = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  const popFrames = [{ list: P0.slice(), shift: -1, moves: 0, head: 0, removed: 0 }];
+  let lst = P0.slice(), moves = 0;
+  for (let r = 0; r < 3; r++) {
+    lst = lst.slice(1);
+    for (let s = 0; s < lst.length; s++) popFrames.push({ list: lst.slice(0, s + 1).concat(["←"]).concat(lst.slice(s + 1)).slice(0, lst.length + 1), shift: s, moves: ++moves, head: r + 1, removed: r + 1, partial: true, done: lst.slice(0, s + 1), rest: lst.slice(s + 1) });
+  }
+  function popRender(f) {
+    const el = $("#pop-list"); el.innerHTML = "";
+    if (f.partial) {
+      f.done.forEach((v, j) => el.append(h("div", { class: "cell" + (j === f.shift ? " cur" : " sel") }, h("span", { class: "idx", text: j }), v)));
+      el.append(h("div", { class: "cell dim" }, h("span", { class: "idx", text: f.done.length }), ""));
+      f.rest.forEach((v, j) => el.append(h("div", { class: "cell" }, h("span", { class: "idx", text: f.done.length + 1 + j }), v)));
+    } else f.list.forEach((v, j) => el.append(h("div", { class: "cell" }, h("span", { class: "idx", text: j }), v)));
+    $("#pop-lc").textContent = "pop(0) hechos: " + f.removed + " · elementos movidos: " + f.moves;
+    const d = $("#pop-deq"); d.innerHTML = "";
+    P0.forEach((v, j) => d.append(h("div", { class: "cell" + (j < f.head ? " dim" : j === f.head ? " ok" : "") }, h("span", { class: "idx", text: j === f.head ? "inicio" : "" }), j < f.head ? "" : v)));
+    $("#pop-dc").textContent = "popleft hechos: " + f.head + " · elementos movidos: 0";
+  }
+  stepper($("#pop-ctl"), popFrames, popRender, { delay: 350 });
+
+  // ---------- Permutations ----------
+  function perms(arr) {
+    if (arr.length <= 1) return [arr];
+    const out = [];
+    arr.forEach((x, i) => perms(arr.slice(0, i).concat(arr.slice(i + 1))).forEach((p) => out.push([x].concat(p))));
+    return out;
+  }
+  const ok = (p) => p.every((x, i) => i === 0 || Math.abs(x - p[i - 1]) !== 1);
+  function showRow(p) {
+    const box = h("div", { class: "perm" });
+    const cells = h("div", { class: "cells", style: { marginTop: "20px" } });
+    p.forEach((x, i) => cells.append(h("div", { class: "cell" + (x % 2 ? "" : " sel") }, h("span", { class: "idx", text: i }), x)));
+    const gaps = h("div", { class: "gaps" });
+    for (let i = 1; i < p.length; i++) { const d = Math.abs(p[i] - p[i - 1]); gaps.append(h("span", { class: d === 1 ? "bad" : "ok", text: "Δ" + d })); }
+    box.append(cells, gaps);
+    return box;
+  }
+  $("#perm-brute").onclick = () => {
+    const n = Math.max(1, Math.min(6, parseInt($("#perm-n").value, 10) || 4));
+    const all = perms(Array.from({ length: n }, (_, i) => i + 1)), out = $("#perm-out");
+    const good = all.filter(ok);
+    out.innerHTML = "";
+    out.append(h("p", { class: "small", html: "n = " + n + ": " + all.length + " permutaciones, <b>" + good.length + "</b> válidas" + (n > 6 ? "" : "") + (good.length ? "" : " → <code>NO SOLUTION</code>") }));
+    const lst = h("div", { class: "permlist" });
+    all.slice(0, 24).forEach((p) => lst.append(h("span", { class: ok(p) ? "ok" : "bad", text: p.join(" ") })));
+    out.append(lst);
+    if (all.length > 24) out.append(h("p", { class: "tiny muted", text: "Se muestran 24 de " + all.length + ". Para n > 6 se limita a 6." }));
+  };
+  $("#perm-build").onclick = () => {
+    const n = Math.max(1, Math.min(14, parseInt($("#perm-n").value, 10) || 4)), out = $("#perm-out");
+    out.innerHTML = "";
+    if (n === 2 || n === 3) { out.append(h("p", { class: "small", html: "n = " + n + ": <code>NO SOLUTION</code>. Pruebe “Probar todas” para comprobarlo." })); return; }
+    const p = []; for (let x = 2; x <= n; x += 2) p.push(x); for (let x = 1; x <= n; x += 2) p.push(x);
+    out.append(h("p", { class: "small", html: "Pares (azul) y luego impares. Todas las diferencias Δ son mayores que 1." }), showRow(p));
+  };
+  $("#perm-brute").click();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 1 · Introducción y jueces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .pipeline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pipeline .stage { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; background: var(--stage); min-width: 150px; }
+  .pipeline .stage b { display: block; font-family: var(--font-display); font-size: 22px; }
+  .pipeline .stage span { font-size: 17px; color: var(--muted); }
+  .pipeline .arrow { color: var(--muted); font-size: 26px; }
+  .tests { display: flex; gap: 8px; flex-wrap: wrap; }
+  .test { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 120px; font-size: 16px; background: var(--stage); }
+  .test .tn { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+  .test .tt { font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .test.run { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .sub-list { display: grid; gap: 6px; }
+  .sub-list button { text-align: left; font-size: 17px; }
+  .verdict-big { font-family: var(--font-mono); font-size: 30px; font-weight: 700; padding: 8px 16px; border-radius: 8px; display: inline-block; }
+  .ws { font-family: var(--font-mono); font-size: 20px; white-space: pre; background: var(--code-bg); border-radius: 8px; padding: 10px 14px; border: 1px solid var(--line); min-height: 52px; }
+  .ws .sp { color: var(--tle); }
+  .ws .nl { color: var(--accent); }
+  .ws .diff { background: var(--wa-soft); color: var(--wa); border-radius: 3px; }
+  .statement { border: 1px solid var(--line); border-radius: 8px; padding: 18px 22px; background: var(--stage); font-size: 19px; display: grid; gap: 10px; }
+  .statement [data-part] { border-radius: 6px; padding: 4px 8px; margin: 0 -8px; transition: background .2s, box-shadow .2s; }
+  .statement [data-part].lit { background: var(--mark); color: var(--mark-ink); }
+  .statement h4 { margin: 0; font-family: var(--font-display); font-size: 19px; }
+  .statement pre { margin: 4px 0 0; font-family: var(--font-mono); font-size: 17px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 150px; overflow: auto; }
+  .chip { font-family: var(--font-mono); font-size: 17px; padding: 3px 9px; border-radius: 6px; background: var(--soft); }
+  .chip.cur { background: var(--mark); color: var(--mark-ink); font-weight: 700; }
+  .chip.even { box-shadow: inset 0 -3px 0 var(--accent); }
+  .chip.odd { box-shadow: inset 0 -3px 0 var(--tle); }
+  .score td.ok { color: var(--ac); font-weight: 700; }
+  .score td.no { color: var(--wa); }
+  .timebar { display: grid; grid-template-columns: 220px 1fr 70px; gap: 10px; align-items: center; font-size: 18px; }
+  .timebar .tb { height: 26px; background: var(--accent); border-radius: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 16px; text-align: right; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span></span><span class="on"></span><span></span><span></span><span class="on"></span><span></span>
+    <span></span><span></span><span class="hl"></span><span></span><span></span><span class="on"></span>
+    <span class="on"></span><span></span><span></span><span class="on"></span><span></span><span></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 1 · Sesión 1</div>
+  <h1>Introducción y jueces en línea</h1>
+  <div class="meta"><span>Objetivo: enviar soluciones correctas y saber leer un enunciado</span></div>
+  <aside class="notes">
+    <p>Clase de 90 minutos. Teclas: <kbd>N</kbd> abre estas notas y <kbd>F</kbd> pantalla completa.</p>
+    <p>Antes de clase: tener abierto el grupo del curso en el juez y una cuenta de prueba para enviar en vivo.</p>
+  </aside>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–15</td><td>Qué es la programación competitiva y formatos de competencia</td></tr>
+    <tr><td>15–35</td><td>El juez en línea, veredictos y el grupo del curso</td></tr>
+    <tr><td>35–50</td><td>Partes de un enunciado</td></tr>
+    <tr><td>50–65</td><td>Plantilla del curso, formatos de entrada y errores de salida</td></tr>
+    <tr><td>65–90</td><td>Cuatro problemas resueltos en vivo (los de la práctica)</td></tr>
+  </table>
+  <p class="muted small">En la sesión 2 de esta semana cada estudiante resuelve un contest corto en el juez.</p>
+  <aside class="notes"><p>Los tiempos son una guía. Si el grupo ya conoce los jueces, pasar rápido por la parte de veredictos y dedicar más tiempo a los problemas.</p></aside>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="eyebrow">Programación competitiva</div>
+  <h2>Un problema, un programa y un juez</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <p>En programación competitiva se escribe un programa que resuelve un problema descrito en un enunciado.</p>
+      <ul>
+        <li class="frag">El programa lee la <strong>entrada</strong> estándar y escribe en la <strong>salida</strong> estándar.</li>
+        <li class="frag">Un <strong>juez en línea</strong> ejecuta el programa con casos de prueba ocultos.</li>
+        <li class="frag">Cada caso tiene un <strong>límite de tiempo</strong> (por lo general 1 o 2 segundos) y un <strong>límite de memoria</strong> (por lo general 256 MB).</li>
+        <li class="frag">La solución es correcta solo si pasa <strong>todos</strong> los casos.</li>
+      </ul>
+    </div>
+    <div class="box soft stack frag">
+      <h3>Qué se practica</h3>
+      <ul class="small">
+        <li>Leer un problema y modelarlo.</li>
+        <li>Elegir un algoritmo que quepa en el tiempo.</li>
+        <li>Programarlo sin errores.</li>
+        <li>Probarlo con casos borde antes de enviar.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Insistir en que pasar los ejemplos del enunciado no basta: el juez usa casos más grandes y casos borde.</p></aside>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="eyebrow">Formatos</div>
+  <h2>ICPC, Codeforces y AtCoder</h2>
+  <table class="t">
+    <tr><th></th><th>ICPC</th><th>Codeforces (Div. 1 y 2)</th><th>AtCoder (ABC)</th></tr>
+    <tr><td><b>Quién</b></td><td>Equipos de 3, un computador</td><td>Individual</td><td>Individual</td></tr>
+    <tr><td><b>Duración</b></td><td>5 horas</td><td>2 a 2.5 horas</td><td>100 minutos</td></tr>
+    <tr><td><b>Ranking</b></td><td>Problemas resueltos, luego penalización</td><td>Puntos; el valor de cada problema baja con el tiempo</td><td>Puntos fijos por problema, luego tiempo</td></tr>
+    <tr><td><b>Envío rechazado</b></td><td>+20 min de penalización</td><td>−50 puntos en ese problema</td><td>+5 min de penalización</td></tr>
+  </table>
+  <p class="small muted">Las rondas Div. 3, Div. 4 y Educational de Codeforces usan reglas tipo ICPC. En todos los formatos, un envío rechazado en un problema que nunca se resuelve no suma penalización.</p>
+  <aside class="notes"><p>No hace falta memorizar los detalles. La idea es que entiendan que enviar sin probar cuesta penalización.</p></aside>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="eyebrow">Ranking ICPC</div>
+  <h2>Cómo se calcula la penalización</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <table class="t score">
+        <tr><th>Equipo</th><th>A</th><th>B</th><th>C</th><th class="r frag">Resueltos</th><th class="r frag">Penalización</th></tr>
+        <tr><td>Rojo</td><td class="ok">+ 25'</td><td class="ok">+1 40'</td><td class="no">−2</td><td class="r frag">2</td><td class="r frag">85</td></tr>
+        <tr><td>Azul</td><td class="ok">+2 30'</td><td class="ok">+ 50'</td><td></td><td class="r frag">2</td><td class="r frag">120</td></tr>
+        <tr><td>Verde</td><td class="ok">+ 10'</td><td class="no">−3</td><td class="ok">+ 100'</td><td class="r frag">2</td><td class="r frag">110</td></tr>
+      </table>
+      <p class="small"><code>+1 40'</code> significa: resuelto en el minuto 40, con 1 envío rechazado antes.</p>
+    </div>
+    <div class="box soft stack small frag">
+      <p><b>Penalización</b> = suma, en los problemas resueltos, del minuto del AC + 20 por cada rechazo previo.</p>
+      <p>Rojo: 25 + (40 + 20) = <b>85</b></p>
+      <p>Azul: (30 + 40) + 50 = <b>120</b></p>
+      <p>Verde: 10 + 100 = <b>110</b>. Los 3 rechazos en B no cuentan.</p>
+      <p>Orden final: Rojo, Verde, Azul.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Preguntar al grupo el orden antes de revelar la columna. Muchos piensan que Verde pierde por los 3 rechazos en B.</p></aside>
+</section>
+
+<!-- 6 -->
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>El juez en línea</h2>
+  <p>Qué hace con el código y qué significa cada veredicto.</p>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="eyebrow">Juez en línea</div>
+  <h2>Qué pasa después de enviar</h2>
+  <div class="pipeline">
+    <div class="stage"><b>Envío</b><span>código + lenguaje</span></div><div class="arrow">→</div>
+    <div class="stage frag"><b>Compilar</b><span>o revisar sintaxis</span></div><div class="arrow frag">→</div>
+    <div class="stage frag"><b>Ejecutar</b><span>caso 1, 2, 3, …</span></div><div class="arrow frag">→</div>
+    <div class="stage frag"><b>Comparar</b><span>salida vs esperada</span></div><div class="arrow frag">→</div>
+    <div class="stage frag"><b>Veredicto</b><span>AC o el primer error</span></div>
+  </div>
+  <ul class="frag">
+    <li>Los casos se ejecutan en orden. El juez se detiene en el primer caso que falla (Codeforces) o los ejecuta todos y muestra cada resultado (CSES, AtCoder).</li>
+    <li>Cada caso mide tiempo y memoria por separado.</li>
+    <li>El caso 1 suele ser el ejemplo del enunciado.</li>
+  </ul>
+  <aside class="notes"><p>Mostrar en el juez real un envío y la página de resultado por caso.</p></aside>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="eyebrow">Veredictos</div>
+  <h2>Qué significa cada veredicto</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Veredicto</th><th>Significa</th><th>Causa típica en Python</th></tr>
+    <tr><td><span class="v ac">AC</span></td><td>Accepted: pasó todos los casos</td><td></td></tr>
+    <tr><td><span class="v wa">WA</span></td><td>Wrong Answer: la salida no coincide</td><td>Idea incorrecta, caso borde, formato de salida</td></tr>
+    <tr><td><span class="v tle">TLE</span></td><td>Time Limit Exceeded</td><td>Algoritmo lento para el tamaño de la entrada</td></tr>
+    <tr><td><span class="v mle">MLE</span></td><td>Memory Limit Exceeded</td><td>Listas enormes, guardar todo lo leído sin necesidad</td></tr>
+    <tr><td><span class="v re">RE</span></td><td>Runtime Error: el programa terminó con error</td><td><code>IndexError</code>, <code>ValueError</code>, división por cero, recursión profunda</td></tr>
+    <tr><td><span class="v ce">CE</span></td><td>Compilation Error</td><td>Error de sintaxis (según el juez, aparece como CE o RE)</td></tr>
+  </table>
+  <aside class="notes"><p>Un TLE no dice si la respuesta era correcta. Un WA en el caso 1 casi siempre es un error de formato o de lectura.</p></aside>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="eyebrow">Simulador</div>
+  <h2>Seis envíos para el mismo problema</h2>
+  <p class="small">Problema: leer <code>n</code> y luego <code>n</code> enteros, uno por línea, e imprimir su suma. Restricción: n ≤ 2·10⁵. Elija un envío y presione <b>Enviar</b>.</p>
+  <div class="cols c-40 fill" id="sim">
+    <div class="stack">
+      <div class="sub-list" id="sim-list"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm" id="sim-code" data-lang="none"></pre>
+      <div class="row"><button class="primary" id="sim-send">Enviar</button><span id="sim-verdict"></span></div>
+      <div class="tests" id="sim-tests"></div>
+      <div class="caption" id="sim-why"></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>Pedir al grupo que prediga el veredicto de cada envío antes de presionar Enviar. Los tiempos son ilustrativos.</p>
+  </aside>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="eyebrow">Grupo del curso</div>
+  <h2>Cómo se usa el juez en este curso</h2>
+  <div class="cols">
+    <ol>
+      <li>Crear cuenta en <b>Codeforces</b>, <b>AtCoder</b>, <b>CSES</b> y <b>vJudge</b> con el mismo nombre de usuario.</li>
+      <li>Unirse al grupo del curso: <span class="mono">[enlace pendiente]</span>.</li>
+      <li>Abrir el contest de la semana y leer los problemas en orden.</li>
+      <li>Probar la solución en el computador con los ejemplos.</li>
+      <li>Enviar eligiendo el lenguaje correcto.</li>
+    </ol>
+    <div class="box soft stack small">
+      <h3>Lenguaje al enviar</h3>
+      <p>En el curso todos los envíos se hacen con <b>PyPy 3</b>.</p>
+      <p>PyPy compila el código mientras corre, así que los bucles son mucho más rápidos que con el intérprete normal de Python.</p>
+      <p>En Codeforces se elige <b>PyPy 3-64</b>. En AtCoder y CSES, la opción que dice PyPy.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Completar el enlace del grupo antes de clase. Hacer en vivo el registro en vJudge y el primer envío.</p></aside>
+</section>
+
+<!-- 11 -->
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Partes de un enunciado</h2>
+  <p>Dónde está cada dato que necesita el programa.</p>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="eyebrow">Enunciado</div>
+  <h2>Anatomía de un enunciado</h2>
+  <div class="cols c-60 fill">
+    <div class="statement" id="stm">
+      <div data-part="historia"><h4>Weird Algorithm (CSES), versión resumida</h4>
+        Un algoritmo recibe un entero positivo n. Si n es par, lo divide entre 2. Si n es impar, lo multiplica por 3 y le suma 1. Repite hasta que n sea 1. Debe simular el algoritmo para un n dado.</div>
+      <div data-part="entrada"><h4>Entrada</h4>Una única línea con el entero n.</div>
+      <div data-part="salida"><h4>Salida</h4>Imprimir en una línea todos los valores que toma n, separados por espacios.</div>
+      <div data-part="restricciones"><h4>Restricciones</h4>1 ≤ n ≤ 10⁶</div>
+      <div data-part="ejemplo"><h4>Ejemplo</h4><pre>Entrada: 3
+Salida:  3 10 5 16 8 4 2 1</pre></div>
+    </div>
+    <div class="stack">
+      <div class="sub-list" id="stm-btns"></div>
+      <div class="box soft small" id="stm-info" style="min-height:150px"></div>
+    </div>
+  </div>
+  <aside class="notes"><p>Recorrer las cinco partes. Preguntar: ¿qué dato de las restricciones nos dice que la respuesta puede pasar de 10⁶? (los valores intermedios crecen: con n = 704 511 se llega a 56 991 483 520).</p></aside>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="eyebrow">Restricciones</div>
+  <h2>Qué dicen las restricciones</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="box"><h3>Tamaño de la entrada</h3><p class="small">n ≤ 2·10⁵ o n ≤ 10⁶ dice cuántas operaciones caben. Con 10⁶ números hay que leer rápido (lo vemos en un momento).</p></div>
+      <div class="box"><h3>Rango de los valores</h3><p class="small">aᵢ ≤ 10⁹ y n ≤ 2·10⁵ hacen que la suma llegue a 2·10¹⁴. En C++ eso no cabe en un <code>int</code>. En Python los enteros no tienen límite.</p></div>
+    </div>
+    <div class="stack">
+      <div class="box"><h3>Número de casos</h3><p class="small">"La primera línea tiene t, el número de casos". A veces se garantiza que la suma de n en todos los casos no pasa de 2·10⁵.</p></div>
+      <div class="box"><h3>Garantías</h3><p class="small">"Los números son distintos", "existe al menos una respuesta". Cada garantía elimina un caso que no hay que programar.</p></div>
+    </div>
+  </div>
+  <aside class="notes"><p>En la semana 2 se usa la tabla de restricciones contra complejidad. Hoy basta con que lean las restricciones antes de programar.</p></aside>
+</section>
+
+<!-- 14 -->
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Entrada y salida en Python</h2>
+  <p>La plantilla del curso y los errores de formato más comunes.</p>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="eyebrow">Plantilla</div>
+  <h2>Plantilla base del curso</h2>
+  <div class="cols c-60">
+    <pre class="code lg">import sys
+input = sys.stdin.readline
+
+def main():
+    n = int(input())
+    a = list(map(int, input().split()))
+    ans = []
+    # ...
+    sys.stdout.write("\n".join(map(str, ans)) + "\n")
+
+main()</pre>
+    <ul class="small">
+      <li class="frag">La línea 2 hace que <code>input()</code> lea con <code>sys.stdin.readline</code>. Por qué conviene se ve en la semana 4.</li>
+      <li class="frag">La línea leída termina en <code>"\n"</code>. <code>int()</code> y <code>split()</code> lo ignoran. Para leer un string hay que usar <code>input().strip()</code>.</li>
+      <li class="frag">Todo el código va dentro de <code>main()</code>.</li>
+      <li class="frag">Las respuestas se guardan en una lista y se escriben juntas al final.</li>
+    </ul>
+  </div>
+  <aside class="notes"><p>Pedir que guarden esta plantilla como archivo base. Todas las soluciones del curso la usan.</p></aside>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <div class="eyebrow">Lectura</div>
+  <h2>Formatos de entrada comunes</h2>
+  <div class="cols">
+    <pre class="code sm"># un entero
+n = int(input())
+
+# varios enteros en una línea
+n, k = map(int, input().split())
+a = list(map(int, input().split()))
+
+# un string (quitar el salto de línea)
+s = input().strip()</pre>
+    <pre class="code sm"># t casos de prueba
+t = int(input())
+for _ in range(t):
+    n = int(input())
+    a = list(map(int, input().split()))
+    ans.append(sum(a))</pre>
+  </div>
+  <p class="small warn-line">Error frecuente: leer un string con <code>sys.stdin.readline</code> y olvidar el <code>.strip()</code>. Entonces <code>len(s)</code> cuenta el <code>"\n"</code> y <code>s[::-1]</code> empieza con un salto de línea.</p>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="eyebrow">Salida</div>
+  <h2>Errores de formato de salida</h2>
+  <div class="row" id="cmp-btns"></div>
+  <div class="cols" style="margin-top:6px">
+    <div class="stack"><span class="small muted">Salida esperada</span><div class="ws" id="cmp-exp"></div></div>
+    <div class="stack"><span class="small muted">Salida del programa</span><div class="ws" id="cmp-got"></div></div>
+  </div>
+  <div class="row"><span id="cmp-v"></span><span class="small" id="cmp-why"></span></div>
+  <p class="tiny muted"><span style="color:var(--tle)">·</span> marca un espacio y <span style="color:var(--accent)">↵</span> un salto de línea.</p>
+  <aside class="notes"><p>Codeforces y AtCoder comparan por palabras e ignoran espacios sobrantes al final. No conviene depender de eso: hay jueces que comparan carácter por carácter.</p></aside>
+</section>
+
+<!-- 19 -->
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Problemas de la práctica</h2>
+  <p>Weird Algorithm, Missing Number, Repetitions e Increasing Array.</p>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="eyebrow">CSES 1068 · Weird Algorithm</div>
+  <h2>Simular el algoritmo paso a paso</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="weird">
+      <div class="row small"><label for="weird-n">n =</label><input id="weird-n" type="number" min="1" max="100000" value="3" style="width:120px"><button id="weird-go">Cargar</button></div>
+      <div class="caption" id="weird-cap"></div>
+      <div class="chips" id="weird-chips"></div>
+      <svg id="weird-plot" viewBox="0 0 640 170" style="width:100%;height:170px" role="img" aria-label="Valores de n en cada paso"></svg>
+    </div>
+    <div class="stack">
+      <pre class="code sm">import sys
+input = sys.stdin.readline
+
+def main():
+    n = int(input())
+    out = [n]
+    while n != 1:
+        if n % 2 == 0:
+            n //= 2
+        else:
+            n = 3 * n + 1
+        out.append(n)
+    sys.stdout.write(" ".join(map(str, out)) + "\n")
+
+main()</pre>
+      <p class="small">Usar <code>//</code> y no <code>/</code>: <code>n / 2</code> da un <code>float</code> y se imprime <code>5.0</code>.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar n = 27: hace 111 pasos y llega a 9232. La simulación es directa; el error típico es imprimir floats o imprimir un valor por línea.</p></aside>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <div class="eyebrow">CSES 1083 · Missing Number</div>
+  <h2>Encontrar el número que falta</h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="small">Se dan n − 1 números distintos entre 1 y n. Hay que encontrar el que falta. Ejemplo: n = 5, números 2 3 1 5.</p>
+      <div class="cells" style="margin-top:20px">
+        <div class="cell ok"><span class="idx">1</span>1</div>
+        <div class="cell ok"><span class="idx">2</span>2</div>
+        <div class="cell ok"><span class="idx">3</span>3</div>
+        <div class="cell bad frag"><span class="idx">4</span>?</div>
+        <div class="cell ok"><span class="idx">5</span>5</div>
+      </div>
+      <div class="box soft small frag" style="margin-top:8px">
+        <p>Suma de 1 a n: <code>n(n+1)/2 = 15</code></p>
+        <p>Suma de los dados: <code>2+3+1+5 = 11</code></p>
+        <p>Falta: <code>15 − 11 = 4</code></p>
+      </div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">import sys
+input = sys.stdin.readline
+
+def main():
+    n = int(input())
+    a = list(map(int, input().split()))
+    total = n * (n + 1) // 2
+    sys.stdout.write(str(total - sum(a)) + "\n")
+
+main()</pre>
+      <p class="small frag">Hace una sola pasada sobre los datos: O(n). Ordenar y buscar el hueco también funciona, pero cuesta O(n log n).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Con n = 2·10⁵, la suma llega a unos 2·10¹⁰. En Python no hay desbordamiento. Mencionar la alternativa con XOR como curiosidad (se ve en la semana 8).</p></aside>
+</section>
+
+<!-- 22 -->
+<section class="slide">
+  <div class="eyebrow">CSES 1069 · Repetitions</div>
+  <h2>La racha más larga de un mismo carácter</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="rep">
+      <div class="row small"><label for="rep-s">s =</label><input id="rep-s" type="text" value="ATTCGGGA" style="width:300px"><button id="rep-go">Cargar</button></div>
+      <div class="cells" id="rep-cells" style="margin-top:22px"></div>
+      <div class="caption" id="rep-cap"></div>
+    </div>
+    <pre class="code sm">import sys
+input = sys.stdin.readline
+
+def main():
+    s = input().strip()
+    best = cur = 1
+    for i in range(1, len(s)):
+        if s[i] == s[i - 1]:
+            cur += 1
+            if cur > best:
+                best = cur
+        else:
+            cur = 1
+    sys.stdout.write(str(best) + "\n")
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Aquí sí importa el <code>.strip()</code>: sin él, el <code>"\n"</code> final cuenta como un carácter más (no cambia la respuesta en este problema, pero sí en otros).</p></aside>
+</section>
+
+<!-- 23 -->
+<section class="slide">
+  <div class="eyebrow">CSES 1094 · Increasing Array</div>
+  <h2>Mínimo de movimientos para que no decrezca</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="inc">
+      <div class="row small"><label for="inc-a">a =</label><input id="inc-a" type="text" value="3 2 5 1 7" style="width:300px"><button id="inc-go">Cargar</button></div>
+      <div class="bars" id="inc-bars" style="margin-top:26px;height:200px"></div>
+      <div class="caption" id="inc-cap" style="margin-top:22px"></div>
+    </div>
+    <div class="stack">
+      <p class="small">Un movimiento suma 1 a un elemento. Si <code>a[i]</code> es menor que el anterior, hay que subirlo hasta igualarlo.</p>
+      <pre class="code sm">def main():
+    n = int(input())
+    a = list(map(int, input().split()))
+    moves = 0
+    mx = a[0]
+    for x in a:
+        if x < mx:
+            moves += mx - x
+        else:
+            mx = x
+    print(moves)</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Preguntar por qué subir al mínimo necesario es óptimo: subir más solo obliga a subir más a los siguientes. Es la primera idea greedy del curso.</p></aside>
+</section>
+
+<!-- 24 -->
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <div class="cols">
+    <div class="stack">
+      <h3>CSES</h3>
+      <ul>
+        <li><a href="https://cses.fi/problemset/task/1068">Weird Algorithm</a></li>
+        <li><a href="https://cses.fi/problemset/task/1083">Missing Number</a></li>
+        <li><a href="https://cses.fi/problemset/task/1069">Repetitions</a></li>
+        <li><a href="https://cses.fi/problemset/task/1094">Increasing Array</a></li>
+      </ul>
+    </div>
+    <div class="stack">
+      <h3>AtCoder (problemas A)</h3>
+      <ul>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/practice_1">PracticeA · Welcome to AtCoder</a></li>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/abc086_a">ABC086 A · Product</a></li>
+        <li><a href="https://atcoder.jp/contests/abs/tasks/abc081_a">ABC081 A · Placing Marbles</a></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Orden sugerido: los tres de AtCoder para calentar (formato de entrada), luego los cuatro de CSES. Al final explicar Increasing Array si fue el menos resuelto.</p></aside>
+</section>
+
+<!-- 25 -->
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Antes de enviar</h2>
+  <ol>
+    <li>Leer las restricciones y el formato de entrada y salida.</li>
+    <li>Usar la plantilla: <code>sys.stdin.readline</code>, código en <code>main()</code>, salida con <code>join</code>.</li>
+    <li>Probar con los ejemplos del enunciado.</li>
+    <li>Probar casos borde: n = 1, el valor máximo, todos iguales.</li>
+    <li>Quitar los <code>print</code> de depuración.</li>
+    <li>Elegir PyPy 3 como lenguaje al enviar.</li>
+  </ol>
+  <aside class="notes"><p>Cerrar mostrando dónde quedan las soluciones y el taller de la semana.</p></aside>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+
+  // ---------- simulador de veredictos ----------
+  const TESTS = [
+    { n: "n = 3", big: false }, { n: "n = 5", big: false }, { n: "n = 1000", big: false },
+    { n: "n = 2·10⁵", big: true }, { n: "n = 2·10⁵", big: true }
+  ];
+  const SUBS = [
+    { name: "1. Solución con la plantilla", code:
+`import sys
+input = sys.stdin.readline
+def main():
+    n = int(input())
+    s = 0
+    for _ in range(n):
+        s += int(input())
+    print(s)
+main()`, res: ["ac","ac","ac","ac","ac"], times: [15,14,16,62,58], why: "Pasa todos los casos." },
+    { name: "2. Imprime texto de más", code:
+`n = int(input())
+s = 0
+for _ in range(n):
+    s += int(input())
+print("La suma es:", s)`, res: ["wa"], times: [16], why: "El juez esperaba solo el número. Imprimió \"La suma es: 15\"." },
+    { name: "3. Recalcula la suma en cada paso", code:
+`n = int(input())
+a = [int(input()) for _ in range(n)]
+for i in range(n):
+    s = sum(a[:i+1])   # O(n) en cada vuelta
+print(s)`, res: ["ac","ac","ac","tle"], times: [17,16,45,2000], why: "Hace O(n²) operaciones: con n = 2·10⁵ son unas 2·10¹⁰. No cabe en 1 segundo." },
+    { name: "4. Recorre una posición de más", code:
+`n = int(input())
+a = [int(input()) for _ in range(n)]
+s = 0
+for i in range(n + 1):
+    s += a[i]
+print(s)`, res: ["re"], times: [18], why: "IndexError: a[n] no existe. El rango correcto es range(n)." },
+    { name: "5. Error de sintaxis", code:
+`n = int(input()
+s = 0
+for _ in range(n):
+    s += int(input())
+print(s)`, res: ["ce"], times: [0], why: "Falta cerrar un paréntesis en la línea 1. El programa no llega a ejecutarse." },
+    { name: "6. Reserva memoria de más", code:
+`n = int(input())
+a = [0] * (10**9)   # por si acaso
+for i in range(n):
+    a[i] = int(input())
+print(sum(a))`, res: ["mle"], times: [40], why: "Una lista de 10⁹ elementos ocupa unos 8 GB. El límite es 256 MB." }
+  ];
+  const LABEL = { ac: "AC", wa: "WA", tle: "TLE", re: "RE", ce: "CE", mle: "MLE" };
+  let sel = 0, timer = null;
+  const list = $("#sim-list"), codeEl = $("#sim-code"), testsEl = $("#sim-tests"), vEl = $("#sim-verdict"), whyEl = $("#sim-why");
+  function drawTests(states) {
+    testsEl.innerHTML = "";
+    TESTS.forEach((t, i) => {
+      const st = states[i] || { s: "wait" };
+      testsEl.append(h("div", { class: "test" + (st.s === "run" ? " run" : "") },
+        h("div", { class: "tn", text: "caso " + (i + 1) + " · " + t.n }),
+        st.s === "wait" ? h("span", { class: "v wait", text: "…" }) :
+        st.s === "run" ? h("span", { class: "v wait", text: "corriendo" }) :
+        st.s === "skip" ? h("span", { class: "v wait", text: "no se ejecuta" }) :
+        h("span", { class: "v " + st.s, text: LABEL[st.s] }),
+        st.t != null ? h("div", { class: "tt", text: st.t >= 2000 ? "> 1000 ms" : st.t + " ms" }) : null));
+    });
+  }
+  function pick(i) {
+    if (timer) clearTimeout(timer);
+    sel = i;
+    Array.from(list.children).forEach((b, j) => b.classList.toggle("on", j === i));
+    codeEl.textContent = SUBS[i].code;
+    if (window.hljs) codeEl.innerHTML = hljs.highlight(SUBS[i].code, { language: "python" }).value;
+    vEl.innerHTML = ""; whyEl.textContent = "";
+    drawTests([]);
+  }
+  SUBS.forEach((s, i) => list.append(h("button", { text: s.name, onclick: () => pick(i) })));
+  $("#sim-send").onclick = () => {
+    const sub = SUBS[sel];
+    if (timer) clearTimeout(timer);
+    vEl.innerHTML = ""; whyEl.textContent = "";
+    if (sub.res[0] === "ce") {
+      drawTests([]);
+      timer = setTimeout(() => { vEl.innerHTML = '<span class="verdict-big v ce">Compilation Error</span>'; whyEl.textContent = sub.why; }, 500);
+      return;
+    }
+    const states = [];
+    let i = 0;
+    function stepRun() {
+      if (i >= TESTS.length || (i > 0 && states[i - 1].s !== "ac")) {
+        for (let j = i; j < TESTS.length; j++) states[j] = { s: "skip" };
+        drawTests(states);
+        const bad = states.find((x) => x.s !== "ac" && x.s !== "skip");
+        const v = bad ? bad.s : "ac";
+        const big = { ac: "Accepted", wa: "Wrong Answer", tle: "Time Limit Exceeded", re: "Runtime Error", mle: "Memory Limit Exceeded" };
+        const at = bad ? " en el caso " + (states.indexOf(bad) + 1) : "";
+        vEl.innerHTML = '<span class="verdict-big v ' + v + '">' + big[v] + at + "</span>";
+        whyEl.textContent = sub.why;
+        return;
+      }
+      states[i] = { s: "run" };
+      drawTests(states);
+      const res = sub.res[i], t = sub.times[i];
+      timer = setTimeout(() => {
+        states[i] = { s: res, t: t };
+        drawTests(states);
+        i++;
+        timer = setTimeout(stepRun, 250);
+      }, res === "tle" ? 1300 : 450);
+    }
+    stepRun();
+  };
+  document.addEventListener("slidechange", () => { if (timer) clearTimeout(timer); });
+  pick(0);
+
+  // ---------- anatomía del enunciado ----------
+  const PARTS = {
+    historia: ["Historia y tarea", "Describe la situación y lo que hay que calcular. En problemas de Codeforces la historia suele ser larga; hay que separar la tarea del adorno."],
+    entrada: ["Entrada", "Dice qué se lee y en qué orden: cuántas líneas, cuántos valores por línea. Aquí: una línea con un entero."],
+    salida: ["Salida", "Dice qué imprimir y con qué formato. Aquí: todos los valores en una sola línea, separados por espacios."],
+    restricciones: ["Restricciones", "Dicen el tamaño máximo de la entrada. Con n ≤ 10⁶ hay que pensar si los valores intermedios crecen (sí crecen) y cuántos pasos hay (pocos cientos)."],
+    ejemplo: ["Ejemplo", "Sirve para confirmar que se entendió el enunciado. Pasar el ejemplo no garantiza AC."]
+  };
+  const stm = $("#stm"), btns = $("#stm-btns"), info = $("#stm-info");
+  Object.keys(PARTS).forEach((k) => btns.append(h("button", { text: PARTS[k][0], onclick: () => {
+    stm.querySelectorAll("[data-part]").forEach((d) => d.classList.toggle("lit", d.dataset.part === k));
+    Array.from(btns.children).forEach((b) => b.classList.toggle("on", b.textContent === PARTS[k][0]));
+    info.innerHTML = "<b>" + PARTS[k][0] + ".</b> " + PARTS[k][1];
+  } })));
+  info.innerHTML = "Elija una parte del enunciado.";
+
+  // ---------- comparador de salida ----------
+  const CASES = [
+    { name: "Texto de más", exp: "15\n", got: "La suma es: 15\n", v: "wa", why: "El juez compara la salida tal cual. Cualquier texto adicional es un error." },
+    { name: "Mayúsculas", exp: "YES\n", got: "Yes\n", v: "wa", why: "\"Yes\" y \"YES\" son strings distintos, salvo que el enunciado diga que no importa." },
+    { name: "Lista de Python", exp: "1 2 3\n", got: "[1, 2, 3]\n", v: "wa", why: "print(a) imprime la representación de la lista. Usar \" \".join(map(str, a)) o print(*a)." },
+    { name: "Booleano", exp: "NO\n", got: "False\n", v: "wa", why: "Hay que traducir el resultado al texto que pide el enunciado." },
+    { name: "Depuración", exp: "4\n", got: "[2, 3, 1, 5]\n4\n", v: "wa", why: "Quedó un print de depuración. El juez lo cuenta como parte de la respuesta." },
+    { name: "Espacio al final", exp: "1 2 3\n", got: "1 2 3 \n", v: "ac", why: "Codeforces y AtCoder ignoran espacios al final de la línea. Otros jueces no." }
+  ];
+  function vis(s, other) {
+    let out = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i], d = other != null && other[i] !== c;
+      const shown = c === " " ? '<span class="sp">·</span>' : c === "\n" ? '<span class="nl">↵</span>\n' : c.replace(/[<>&]/g, (x) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[x]));
+      out += d ? '<span class="diff">' + shown + "</span>" : shown;
+    }
+    return out;
+  }
+  const cb = $("#cmp-btns");
+  CASES.forEach((c, i) => cb.append(h("button", { text: c.name, onclick: () => showCase(i) })));
+  function showCase(i) {
+    const c = CASES[i];
+    Array.from(cb.children).forEach((b, j) => b.classList.toggle("on", j === i));
+    $("#cmp-exp").innerHTML = vis(c.exp);
+    $("#cmp-got").innerHTML = vis(c.got, c.exp);
+    $("#cmp-v").innerHTML = '<span class="v ' + c.v + '">' + c.v.toUpperCase() + "</span>";
+    $("#cmp-why").textContent = c.why;
+  }
+  showCase(0);
+
+  // ---------- Weird Algorithm ----------
+  const wChips = $("#weird-chips"), wCap = $("#weird-cap"), wPlot = $("#weird-plot");
+  const weird = h("div"); $("#weird").append(weird);
+  let wStep = null;
+  function weirdFrames(n) {
+    const seq = [n];
+    while (n !== 1 && seq.length < 400) { n = n % 2 === 0 ? n / 2 : 3 * n + 1; seq.push(n); }
+    return seq.map((_, i) => ({ seq, i }));
+  }
+  function weirdRender(f) {
+    const { seq, i } = f, v = seq[i];
+    wChips.innerHTML = "";
+    for (let j = 0; j <= i; j++) wChips.append(h("span", { class: "chip " + (seq[j] % 2 ? "odd" : "even") + (j === i ? " cur" : ""), text: seq[j] }));
+    wChips.scrollTop = wChips.scrollHeight;
+    if (v === 1) wCap.innerHTML = "n = 1: termina. Se imprimieron <b>" + seq.length + "</b> valores.";
+    else wCap.innerHTML = "n = <b>" + v + "</b> es " + (v % 2 ? "impar → 3·" + v + " + 1 = " + (3 * v + 1) : "par → " + v + " / 2 = " + v / 2);
+    const max = Math.max(...seq), W = 640, H = 160, L = seq.length;
+    const pts = seq.slice(0, i + 1).map((x, j) => [10 + (j / Math.max(1, L - 1)) * (W - 20), H - 5 - (x / max) * (H - 20)]);
+    const css = getComputedStyle(document.documentElement);
+    wPlot.innerHTML = '<line x1="10" y1="' + (H - 5) + '" x2="' + (W - 10) + '" y2="' + (H - 5) + '" stroke="' + css.getPropertyValue("--line") + '"/>' +
+      '<polyline fill="none" stroke-width="2.5" stroke="' + css.getPropertyValue("--accent") + '" points="' + pts.map((p) => p.join(",")).join(" ") + '"/>' +
+      (pts.length ? '<circle r="5" fill="' + css.getPropertyValue("--tle") + '" cx="' + pts[pts.length - 1][0] + '" cy="' + pts[pts.length - 1][1] + '"/>' : "") +
+      '<text x="12" y="14" font-size="13" font-family="monospace" fill="' + css.getPropertyValue("--muted") + '">máximo: ' + max + "</text>";
+  }
+  function weirdLoad() {
+    let n = Math.max(1, Math.min(100000, parseInt($("#weird-n").value, 10) || 3));
+    const fr = weirdFrames(n);
+    if (wStep) wStep.setFrames(fr); else wStep = stepper(weird, fr, weirdRender, { delay: 500 });
+  }
+  $("#weird-go").onclick = weirdLoad;
+  weirdLoad();
+
+  // ---------- Repetitions ----------
+  const repBox = h("div"); $("#rep").append(repBox);
+  let repStep = null;
+  function repFrames(s) {
+    const fr = [{ i: 0, start: 0, cur: 1, best: 1, bs: 0 }];
+    let start = 0, cur = 1, best = 1, bs = 0;
+    for (let i = 1; i < s.length; i++) {
+      if (s[i] === s[i - 1]) { cur++; } else { cur = 1; start = i; }
+      if (cur > best) { best = cur; bs = start; }
+      fr.push({ i, start, cur, best, bs });
+    }
+    return fr.map((f) => Object.assign({ s }, f));
+  }
+  function repRender(f) {
+    const el = $("#rep-cells"); el.innerHTML = "";
+    for (let j = 0; j < f.s.length; j++) {
+      let cls = "cell";
+      if (j >= f.start && j <= f.i) cls += j === f.i ? " cur" : " sel";
+      else if (j >= f.bs && j < f.bs + f.best) cls += " ok";
+      else if (j > f.i) cls += " dim";
+      el.append(h("div", { class: cls }, h("span", { class: "idx", text: j }), f.s[j]));
+    }
+    $("#rep-cap").innerHTML = "i = " + f.i + " · racha actual <b>" + f.cur + "</b> · mejor <b>" + f.best + "</b>" +
+      (f.i > 0 ? (f.s[f.i] === f.s[f.i - 1] ? " · igual al anterior: cur += 1" : " · distinto: cur = 1") : "");
+  }
+  function repLoad() {
+    const s = ($("#rep-s").value || "A").replace(/\s/g, "").slice(0, 20) || "A";
+    const fr = repFrames(s);
+    if (repStep) repStep.setFrames(fr); else repStep = stepper(repBox, fr, repRender);
+  }
+  $("#rep-go").onclick = repLoad;
+  repLoad();
+
+  // ---------- Increasing Array ----------
+  const incBox = h("div"); $("#inc").append(incBox);
+  let incStep = null;
+  function incFrames(a) {
+    const b = a.slice(), fr = [{ b: b.slice(), i: 0, moves: 0, add: 0 }];
+    let moves = 0;
+    for (let i = 1; i < b.length; i++) {
+      let add = 0;
+      if (b[i] < b[i - 1]) { add = b[i - 1] - b[i]; moves += add; b[i] = b[i - 1]; }
+      fr.push({ b: b.slice(), i, moves, add });
+    }
+    return fr.map((f) => Object.assign({ a }, f));
+  }
+  function incRender(f) {
+    const el = $("#inc-bars"); el.innerHTML = "";
+    const max = Math.max(...f.b, 1);
+    f.b.forEach((x, j) => {
+      const orig = f.a[j], raised = x - orig;
+      const bar = h("div", { class: "bar" + (j === f.i ? " cur" : j < f.i ? " ok" : ""), style: { height: (x / max) * 100 + "%" } },
+        h("span", { class: "val", text: x }), h("span", { class: "lab", text: "a[" + j + "]" }));
+      if (raised > 0 && j <= f.i) bar.append(h("div", { style: { position: "absolute", left: 0, right: 0, top: 0, height: (raised / x) * 100 + "%", background: "repeating-linear-gradient(45deg, transparent 0 6px, rgba(0,0,0,.12) 6px 9px)" } }));
+      el.append(bar);
+    });
+    $("#inc-cap").innerHTML = f.i === 0 ? "El primer elemento queda igual." :
+      (f.add ? "a[" + f.i + "] era " + f.a[f.i] + ", menor que " + f.b[f.i - 1] + ": se sube " + f.add + "." : "a[" + f.i + "] = " + f.b[f.i] + " no es menor que el anterior: no se mueve.") +
+      " Movimientos: <b>" + f.moves + "</b>";
+  }
+  function incLoad() {
+    const a = ($("#inc-a").value || "").trim().split(/\s+/).map(Number).filter((x) => !isNaN(x) && x >= 0).slice(0, 14);
+    const fr = incFrames(a.length ? a : [3, 2, 5, 1, 7]);
+    if (incStep) incStep.setFrames(fr); else incStep = stepper(incBox, fr, incRender);
+  }
+  $("#inc-go").onclick = incLoad;
+  incLoad();
+})();
+</script>
+</body>
+</html>
