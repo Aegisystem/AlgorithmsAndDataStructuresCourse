@@ -8,13 +8,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="../assets/curso.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
 <script src="../assets/curso.js"></script>
 <style>
   .calc-sel button { font-size: 20px; min-width: 70px; }
-  .calc-rows { display: grid; gap: 8px; margin-top: 4px; }
+  .calc-rows { display: grid; gap: 5px; margin-top: 2px; }
   .crow { display: grid; grid-template-columns: 150px 1fr 170px; gap: 16px; align-items: center; }
   .cname { font-size: 22px; background: none !important; padding: 0 !important; }
-  .ctrack { position: relative; height: 34px; background: var(--soft); border-radius: 4px; }
+  .ctrack { position: relative; height: 32px; background: var(--soft); border-radius: 4px; }
   .ctrack.bare { background: none; height: 22px; }
   .cbar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width .3s; }
   .cbar.ok { background: var(--ac); }
@@ -70,7 +71,7 @@
   <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 2 · Sesión 1</div>
   <h1>Complejidad y simulación</h1>
   <div class="meta"><span>Objetivo: estimar si una idea pasa el límite de tiempo antes de programarla</span></div>
-  <aside class="notes"><p>Clase de 90 minutos. La parte central es la tabla de restricciones contra complejidad (diapositivas 8 a 10). La calculadora de la diapositiva 6 sirve para responder preguntas del grupo en vivo.</p></aside>
+  <aside class="notes"><p>Clase de 90 minutos. La parte central es la tabla de restricciones contra complejidad (diapositivas 8 a 10). La calculadora de la diapositiva 7 sirve para responder preguntas del grupo en vivo.</p></aside>
 </section>
 
 <section class="slide">
@@ -107,7 +108,7 @@ print(len(set(a)))</pre>
       <p class="small">Las dos dan la respuesta correcta. Lo que cambia es la cantidad de operaciones.</p>
     </div>
   </div>
-  <aside class="notes"><p>Preguntar cuál pasa antes de mostrar los veredictos. Esta diapositiva conecta con los costos ocultos de la parte 3.</p></aside>
+  <aside class="notes"><p>Preguntar cuál pasa antes de mostrar los veredictos. Esta diapositiva conecta con los costos ocultos de la parte 2.</p></aside>
 </section>
 
 <section class="slide section">
@@ -155,7 +156,7 @@ print(len(set(a)))</pre>
   <h2>¿Cabe en 1 segundo?</h2>
   <div class="row calc-sel"><span class="small muted">n =</span><span class="row" id="calc-n"></span></div>
   <div class="calc-rows" id="calc-rows"></div>
-  <p class="small muted">Supuesto: en el juez, PyPy hace unas 10⁸ operaciones simples por segundo y C++ unas 10⁹. Son órdenes de magnitud. Desde n = 10⁶ se muestra también C++. Medido en un Apple M4, C++ fue entre 1 y 9 veces más rápido que PyPy según el código. La longitud de cada barra está en escala logarítmica.</p>
+  <p class="small muted">Supuesto: en el juez, PyPy hace unas 10⁸ operaciones simples por segundo y C++ unas 10⁹. Desde n = 10⁶ se compara con C++. Las barras usan escala logarítmica.</p>
   <aside class="notes"><p>Elegir n = 10³, 10⁵, 10⁶ y 10⁹ y preguntar qué complejidades pasan antes de mirar las barras.</p></aside>
 </section>
 
@@ -420,8 +421,9 @@ for it in range(500):
     if n == 2 or n == 3:
         print("NO SOLUTION")
         return
-    p = list(range(2, n + 1, 2)) + list(range(1, n + 1, 2))
-    print(*p)
+    pares = list(range(2, n + 1, 2))
+    impares = list(range(1, n + 1, 2))
+    print(*(pares + impares))
 
 main()</pre>
       <p class="small">Dos pares seguidos difieren en 2. Lo mismo dos impares. En la unión, el último par (n o n − 1) y el 1 difieren en más de 1 cuando n ≥ 4.</p>

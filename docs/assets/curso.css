@@ -228,6 +228,11 @@ aside.notes { display: none; }
 .prob-ex pre { margin: 0 0 10px; font-family: var(--font-mono); font-size: calc(28px * var(--k, 1)); line-height: 1.4; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 18px; overflow: auto; }
 .prob-link { font-size: 17px; color: var(--muted); }
 
+/* aviso de clase no habilitada */
+.aviso { position: fixed; inset: 0; display: grid; place-content: center; gap: 14px; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); text-align: left; }
+.aviso h1 { font-family: var(--font-display); font-size: clamp(28px, 5vw, 44px); margin: 0; }
+.aviso p { margin: 0; color: var(--muted); }
+
 /* modo presentación: sin márgenes, sin sombra y sin la barra de páginas */
 body.presenting { background: var(--stage); }
 body.presenting .slide { box-shadow: none; border-radius: 0; }

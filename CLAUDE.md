@@ -8,3 +8,4 @@ Proyecto para construir el material completo de la asignatura (16 semanas, 2 ses
 - Priorizar DFS iterativo y DP bottom-up; no usar `sortedcontainers`.
 - No incluir temas de la tabla de "Temas excluidos" salvo que se pida como extensión.
 - Cada problema asignado debe tener una solución en Python que pase el límite de tiempo.
+- Las clases están en `docs/` (GitHub Pages). Qué clases pueden abrir los estudiantes se define en `docs/config.js` (`disponible: true/false`); una clase nueva también se agrega ahí para que aparezca en el índice.

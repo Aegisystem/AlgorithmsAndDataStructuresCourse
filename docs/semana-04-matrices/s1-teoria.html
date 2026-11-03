@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="../assets/curso.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
 <script src="../assets/curso.js"></script>
 <style>
   .mx .cell { width: 44px; height: 44px; font-size: 17px; cursor: pointer; }
@@ -97,7 +98,9 @@
     <div class="stack">
       <pre class="code sm"># n filas de m números
 n, m = map(int, input().split())
-M = [list(map(int, input().split())) for _ in range(n)]
+M = []
+for _ in range(n):
+    M.append(list(map(int, input().split())))
 
 # n filas de caracteres '#' y '.'
 g = [input() for _ in range(n)]
@@ -210,9 +213,10 @@ DY = [0, 0, -1, 1]         # izquierda, derecha
 
 for d in range(4):
     ni, nj = i + DX[d], j + DY[d]
-    if 0 &lt;= ni &lt; n and 0 &lt;= nj &lt; m and g[ni][nj] != '#':
-        # (ni, nj) es un vecino válido
-        ...
+    if 0 &lt;= ni &lt; n and 0 &lt;= nj &lt; m:
+        if g[ni][nj] != '#':
+            # (ni, nj) es un vecino válido
+            ...
 
 # 8 direcciones: todos los (di, dj) salvo (0, 0)
 for di in (-1, 0, 1):
@@ -272,9 +276,10 @@ for i in range(n):
     <div class="stack small">
       <pre class="code sm">k = i * m + j          # (i, j) → k
 i, j = divmod(k, m)    # k → (i, j)
-vis = bytearray(n * m) # visitados, 1 byte por celda</pre>
+# visitados, 1 byte por celda
+vis = bytearray(n * m)</pre>
       <p>Cada celda queda representada por un solo entero. En BFS (semana 12) la cola guarda enteros en lugar de tuplas <code>(i, j)</code>.</p>
-      <p>En PyPy también es más rápido: sumar los 4 vecinos de 10⁶ celdas tardó 0.005 s con <code>M[i][j]</code> y 0.002 s aplanado.</p>
+      <p>Además, en PyPy es más rápido: sumar los 4 vecinos de 10⁶ celdas tardó 0.005 s con <code>M[i][j]</code> y 0.002 s aplanado.</p>
     </div>
   </div>
   <aside class="notes"><p>Medido con PyPy 3.11, Apple M4. Guardar la fila en una variable (<code>row = M[i]</code>) también bajó a 0.002 s. Sirve para representar estados con un entero y para usar <code>bytearray</code>. En PyPy la lista plana suele ser más rápida.</p></aside>
@@ -509,17 +514,21 @@ t = int(data[0])
         for di in (-1, 0, 1):
             for dj in (-1, 0, 1):
                 ni, nj = i + di, j + dj
-                if 0 &lt;= ni &lt; h and 0 &lt;= nj &lt; w and g[ni][nj] == "#":
-                    c += 1
+                if 0 &lt;= ni &lt; h and 0 &lt;= nj &lt; w:
+                    if g[ni][nj] == "#":
+                        c += 1
         fila.append(str(c))
     print("".join(fila))</pre>
     </div>
     <div class="stack">
       <h3>ABC107 B · Grid Compression</h3>
       <p class="small">Quitar las filas y columnas que solo tienen <code>.</code>.</p>
-      <pre class="code sm">g = [f for f in g if "#" in f]        # filas
-cols = [c for c in zip(*g) if "#" in c] # columnas
-g = ["".join(f) for f in zip(*cols)]    # volver a filas</pre>
+      <pre class="code sm"># quitar filas blancas
+g = [f for f in g if "#" in f]
+# quitar columnas blancas
+cols = [c for c in zip(*g) if "#" in c]
+# volver a filas
+g = ["".join(f) for f in zip(*cols)]</pre>
       <p class="small">Las columnas se filtran transponiendo con <code>zip(*g)</code>, filtrando y transponiendo otra vez.</p>
     </div>
   </div>
@@ -568,7 +577,7 @@ g = ["".join(f) for f in zip(*cols)]    # volver a filas</pre>
     <li>Leer grillas con <code>input()</code>, y como lista si hay que modificarlas.</li>
     <li>Revisar los límites antes de acceder a una celda vecina.</li>
     <li>Transponer con <code>zip(*M)</code> y rotar con <code>zip(*M[::-1])</code>.</li>
-    <li>Guardar la fila en una variable dentro de los bucles internos.</li>
+    <li>Aplanar con <code>i * m + j</code> cuando cada celda deba ser un solo entero.</li>
     <li>Con 10⁵ líneas o más, leer con <code>sys.stdin.readline</code> y escribir una sola vez con <code>join</code>.</li>
   </ol>
 </section>

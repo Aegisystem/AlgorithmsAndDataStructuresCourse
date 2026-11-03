@@ -170,6 +170,26 @@
     show(isNaN(start) ? 0 : start, false);
   }
 
+  // Una clase que no está habilitada en config.js muestra un aviso en lugar de las
+  // diapositivas. Con ?docente en la dirección se muestra igual.
+  function bloqueada() {
+    const curso = window.CURSO;
+    if (!curso || new URLSearchParams(location.search).has("docente")) return false;
+    const ruta = decodeURIComponent(location.pathname);
+    for (const m of curso.modulos)
+      for (const c of m.clases)
+        if (c.url && ruta.endsWith(c.url)) return !c.disponible;
+    return false;
+  }
+  function mostrarAviso() {
+    document.body.innerHTML = "";
+    document.body.append(h("div", { class: "aviso" },
+      h("div", { class: "eyebrow", text: "Algoritmia y Estructuras de Datos Avanzadas" }),
+      h("h1", { text: "Esta clase todavía no está disponible." }),
+      h("p", { text: "Se habilita cuando llegue su semana." }),
+      h("a", { href: "../index.html", text: "Volver al índice" })));
+  }
+
   function highlight() {
     if (!window.hljs) return;
     $$("pre.code").forEach((pre) => {
@@ -179,5 +199,9 @@
   }
 
   window.Curso = { h, $, $$, stepper };
-  document.addEventListener("DOMContentLoaded", () => { highlight(); initDeck(); });
+  document.addEventListener("DOMContentLoaded", () => {
+    if (bloqueada()) return mostrarAviso();
+    highlight();
+    initDeck();
+  });
 })();

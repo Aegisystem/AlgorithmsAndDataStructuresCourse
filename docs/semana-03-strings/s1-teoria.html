@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="../assets/curso.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
 <script src="../assets/curso.js"></script>
 <style>
   .slicer .cell { width: 50px; height: 50px; font-size: 22px; }
@@ -187,7 +188,7 @@ res = "".join(partes)   # O(n) en total</pre>
 <section class="slide section">
   <div class="eyebrow">Parte 3</div>
   <h2>Métodos de strings</h2>
-  <p>Funciones que ya vienen en Python y recorren el string en C.</p>
+  <p>Funciones de Python que recorren el string sin escribir el bucle a mano.</p>
 </section>
 
 <section class="slide">
@@ -261,7 +262,8 @@ for c in s:
 
 # con la biblioteca
 from collections import Counter
-cnt = Counter(s)   # {'a': 3, 'n': 2, 'b': 1}</pre>
+cnt = Counter(s)
+# con s = "banana": a: 3, n: 2, b: 1</pre>
       <p class="small">El arreglo de 26 sirve cuando las letras son minúsculas. <code>Counter</code> sirve para cualquier carácter o palabra.</p>
     </div>
   </div>
@@ -367,15 +369,13 @@ def a_base(n, b):
       <dl class="prob-io"><dt>Entrada</dt><dd>n en la primera línea y luego n palabras en minúsculas, una por línea.</dd><dt>Salida</dt><dd>Cada palabra, abreviada si hace falta, una por línea.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 100; cada palabra tiene de 1 a 100 letras</dd></dl>
     </div>
     <div class="prob-ex">
-      <div class="ex-lab">Entrada</div><pre>4
+      <div class="ex-lab">Entrada</div><pre>3
 word
 localization
-internationalization
-pneumonoultramicroscopicsilicovolcanoconiosis</pre>
+internationalization</pre>
       <div class="ex-lab">Salida</div><pre>word
 l10n
-i18n
-p43s</pre>
+i18n</pre>
     </div>
   </div>
   <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/71/A">https://codeforces.com/problemset/problem/71/A</a></p>
@@ -408,22 +408,28 @@ p43s</pre>
     <div class="stack">
       <h3>71A · Way Too Long Words</h3>
       <p class="small">Si una palabra tiene más de 10 letras, se escribe primera letra + cantidad de letras del medio + última letra.</p>
-      <pre class="code sm">for _ in range(int(input())):
-    w = input()
-    if len(w) > 10:
-        w = w[0] + str(len(w) - 2) + w[-1]
-    print(w)</pre>
+      <pre class="code sm">def main():
+    for _ in range(int(input())):
+        w = input()
+        if len(w) > 10:
+            w = w[0] + str(len(w) - 2) + w[-1]
+        print(w)
+
+main()</pre>
       <p class="tiny muted">"localization" → "l10n"</p>
     </div>
     <div class="stack">
       <h3>118A · String Task</h3>
       <p class="small">Quitar las vocales (incluida la y), poner un punto antes de cada consonante y pasar a minúsculas.</p>
-      <pre class="code sm">s = input().lower()
-res = []
-for c in s:
-    if c not in "aoyeui":
-        res.append("." + c)
-print("".join(res))</pre>
+      <pre class="code sm">def main():
+    s = input().lower()
+    res = []
+    for c in s:
+        if c not in "aoyeui":
+            res.append("." + c)
+    print("".join(res))
+
+main()</pre>
       <p class="tiny muted">"Codeforces" → ".c.d.f.r.c.s"</p>
     </div>
   </div>
@@ -476,23 +482,29 @@ Abz</pre>
     <div class="stack">
       <h3>112A · Petya and Strings</h3>
       <p class="small">Comparar dos strings sin distinguir mayúsculas. Imprimir −1, 0 o 1.</p>
-      <pre class="code sm">a = input().lower()
-b = input().lower()
-if a < b:
-    print(-1)
-elif a > b:
-    print(1)
-else:
-    print(0)</pre>
+      <pre class="code sm">def main():
+    a = input().lower()
+    b = input().lower()
+    if a < b:
+        print(-1)
+    elif a > b:
+        print(1)
+    else:
+        print(0)
+
+main()</pre>
     </div>
     <div class="stack">
       <h3>236A · Boy or Girl</h3>
       <p class="small">Si el nombre de usuario tiene una cantidad par de letras distintas, es mujer; si es impar, es hombre.</p>
-      <pre class="code sm">s = input()
-if len(set(s)) % 2 == 0:
-    print("CHAT WITH HER!")
-else:
-    print("IGNORE HIM!")</pre>
+      <pre class="code sm">def main():
+    s = input()
+    if len(set(s)) % 2 == 0:
+        print("CHAT WITH HER!")
+    else:
+        print("IGNORE HIM!")
+
+main()</pre>
     </div>
   </div>
 </section>
@@ -517,7 +529,7 @@ else:
 <section class="slide">
   <div class="eyebrow">Solución · CSES 1755 · Palindrome Reorder</div>
   <h2>Reordenar las letras para formar un palíndromo</h2>
-  <div class="cols c-60 fill">
+  <div class="cols c-40 fill">
     <div class="stack" id="pr">
       <div class="row small"><label for="pr-s">s =</label><input id="pr-s" type="text" value="AAAACACBA" maxlength="24" style="width:260px"><button id="pr-go">Construir</button></div>
       <div class="freq" id="pr-bars" style="height:110px"></div>
@@ -525,20 +537,29 @@ else:
       <div class="cells" id="pr-out" style="margin-top:18px"></div>
     </div>
     <div class="stack">
-      <pre class="code sm">s = input()
-cnt = [0] * 26
-for c in s:
-    cnt[ord(c) - 65] += 1
-impares = [i for i in range(26) if cnt[i] % 2]
-if len(impares) > 1:
-    print("NO SOLUTION")
-else:
-    mitad = []
+      <pre class="code sm" style="font-size:15px; line-height:1.38">def main():
+    s = input()
+    cnt = [0] * 26
+    for c in s:
+        cnt[ord(c) - 65] += 1
+    impares = []
     for i in range(26):
-        mitad.append(chr(65 + i) * (cnt[i] // 2))
-    mitad = "".join(mitad)
-    centro = chr(65 + impares[0]) if impares else ""
-    print(mitad + centro + mitad[::-1])</pre>
+        if cnt[i] % 2 == 1:
+            impares.append(i)
+    if len(impares) > 1:
+        print("NO SOLUTION")
+    else:
+        mitad = []
+        for i in range(26):
+            letra = chr(65 + i)
+            mitad.append(letra * (cnt[i] // 2))
+        mitad = "".join(mitad)
+        centro = ""
+        if impares:
+            centro = chr(65 + impares[0])
+        print(mitad + centro + mitad[::-1])
+
+main()</pre>
     </div>
   </div>
   <aside class="notes"><p>Un palíndromo tiene a lo sumo una letra con frecuencia impar (la del centro). Con n ≤ 10⁶ la solución es O(n + 26). Cualquier palíndromo válido es aceptado.</p></aside>
