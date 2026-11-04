@@ -18,7 +18,7 @@ window.CURSO = {
       semanas: "semanas 1–4",
       clases: [
         { semana: 1, titulo: "Introducción y jueces", resumen: "Formatos de competencia, veredictos, enunciados, entrada y salida", s2: "práctica", url: "semana-01-introduccion/s1-teoria.html", disponible: true },
-        { semana: 2, titulo: "Complejidad y simulación", resumen: "Contar operaciones, tabla de restricciones, costos ocultos, Permutations", s2: "práctica", url: "semana-02-complejidad/s1-teoria.html", disponible: true },
+        { semana: 2, titulo: "Complejidad y simulación", resumen: "Contar operaciones, tabla de restricciones, costos ocultos, Permutations", s2: "práctica", url: "semana-02-complejidad/s1-teoria.html", disponible: false },
         { semana: 3, titulo: "Strings", resumen: "Slicing, join, métodos, frecuencias, bases, orden lexicográfico", s2: "práctica", url: "semana-03-strings/s1-teoria.html", disponible: false },
         { semana: 4, titulo: "Matrices", resumen: "Crear y leer, recorridos, vecinos, Number Spiral, entrada y salida rápida", s2: "Contest 1", url: "semana-04-matrices/s1-teoria.html", disponible: false }
       ]
