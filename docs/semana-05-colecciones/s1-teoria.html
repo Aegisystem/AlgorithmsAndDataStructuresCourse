@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 5 · Colecciones, pilas y colas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .setrow { display: grid; grid-template-columns: 110px auto; gap: 10px 14px; align-items: center; }
+  .setrow .lab { font-family: var(--font-mono); font-size: 20px; color: var(--muted); }
+  .setrow .cell { width: 44px; height: 44px; }
+  .setrow .cell.off { opacity: .18; }
+  .ops { display: grid; grid-template-columns: repeat(4, auto); gap: 6px; justify-content: start; }
+  .ops button { font-family: var(--font-mono); font-size: 18px; }
+  .out { font-family: var(--font-mono); font-size: 22px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; min-height: 50px; white-space: pre-wrap; }
+  .dtab { border-collapse: collapse; font-family: var(--font-mono); font-size: 20px; }
+  .dtab th, .dtab td { border-bottom: 1px solid var(--line); padding: 6px 16px; text-align: left; }
+  .dtab th { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .dtab tr.cur td { background: var(--mark); color: var(--mark-ink); }
+  .dtab tr.new td { background: var(--ac-soft); }
+  .words { display: flex; gap: 6px; flex-wrap: wrap; }
+  .words span { font-family: var(--font-mono); font-size: 20px; border: 1.5px solid var(--line); border-radius: 6px; padding: 4px 10px; }
+  .words span.cur { background: var(--mark); border-color: var(--mark); color: var(--mark-ink); }
+  .words span.done { background: var(--accent-soft); border-color: var(--accent); }
+  .pila { display: flex; flex-direction: column-reverse; gap: 4px; min-height: 250px; justify-content: flex-start; align-items: center; border: 2px solid var(--line); border-top: none; border-radius: 0 0 8px 8px; padding: 6px; width: 90px; }
+  .pila .cell { width: 64px; }
+  .pila .cell.top { background: var(--mark); border-color: var(--mark); color: var(--mark-ink); }
+  .pila-wrap { display: grid; justify-items: center; gap: 6px; }
+  .pila-wrap .lab { font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .chars .cell { width: 40px; height: 44px; font-size: 22px; }
+  .verd { font-size: 24px; font-weight: 700; min-height: 1.4em; }
+  .verd.ok { color: var(--ac); } .verd.bad { color: var(--wa); }
+  .ed-text { font-family: var(--font-mono); font-size: 34px; min-height: 58px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; background: var(--code-bg); letter-spacing: .08em; }
+  .ed-btns { display: grid; grid-template-columns: repeat(4, auto); gap: 6px; justify-content: start; }
+  .deq { display: flex; gap: 4px; align-items: center; min-height: 72px; }
+  .deq .end { font-family: var(--font-mono); font-size: 14px; color: var(--muted); padding: 0 6px; }
+  .deq .cell { width: 54px; height: 50px; }
+  .dq-btns { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; justify-content: start; }
+  .dq-btns button { font-family: var(--font-mono); font-size: 17px; }
+  .log { font-family: var(--font-mono); font-size: 17px; color: var(--muted); display: grid; gap: 2px; min-height: 120px; }
+  .log div:last-child { color: var(--ink); font-weight: 600; }
+  .timebar { display: grid; grid-template-columns: 300px 1fr 90px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .quiz { display: grid; grid-template-columns: 1fr 260px; gap: 10px 28px; align-items: baseline; font-size: 23px; }
+  .quiz .frag { font-family: var(--font-mono); font-size: 20px; color: var(--accent); }
+  .choose { display: grid; grid-template-columns: 1fr auto; gap: 12px 40px; align-items: baseline; font-size: 25px; max-width: 980px; }
+  .choose code { font-size: 22px; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span class="hl"></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span>
+    <span></span><span></span><span></span><span></span><span></span><span class="on"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 5 · Sesión 1</div>
+  <h1>Colecciones, pilas y colas</h1>
+  <div class="meta"><span>Objetivo: elegir la estructura de datos según la operación que domina el problema</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. Abre el módulo 2. La sesión 2 es una práctica con los cuatro problemas de hoy. El parcial teórico 1 y el Contest 2 son en la semana 7 y cubren las semanas 1 a 6.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–5</td><td>Elegir la estructura según la operación</td></tr>
+    <tr><td>5–20</td><td><code>set</code> y Distinct Numbers</td></tr>
+    <tr><td>20–40</td><td><code>dict</code>, <code>Counter</code>, <code>defaultdict</code> y Registration System</td></tr>
+    <tr><td>40–60</td><td>Pilas con <code>list</code> y Regular Bracket Sequence</td></tr>
+    <tr><td>60–80</td><td>Colas con <code>deque</code> y Josephus Problem I</td></tr>
+    <tr><td>80–90</td><td>Tabla comparativa y ejercicio</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Elegir la estructura</div>
+  <h2>La operación que más se repite decide la estructura</h2>
+  <div class="choose">
+    <span>¿El valor x ya apareció?</span><code>set</code>
+    <span>¿Cuántas veces apareció x?</span><code>dict</code> o <code>Counter</code>
+    <span>¿Qué valores van con la clave k?</span><code>defaultdict(list)</code>
+    <span>Sacar el último que entró</span><span>pila con <code>list</code></span>
+    <span>Sacar el primero que entró</span><span>cola con <code>deque</code></span>
+  </div>
+  <p class="small">En la semana 2 vimos que <code>x in lista</code> y <code>lista.pop(0)</code> cuestan O(n). Con la estructura correcta, las dos operaciones cuestan O(1).</p>
+  <aside class="notes"><p>Las cuatro estructuras de hoy vienen con Python: <code>set</code>, <code>dict</code> y <code>list</code> están siempre disponibles, y <code>Counter</code>, <code>defaultdict</code> y <code>deque</code> se importan de <code>collections</code>.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Conjuntos: <code style="background:none;color:inherit">set</code></h2>
+  <p>Valores sin repetir, con pertenencia en O(1).</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">set</div>
+  <h2>Operaciones básicas de un set</h2>
+  <div class="cols">
+    <pre class="code sm">s = set()              # vacío ({} es un dict)
+s = {3, 1, 4}
+s.add(5)               # O(1)
+s.discard(9)           # borra si está; si no, nada
+s.remove(9)            # KeyError si no está
+4 in s                 # True, O(1) en promedio
+len(s)
+
+# sin repetidos
+distintos = len(set(a))
+ordenados = sorted(set(a))
+# sin repetidos y en el orden de aparición
+unicos = list(dict.fromkeys(a))</pre>
+    <div class="stack small">
+      <p>Un set guarda cada valor una sola vez. Si el valor ya está, <code>add</code> deja el set igual.</p>
+      <p>Sus elementos deben ser inmutables: enteros, strings o tuplas. Meter una lista en un set da <code>TypeError</code>.</p>
+      <p>Para guardar celdas de una grilla se usan tuplas: <code>vis.add((i, j))</code>.</p>
+      <p>Python no garantiza el orden en que se recorre un set. Si el orden importa, se usa <code>sorted</code> o <code>dict.fromkeys</code>.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>El set usa una tabla hash, como se vio en la semana 2 con la búsqueda en lista frente a set. "O(1) en promedio" significa que una operación suelta puede tardar más, y que n operaciones tardan O(n) en total.</p><p>En PyPy 3.11 un set se recorre en orden de inserción. Es un detalle del intérprete: el lenguaje no lo garantiza.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Operaciones de conjuntos</div>
+  <h2>Unión, intersección, diferencia y diferencia simétrica</h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <div class="setrow" id="so-rows"></div>
+      <div class="out" id="so-out"></div>
+    </div>
+    <div class="stack">
+      <div class="ops" id="so-btns"></div>
+      <ul class="small">
+        <li><code>A | B</code>: está en A o en B.</li>
+        <li><code>A &amp; B</code>: está en los dos.</li>
+        <li><code>A - B</code>: está en A y no en B.</li>
+        <li><code>A ^ B</code>: está en uno solo.</li>
+      </ul>
+      <p class="small">Cada operación cuesta O(len(A) + len(B)).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Ejemplo de uso: los números que faltan de 1 a n son <code>set(range(1, n + 1)) - set(a)</code>. Preguntar al grupo qué da <code>A ^ B</code> antes de presionar el botón.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1621</div>
+  <h2>Distinct Numbers</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay una lista de n enteros. Hay que contar cuántos valores distintos tiene.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n en la primera línea y los n enteros en la segunda.</dd><dt>Salida</dt><dd>La cantidad de valores distintos.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ xᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+2 3 2 2 3</pre>
+      <div class="ex-lab">Salida</div><pre>2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1621">https://cses.fi/problemset/task/1621</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: revisar cada número contra los anteriores con <code>in</code> sobre una lista o con <code>a.count(x)</code>, que es O(n²): con n = 2·10⁵ son 4·10¹⁰ comparaciones. Caso a probar: n = 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1621</div>
+  <h2>Distinct Numbers</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Qué estructura guarda cada valor una sola vez?</p></div>
+    <div class="idea-a frag">Un set. Se meten los n valores y la respuesta es su tamaño. Es O(n).</div>
+    <div class="idea-a frag">Otra forma: ordenar y contar las posiciones donde el valor cambia. Es O(n log n) y se ve en la semana 6.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1621 · Distinct Numbers</div>
+  <h2>Contar valores distintos</h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="small">Hay que contar cuántos valores distintos hay entre n enteros, con n ≤ 2·10⁵.</p>
+      <pre class="code">def main():
+    n = int(input())
+    a = list(map(int, input().split()))
+    print(len(set(a)))
+
+main()</pre>
+    </div>
+    <div class="stack small">
+      <p>Con 2·10⁵ valores aleatorios hasta 10⁹:</p>
+      <div class="timebar" style="grid-template-columns: 160px 1fr 90px"><span><code>set</code></span><div class="tb" style="width:29%"></div><span class="tv">0.005 s</span></div>
+      <div class="timebar" style="grid-template-columns: 160px 1fr 90px"><span>ordenar</span><div class="tb slow" style="width:100%"></div><span class="tv">0.017 s</span></div>
+      <p class="tiny muted">Solo el cálculo, sin leer la entrada. PyPy 3.11, Apple M4.</p>
+      <p>Los dos pasan. El set es el código más corto.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Se convierten los valores a <code>int</code>. Con strings, "7" y "07" cuentan como valores distintos. La entrada de este problema no trae ceros a la izquierda; la de otros problemas puede traerlos.</p><p>En Codeforces hay casos diseñados para que las tablas hash de un lenguaje sean lentas. Si una solución con set o dict da TLE sin razón aparente, ordenar es la alternativa segura.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Diccionarios: <code style="background:none;color:inherit">dict</code></h2>
+  <p>De una clave a un valor: contar, agrupar y mapear.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">dict</div>
+  <h2>Operaciones básicas de un dict</h2>
+  <div class="cols">
+    <pre class="code sm">d = {}
+d["ana"] = 3            # crear o cambiar, O(1)
+d["ana"]                # 3
+d["eva"]                # KeyError: no existe
+d.get("eva", 0)         # 0 si no existe
+"eva" in d              # busca en las claves, O(1)
+del d["ana"]
+
+for k in d: ...             # claves
+for k, v in d.items(): ...  # pares
+for v in d.values(): ...    # valores</pre>
+    <div class="stack small">
+      <p>Las claves siguen las mismas reglas que los elementos de un set: no se repiten y deben ser inmutables.</p>
+      <p>Desde Python 3.7, un dict se recorre en el orden en que se insertaron las claves.</p>
+      <p><code>x in d</code> busca entre las claves. Buscar un valor con <code>x in d.values()</code> es O(n).</p>
+      <p>Reemplaza a <code>lista.index(x)</code>: con <code>pos = {v: i for i, v in enumerate(a)}</code> cada búsqueda de posición es O(1).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Contar</div>
+  <h2>Contar apariciones con un dict</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="ct">
+      <div class="words" id="ct-words"></div>
+      <pre class="code sm">veces = {}
+for w in palabras:
+    veces[w] = veces.get(w, 0) + 1</pre>
+      <div class="caption" id="ct-cap"></div>
+    </div>
+    <div class="stack">
+      <table class="dtab" id="ct-tab"></table>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. La primera vez que aparece una palabra se crea la clave (verde). Las siguientes veces se suma 1 (amarillo).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Counter y defaultdict</div>
+  <h2>Cuatro formas de contar</h2>
+  <div class="cols">
+    <pre class="code sm" style="font-size:15px">from collections import Counter, defaultdict
+
+# 1. get
+d = {}
+for x in a:
+    d[x] = d.get(x, 0) + 1
+
+# 2. if
+d = {}
+for x in a:
+    if x in d:
+        d[x] += 1
+    else:
+        d[x] = 1
+
+# 3. una clave nueva empieza en int() = 0
+d = defaultdict(int)
+for x in a:
+    d[x] += 1
+
+# 4. Counter
+c = Counter(a)</pre>
+    <div class="stack small">
+      <p>Con 10⁶ valores entre 1 y 1000, las cuatro tardaron entre 0.010 s y 0.012 s (PyPy 3.11, Apple M4). Se escoge la que se lea mejor.</p>
+      <pre class="code sm">c = Counter("abracadabra")
+c["a"]              # 5
+c["z"]              # 0, y la clave no se crea
+c.most_common(2)    # [('a', 5), ('b', 2)]</pre>
+      <p>Si los valores son enteros pequeños (por ejemplo, de 0 a 10⁶), una lista <code>cnt = [0] * (m + 1)</code> también sirve, como el arreglo de 26 letras de la semana 3.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Agrupar</div>
+  <h2>Agrupar valores con <code style="background:none;padding:0">defaultdict(list)</code></h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">from collections import defaultdict
+
+palabras = ["amor", "roma", "pato", "mora",
+            "topa", "sol"]
+grupos = defaultdict(list)
+for w in palabras:
+    clave = "".join(sorted(w))   # letras ordenadas
+    grupos[clave].append(w)
+
+for g in grupos.values():
+    print(g)</pre>
+      <pre class="code sm" data-lang="none">['amor', 'roma', 'mora']
+['pato', 'topa']
+['sol']</pre>
+    </div>
+    <div class="stack small">
+      <p>Dos palabras son anagramas si tienen las mismas letras (semana 3). Al ordenar las letras, todos los anagramas dan la misma clave: "amor", "roma" y "mora" dan "amor".</p>
+      <p><code>defaultdict(list)</code> crea una lista vacía la primera vez que se usa una clave. Sin él, habría que escribir <code>if clave not in grupos: grupos[clave] = []</code>.</p>
+      <p>Otro uso frecuente: las posiciones donde aparece cada valor, con <code>pos[x].append(i)</code>.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Con <code>defaultdict</code>, leer <code>grupos[k]</code> crea la clave k con una lista vacía. Para preguntar si existe, usar <code>k in grupos</code>.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · Codeforces 4C</div>
+  <h2>Registration System</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Un sitio recibe n solicitudes de registro. Si el nombre no existe, se registra y la respuesta es OK.</p>
+      <p>Si ya existe, el sistema prueba nombre1, nombre2, … y registra el primero libre. La respuesta es ese nombre nuevo.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y luego un nombre por línea (hasta 32 letras minúsculas).</dd><dt>Salida</dt><dd>Una respuesta por solicitud.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>6
+first
+first
+second
+second
+third
+third</pre>
+      <div class="ex-lab">Salida</div><pre>OK
+first1
+OK
+second1
+OK
+third1</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/4/C">https://codeforces.com/problemset/problem/4/C</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: guardar los nombres en una lista y preguntar con <code>in</code>, que es O(n²) en total. Otro: empezar el contador en 0 y producir "first0". Caso a probar: el mismo nombre tres veces da OK, nombre1 y nombre2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 4C</div>
+  <h2>Registration System</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si "ana" ya llegó k veces, ¿qué número le toca a la siguiente "ana"? ¿Hace falta probar nombre1, nombre2, … uno por uno?</p></div>
+    <div class="idea-a frag">Le toca k. Basta guardar en un dict cuántas veces llegó cada nombre.</div>
+    <div class="idea-a frag">Cada solicitud cuesta O(1) más la longitud del nombre. El total es O(n · 32).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · Codeforces 4C · Registration System</div>
+  <h2>Un contador por nombre</h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="small">Para cada nombre: OK si es nuevo. Si no, el nombre seguido del primer número libre.</p>
+      <pre class="code sm">def main():
+    n = int(input())
+    veces = {}
+    res = []
+    for _ in range(n):
+        nombre = input()
+        if nombre in veces:
+            res.append(nombre + str(veces[nombre]))
+            veces[nombre] += 1
+        else:
+            res.append("OK")
+            veces[nombre] = 1
+    print("\n".join(res))
+
+main()</pre>
+    </div>
+    <div class="stack small">
+      <p><code>veces[nombre]</code> es el número que le toca a la próxima repetición.</p>
+      <p>Las respuestas se juntan en una lista y se imprimen al final con un solo <code>print</code>.</p>
+      <p>Con 10⁵ solicitudes tardó 0.07 s con PyPy 3.11 en un Apple M4.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Caso que el enunciado permite y los casos de prueba no incluyen: "a", "a", "a1". La segunda solicitud registra "a1", así que la tercera debería responder "a11". Esta solución responde OK y es aceptada. Para cubrirlo, el nombre generado también se guarda en el dict.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Pilas</h2>
+  <p>El último que entra es el primero que sale.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Pila con list</div>
+  <h2>Una lista sirve como pila</h2>
+  <div class="cols">
+    <pre class="code">pila = []
+pila.append(x)    # apilar, O(1)
+pila[-1]          # ver el tope
+pila.pop()        # desapilar, O(1)
+if pila:          # ¿hay elementos?
+    ...</pre>
+    <div class="stack small">
+      <p>El tope de la pila es el final de la lista. <code>append</code> y <code>pop()</code> trabajan en el final, así que cuestan O(1).</p>
+      <p><code>pila.pop()</code> y <code>pila[-1]</code> con la pila vacía dan <code>IndexError</code>. Antes de usarlos se revisa <code>if pila</code>.</p>
+      <p>10⁶ <code>append</code> seguidos de 10⁶ <code>pop</code> tardaron 0.005 s (PyPy 3.11, Apple M4).</p>
+      <p>Se usa una pila cuando lo que llegó al final es lo primero que hay que atender: cerrar el último paréntesis abierto o deshacer la última acción.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Paréntesis balanceados</div>
+  <h2>Cada cierre debe coincidir con el último abierto</h2>
+  <div class="cols fill">
+    <div class="stack" id="pb">
+      <div class="row"><label class="small muted" for="pb-in">Expresión</label><input type="text" id="pb-in" value="{[()()]}(]" size="16"><button id="pb-load">Cargar</button></div>
+      <div class="cells chars" id="pb-chars" style="margin-top:18px"></div>
+      <div class="row" style="align-items:flex-start; gap:24px; flex-wrap:nowrap">
+        <div class="pila-wrap"><span class="lab">tope</span><div class="pila" id="pb-stack" style="min-height:200px"></div><span class="lab">pila</span></div>
+        <div class="stack"><div class="caption" id="pb-cap"></div><div class="verd" id="pb-verd"></div></div>
+      </div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">PAR = {")": "(", "]": "[", "}": "{"}
+
+def balanceado(s):
+    pila = []
+    for c in s:
+        if c in "([{":
+            pila.append(c)
+        elif not pila or pila.pop() != PAR[c]:
+            return False
+    return not pila</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar con el ejemplo cargado: falla en el último <code>]</code> porque el tope es <code>(</code>. Probar también <code>(()</code> (sobra un abierto, la pila no queda vacía) y <code>())</code> (llega un cierre con la pila vacía).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Evaluar expresiones</div>
+  <h2>Expresión en notación posfija</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="pf">
+      <div class="row"><label class="small muted" for="pf-in">Expresión</label><input type="text" id="pf-in" value="3 4 + 2 * 7 -" size="18"><button id="pf-load">Cargar</button></div>
+      <div class="words" id="pf-toks" style="margin-top:6px"></div>
+      <div class="caption" id="pf-cap"></div>
+      <pre class="code sm">pila = []
+for tok in expr.split():
+    if tok in ("+", "-", "*"):
+        b = pila.pop()
+        a = pila.pop()
+        if tok == "+": pila.append(a + b)
+        elif tok == "-": pila.append(a - b)
+        else: pila.append(a * b)
+    else:
+        pila.append(int(tok))
+print(pila[0])</pre>
+    </div>
+    <div class="stack center">
+      <div class="pila-wrap"><span class="lab">tope</span><div class="pila" id="pf-stack"></div><span class="lab">pila</span></div>
+    </div>
+  </div>
+  <aside class="notes"><p>En notación posfija el operador va después de sus dos operandos: <code>3 4 +</code> es 3 + 4. La expresión del ejemplo es (3 + 4) · 2 − 7 = 7. No necesita paréntesis.</p><p>El orden de <code>a</code> y <code>b</code> importa en la resta: <code>b</code> es el que estaba en el tope. Una expresión normal, como (3 + 4) * 2, se puede pasar a posfija con otra pila; ese algoritmo no está en el programa.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Deshacer</div>
+  <h2>Deshacer con una pila de acciones</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="ed-btns" id="ed-btns"></div>
+      <div class="ed-text" id="ed-text"></div>
+      <span class="small muted">Historial (el tope está a la derecha)</span>
+      <div class="cells" id="ed-hist" style="min-height:50px"></div>
+    </div>
+    <pre class="code sm">texto = []
+hist = []           # pila de acciones
+
+def escribir(c):
+    texto.append(c)
+    hist.append(("escribir", c))
+
+def borrar():
+    if texto:
+        hist.append(("borrar", texto.pop()))
+
+def deshacer():
+    if hist:
+        op, c = hist.pop()
+        if op == "escribir":
+            texto.pop()
+        else:
+            texto.append(c)</pre>
+  </div>
+  <aside class="notes"><p>Cada acción guarda lo necesario para revertirla. Deshacer saca la última acción y hace lo contrario. Aquí el texto también es una pila: se escribe y se borra al final.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · Codeforces 26B</div>
+  <h2>Regular Bracket Sequence</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una secuencia de paréntesis es correcta si cada <code>(</code> se cierra después con un <code>)</code>, como en <code>(())()</code>.</p>
+      <p>Se pueden borrar paréntesis de la secuencia dada. Hay que encontrar la longitud máxima de una secuencia correcta que se pueda obtener.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Una línea con la secuencia de <code>(</code> y <code>)</code>.</dd><dt>Salida</dt><dd>La longitud máxima.</dd><dt>Restricciones</dt><dd>La longitud es a lo sumo 10⁶.</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>(()))(</pre>
+      <div class="ex-lab">Salida</div><pre>4</pre>
+      <div class="ex-lab">Entrada</div><pre>((()())</pre>
+      <div class="ex-lab">Salida</div><pre>6</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/26/B">https://codeforces.com/problemset/problem/26/B</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: responder 2 · min(cantidad de <code>(</code>, cantidad de <code>)</code>). Falla con <code>)(</code>, donde la respuesta es 0. Caso a probar: <code>)(</code>.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 26B</div>
+  <h2>Regular Bracket Sequence</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Al recorrer la secuencia, ¿qué se hace con un <code>)</code> que llega cuando no hay ningún <code>(</code> abierto?</p></div>
+    <div class="idea-a frag">Se borra. Si hay un <code>(</code> abierto, se cierra con él y se suman 2 a la respuesta.</div>
+    <div class="idea-a frag">Los <code>(</code> que quedan abiertos al final también se borran.</div>
+    <div class="idea-a frag">Todos los elementos de la pila son <code>(</code>, así que basta un contador con su tamaño.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · Codeforces 26B · Regular Bracket Sequence</div>
+  <h2>Cerrar cada paréntesis con el último abierto</h2>
+  <div class="cols">
+    <div class="stack" id="rb">
+      <p class="small">Hay que encontrar la secuencia correcta más larga que queda al borrar paréntesis.</p>
+      <div class="row"><input type="text" id="rb-in" value="(()))(" size="16"><button id="rb-load">Cargar</button></div>
+      <div class="cells chars" id="rb-chars" style="margin-top:18px"></div>
+      <div class="caption" id="rb-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">def main():
+    s = input()
+    abiertos = 0
+    largo = 0
+    for c in s:
+        if c == "(":
+            abiertos += 1
+        elif abiertos > 0:
+            abiertos -= 1
+            largo += 2
+    print(largo)
+
+main()</pre>
+      <p class="small">Una pasada, O(n). Con 10⁶ caracteres tardó 0.04 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>En verde los pares que quedan; en rojo los que se borran. La visualización empareja cada <code>)</code> con su <code>(</code>. El código solo cuenta los <code>(</code> abiertos.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Colas con <code style="background:none;color:inherit">deque</code></h2>
+  <p>El primero que entra es el primero que sale.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">deque</div>
+  <h2>Operaciones en los dos extremos</h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <div class="dq-btns" id="dq-btns"></div>
+      <div class="deq" id="dq"></div>
+      <div class="log" id="dq-log"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">from collections import deque
+
+q = deque([1, 2, 3])
+q.append(x)        # al final
+q.popleft()        # saca el primero
+q.appendleft(x)    # al inicio
+q.pop()            # saca el último
+q[0], q[-1]        # ver los extremos
+q.rotate(k)        # mueve k a la derecha</pre>
+      <p class="small">Las operaciones en los extremos cuestan O(1). Acceder a <code>q[i]</code> en el medio cuesta O(n).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Una cola usa <code>append</code> y <code>popleft</code>. <code>rotate(1)</code> pasa el último al inicio; <code>rotate(-1)</code> pasa el primero al final. <code>rotate(k)</code> cuesta O(k).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Simulación</div>
+  <h2>Una fila de atención por turnos</h2>
+  <div class="cols c-60 fill">
+    <div class="stack" id="rr">
+      <p class="small">Cada cliente tiene varios trámites. La ventanilla atiende un trámite por minuto. Si al cliente le quedan trámites, vuelve al final de la fila.</p>
+      <div class="deq" id="rr-q"></div>
+      <div class="caption" id="rr-cap"></div>
+    </div>
+    <pre class="code sm">q = deque([("A", 3), ("B", 1), ("C", 2)])
+t = 0
+while q:
+    nombre, k = q.popleft()
+    t += 1
+    if k > 1:
+        q.append((nombre, k - 1))
+    else:
+        print(nombre, "termina en", t)</pre>
+  </div>
+  <aside class="notes"><p>Salida: B termina en 2, C en 5 y A en 6. La misma idea se usa en BFS (semana 12), donde la cola guarda los nodos por visitar.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 2162</div>
+  <h2>Josephus Problem I</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>n niños, numerados de 1 a n, forman un círculo. Empezando por el niño 1, se salta un niño y se saca el siguiente, hasta que no queda nadie.</p>
+      <p>Hay que imprimir el orden en que salen.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un entero n.</dd><dt>Salida</dt><dd>Los n niños en el orden en que salen.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>7</pre>
+      <div class="ex-lab">Salida</div><pre>2 4 6 1 5 3 7</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/2162">https://cses.fi/problemset/task/2162</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano, dibujando el círculo en el tablero.</p><p>Error común: sacar primero al niño 1. El primero que sale es el 2. Casos a probar: n = 1 imprime 1, y n = 2 imprime 2 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 2162</div>
+  <h2>Josephus Problem I</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si el círculo es una fila, ¿qué le pasa al niño que se salta? ¿Y al siguiente?</p></div>
+    <div class="idea-a frag">El que se salta pasa del inicio al final de la fila: <code>q.rotate(-1)</code>.</div>
+    <div class="idea-a frag">El siguiente sale: <code>q.popleft()</code>. Cada paso es O(1) y el total es O(n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 2162 · Josephus Problem I</div>
+  <h2>Saltar uno y sacar el siguiente</h2>
+  <div class="cols">
+    <div class="stack" id="jo">
+      <p class="small">n niños en círculo. Se salta uno y se saca el siguiente, hasta que no queda nadie.</p>
+      <div class="row"><label class="small muted" for="jo-n">n</label><select id="jo-n"></select></div>
+      <div class="deq" id="jo-q"></div>
+      <div class="caption" id="jo-cap"></div>
+    </div>
+    <pre class="code sm">from collections import deque
+
+def main():
+    n = int(input())
+    q = deque(range(1, n + 1))
+    orden = []
+    while q:
+        q.rotate(-1)               # se salta
+        orden.append(q.popleft())  # sale
+    print(" ".join(map(str, orden)))
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>El primero de la fila (amarillo) es el que se salta o sale en ese paso. Mostrar con n = 7 que la salida coincide con el ejemplo.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medición</div>
+  <h2>Josephus con n = 2·10⁵</h2>
+  <div class="stack" style="max-width:1080px; gap:14px">
+    <div class="timebar"><span><code>pop(0)</code> + <code>append</code></span><div class="tb slow" style="width:100%"></div><span class="tv">4.83 s</span></div>
+    <div class="timebar"><span><code>lista.pop(i)</code></span><div class="tb slow" style="width:32%"></div><span class="tv">1.56 s</span></div>
+    <div class="timebar"><span><code>deque.rotate</code> + <code>popleft</code></span><div class="tb" style="width:0.5%"></div><span class="tv">0.004 s</span></div>
+  </div>
+  <div class="cols small">
+    <p>Con una lista, sacar un elemento del inicio o del medio mueve todos los que están después. Son O(n) por paso y O(n²) en total.</p>
+    <p>El límite de tiempo de CSES es 1 s. Las dos versiones con lista dan TLE.</p>
+  </div>
+  <p class="small muted">Solo la simulación, sin entrada ni salida. PyPy 3.11, Apple M4.</p>
+  <aside class="notes"><p>La versión con <code>lista.pop(i)</code> lleva un índice <code>i = (i + 1) % len(ninos)</code> que salta un niño en cada paso. Está en <code>soluciones/probar.py</code> como verificador.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Comparación</h2>
+  <p>Qué cuesta cada operación en cada estructura.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tabla</div>
+  <h2>Complejidad por estructura</h2>
+  <table class="t" style="font-size:20px">
+    <tr><th>Operación</th><th><code>list</code></th><th><code>deque</code></th><th><code>set</code></th><th><code>dict</code></th></tr>
+    <tr><td>Agregar al final</td><td>O(1)</td><td>O(1)</td><td>O(1)*</td><td>O(1)*</td></tr>
+    <tr><td>Quitar del final</td><td>O(1)</td><td>O(1)</td><td>—</td><td>—</td></tr>
+    <tr><td>Agregar o quitar al inicio</td><td>O(n)</td><td>O(1)</td><td>—</td><td>—</td></tr>
+    <tr><td>Acceder a la posición i</td><td>O(1)</td><td>O(n) en el medio</td><td>—</td><td>—</td></tr>
+    <tr><td><code>x in ...</code></td><td>O(n)</td><td>O(n)</td><td>O(1)*</td><td>O(1)* (claves)</td></tr>
+    <tr><td>Borrar un valor x</td><td>O(n)</td><td>O(n)</td><td>O(1)*</td><td>O(1)* (clave)</td></tr>
+    <tr><td>Leer o cambiar por clave</td><td>—</td><td>—</td><td>—</td><td>O(1)*</td></tr>
+  </table>
+  <p class="small muted">* En promedio. En set y dict, "agregar" es <code>s.add(x)</code> y <code>d[k] = v</code>.</p>
+  <aside class="notes"><p>Esta tabla entra en el parcial teórico 1. Pedir al grupo que la complete de memoria antes de mostrarla, o volver a ella al final de la clase.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Ejercicio</div>
+  <h2>¿Qué estructura usaría?</h2>
+  <div class="quiz">
+    <span>Revisar si un número ya apareció antes en la entrada.</span><span class="frag">set</span>
+    <span>Imprimir la palabra que más se repite.</span><span class="frag">Counter</span>
+    <span>Revisar que las etiquetas &lt;a&gt; &lt;b&gt; &lt;/b&gt; &lt;/a&gt; cierran en orden.</span><span class="frag">pila</span>
+    <span>Atender pedidos en el orden de llegada.</span><span class="frag">deque</span>
+    <span>Guardar, para cada valor, las posiciones donde aparece.</span><span class="frag">defaultdict(list)</span>
+    <span>El navegador: botón "atrás" para volver a la página anterior.</span><span class="frag">pila</span>
+  </div>
+  <aside class="notes"><p>Pedir la respuesta antes de mostrarla con →. En cada caso, preguntar qué operación domina y cuánto costaría con una lista.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1621">CSES 1621 · Distinct Numbers</a></li>
+    <li><a href="https://cses.fi/problemset/task/2162">CSES 2162 · Josephus Problem I</a></li>
+    <li><a href="https://codeforces.com/problemset/problem/4/C">CF 4C · Registration System</a></li>
+    <li><a href="https://codeforces.com/problemset/problem/26/B">CF 26B · Regular Bracket Sequence</a></li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para elegir la estructura</h2>
+  <ol>
+    <li>Identificar la operación que se repite n veces.</li>
+    <li>Para preguntar si un valor está, usar <code>set</code>.</li>
+    <li>Para contar o agrupar, usar <code>dict</code>, <code>Counter</code> o <code>defaultdict</code>.</li>
+    <li>Para atender lo último que llegó, usar una lista como pila.</li>
+    <li>Para atender lo primero que llegó, usar <code>deque</code> con <code>popleft</code>.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const pyset = (arr) => arr.length ? "{" + arr.join(", ") + "}" : "set()";
+
+  // ---------- operaciones de conjuntos ----------
+  const SA = [1, 2, 3, 5, 8], SB = [2, 3, 4, 8, 9], U = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const SOPS = {
+    "A | B": (x) => SA.includes(x) || SB.includes(x),
+    "A & B": (x) => SA.includes(x) && SB.includes(x),
+    "A - B": (x) => SA.includes(x) && !SB.includes(x),
+    "A ^ B": (x) => SA.includes(x) !== SB.includes(x)
+  };
+  function soDraw(op) {
+    const el = $("#so-rows"); el.innerHTML = "";
+    const row = (lab, has, cls) => {
+      const r = h("div", { class: "cells" });
+      U.forEach((x) => r.append(cell(has(x) ? cls : "off", x)));
+      el.append(h("span", { class: "lab", text: lab }), r);
+    };
+    row("A", (x) => SA.includes(x), "sel");
+    row("B", (x) => SB.includes(x), "sel");
+    if (op) row(op, SOPS[op], "ok");
+    Array.from($("#so-btns").children).forEach((b) => b.classList.toggle("on", b.textContent === op));
+    $("#so-out").textContent = op ? op + "  →  " + pyset(U.filter(SOPS[op])) : "A = " + pyset(SA) + "\nB = " + pyset(SB);
+  }
+  Object.keys(SOPS).forEach((k) => $("#so-btns").append(h("button", { text: k, onclick: () => soDraw(k) })));
+  soDraw(null);
+
+  // ---------- contar con dict ----------
+  const WORDS = ["ana", "luis", "ana", "eva", "luis", "ana"];
+  const ctFrames = [{ k: -1 }];
+  WORDS.forEach((_, k) => ctFrames.push({ k }));
+  stepper($("#ct"), ctFrames, (f) => {
+    const w = $("#ct-words"); w.innerHTML = "";
+    WORDS.forEach((x, i) => w.append(h("span", { class: i === f.k ? "cur" : i < f.k ? "done" : "", text: x })));
+    const d = new Map(); let nueva = false;
+    for (let i = 0; i <= f.k; i++) { if (i === f.k) nueva = !d.has(WORDS[i]); d.set(WORDS[i], (d.get(WORDS[i]) || 0) + 1); }
+    const t = $("#ct-tab"); t.innerHTML = "";
+    t.append(h("tr", null, h("th", { text: "clave" }), h("th", { text: "valor" })));
+    d.forEach((v, k) => t.append(h("tr", { class: f.k >= 0 && k === WORDS[f.k] ? (nueva ? "new" : "cur") : "" }, h("td", { text: '"' + k + '"' }), h("td", { text: v }))));
+    if (f.k < 0) $("#ct-cap").textContent = "El dict empieza vacío.";
+    else $("#ct-cap").innerHTML = '"' + WORDS[f.k] + '" ' + (nueva ? "no estaba: get devuelve 0 y queda en <b>1</b>" : "ya estaba: queda en <b>" + d.get(WORDS[f.k]) + "</b>");
+  }, { delay: 900 });
+
+  // ---------- paréntesis balanceados ----------
+  const PAR = { ")": "(", "]": "[", "}": "{" };
+  function pbFrames(s) {
+    const fr = [{ i: -1, st: [], msg: "Pila vacía. Se recorre la expresión de izquierda a derecha." }], st = [];
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if ("([{".includes(c)) { st.push(c); fr.push({ i, st: st.slice(), msg: "'" + c + "' abre: se apila." }); continue; }
+      if (!(c in PAR)) { fr.push({ i, st: st.slice(), msg: "'" + c + "' no es un paréntesis: se ignora." }); continue; }
+      if (!st.length) { fr.push({ i, st: [], msg: "'" + c + "' cierra, pero la pila está vacía.", end: false }); return fr; }
+      const top = st.pop();
+      if (top !== PAR[c]) { fr.push({ i, st: st.slice(), msg: "'" + c + "' cierra, pero el tope era '" + top + "'.", end: false }); return fr; }
+      fr.push({ i, st: st.slice(), msg: "'" + c + "' cierra el '" + top + "' del tope: se desapila." });
+    }
+    fr.push({ i: s.length, st: st.slice(), msg: st.length ? "Terminó la expresión y quedan " + st.length + " abiertos." : "Terminó la expresión y la pila quedó vacía.", end: st.length === 0 });
+    return fr;
+  }
+  function drawStack(el, st) { el.innerHTML = ""; st.forEach((x, k) => el.append(cell(k === st.length - 1 ? "top" : "sel", x))); }
+  let pbStep = null, pbS = "";
+  function pbRender(f) {
+    const c = $("#pb-chars"); c.innerHTML = "";
+    [...pbS].forEach((ch, i) => c.append(cell(i === f.i ? (f.end === false ? "bad" : "cur") : i < f.i ? "dim" : "", ch)));
+    drawStack($("#pb-stack"), f.st);
+    $("#pb-cap").textContent = f.msg;
+    const v = $("#pb-verd");
+    v.className = "verd" + (f.end === true ? " ok" : f.end === false ? " bad" : "");
+    v.textContent = f.end === true ? "Balanceada: True" : f.end === false ? "No balanceada: False" : "";
+  }
+  function pbLoad() {
+    pbS = $("#pb-in").value.replace(/\s/g, "").slice(0, 18);
+    const fr = pbFrames(pbS);
+    if (pbStep) pbStep.setFrames(fr); else pbStep = stepper($("#pb"), fr, pbRender, { delay: 700 });
+  }
+  $("#pb-load").onclick = pbLoad;
+  $("#pb-in").addEventListener("keydown", (e) => { if (e.key === "Enter") pbLoad(); });
+  pbLoad();
+
+  // ---------- posfija ----------
+  let pfStep = null, pfT = [];
+  function pfFrames(toks) {
+    const fr = [{ i: -1, st: [], msg: "Pila vacía." }], st = [];
+    for (let i = 0; i < toks.length; i++) {
+      const t = toks[i];
+      if (["+", "-", "*"].includes(t)) {
+        if (st.length < 2) { fr.push({ i, st: st.slice(), msg: "'" + t + "' necesita dos números y la pila tiene " + st.length + ". La expresión está mal formada.", bad: true }); return fr; }
+        const b = st.pop(), a = st.pop(), r = t === "+" ? a + b : t === "-" ? a - b : a * b;
+        st.push(r);
+        fr.push({ i, st: st.slice(), msg: "b = " + b + ", a = " + a + " → a " + t + " b = " + r + " se apila." });
+      } else if (/^-?\d+$/.test(t)) { st.push(parseInt(t, 10)); fr.push({ i, st: st.slice(), msg: t + " es un número: se apila." }); }
+      else { fr.push({ i, st: st.slice(), msg: "'" + t + "' no es un número ni un operador.", bad: true }); return fr; }
+    }
+    fr.push({ i: toks.length, st: st.slice(), msg: st.length === 1 ? "Resultado: " + st[0] : "Quedaron " + st.length + " valores en la pila. La expresión está mal formada.", bad: st.length !== 1 });
+    return fr;
+  }
+  function pfRender(f) {
+    const w = $("#pf-toks"); w.innerHTML = "";
+    pfT.forEach((t, i) => w.append(h("span", { class: i === f.i ? "cur" : i < f.i ? "done" : "", text: t })));
+    drawStack($("#pf-stack"), f.st);
+    $("#pf-cap").innerHTML = f.i === pfT.length && !f.bad ? "<b>" + f.msg + "</b>" : f.msg;
+  }
+  function pfLoad() {
+    pfT = $("#pf-in").value.trim().split(/\s+/).filter(Boolean).slice(0, 13);
+    const fr = pfFrames(pfT);
+    if (pfStep) pfStep.setFrames(fr); else pfStep = stepper($("#pf"), fr, pfRender, { delay: 900 });
+  }
+  $("#pf-load").onclick = pfLoad;
+  $("#pf-in").addEventListener("keydown", (e) => { if (e.key === "Enter") pfLoad(); });
+  pfLoad();
+
+  // ---------- deshacer ----------
+  const ed = { texto: [], hist: [] };
+  function edDraw() {
+    $("#ed-text").textContent = ed.texto.join("") || " ";
+    const hi = $("#ed-hist"); hi.innerHTML = "";
+    ed.hist.forEach((a, k) => hi.append(h("div", { class: "cell " + (k === ed.hist.length - 1 ? "top cur" : "sel"), style: { width: "auto", padding: "0 10px", fontSize: "16px" }, text: (a[0] === "escribir" ? "+" : "−") + a[1] })));
+    if (!ed.hist.length) hi.append(h("span", { class: "small muted", text: "vacío" }));
+  }
+  const ED = {
+    "escribir('a')": () => { ed.texto.push("a"); ed.hist.push(["escribir", "a"]); },
+    "escribir('b')": () => { ed.texto.push("b"); ed.hist.push(["escribir", "b"]); },
+    "borrar()": () => { if (ed.texto.length) ed.hist.push(["borrar", ed.texto.pop()]); },
+    "deshacer()": () => { if (ed.hist.length) { const [op, c] = ed.hist.pop(); if (op === "escribir") ed.texto.pop(); else ed.texto.push(c); } }
+  };
+  Object.keys(ED).forEach((k) => $("#ed-btns").append(h("button", { class: k === "deshacer()" ? "primary" : "", style: { fontFamily: "var(--font-mono)", fontSize: "17px" }, text: k, onclick: () => { ED[k](); edDraw(); } })));
+  edDraw();
+
+  // ---------- Regular Bracket Sequence ----------
+  let rbStep = null, rbS = "";
+  function rbFrames(s) {
+    const fr = [{ i: -1, ab: 0, lg: 0, st: [], pair: {}, gone: new Set() }];
+    let ab = 0, lg = 0; const st = [], pair = {}, gone = new Set();
+    for (let i = 0; i < s.length; i++) {
+      let msg;
+      if (s[i] === "(") { ab++; st.push(i); msg = "'(' abre: abiertos = " + ab; }
+      else if (ab > 0) { ab--; lg += 2; const j = st.pop(); pair[i] = j; pair[j] = i; msg = "')' cierra el '(' de la posición " + j + ": largo = " + lg; }
+      else { gone.add(i); msg = "')' sin abiertos: se borra"; }
+      fr.push({ i, ab, lg, pair: Object.assign({}, pair), gone: new Set(gone), msg });
+    }
+    const left = new Set(gone); st.forEach((j) => left.add(j));
+    fr.push({ i: s.length, ab, lg, pair: Object.assign({}, pair), gone: left, msg: (st.length ? "Quedan " + st.length + " '(' abiertos: se borran. " : "") + "Respuesta: " + lg });
+    return fr;
+  }
+  function rbRender(f) {
+    const c = $("#rb-chars"); c.innerHTML = "";
+    [...rbS].forEach((ch, i) => {
+      let cls = i === f.i ? "cur" : f.gone.has(i) ? "bad" : i in f.pair ? "ok" : i < f.i ? "sel" : "";
+      c.append(cell(cls, ch));
+      c.lastChild.append(h("span", { class: "idx", text: i }));
+    });
+    $("#rb-cap").innerHTML = f.i < 0 ? "abiertos = 0, largo = 0" : f.msg + "<br>abiertos = <b>" + f.ab + "</b>, largo = <b>" + f.lg + "</b>";
+  }
+  function rbLoad() {
+    rbS = $("#rb-in").value.replace(/[^()]/g, "").slice(0, 16);
+    const fr = rbFrames(rbS);
+    if (rbStep) rbStep.setFrames(fr); else rbStep = stepper($("#rb"), fr, rbRender, { delay: 700 });
+  }
+  $("#rb-load").onclick = rbLoad;
+  $("#rb-in").addEventListener("keydown", (e) => { if (e.key === "Enter") rbLoad(); });
+  rbLoad();
+
+  // ---------- deque ----------
+  let dq = [1, 2, 3, 4, 5], dqNext = 6, dqHit = -1;
+  const dqLog = ["q = deque([1, 2, 3, 4, 5])"];
+  function dqDraw() {
+    const el = $("#dq"); el.innerHTML = "";
+    el.append(h("span", { class: "end", text: "inicio" }));
+    dq.forEach((v, i) => el.append(cell(i === dqHit ? "cur" : "sel", v)));
+    el.append(h("span", { class: "end", text: "final" }));
+    const lg = $("#dq-log"); lg.innerHTML = "";
+    dqLog.slice(-5).forEach((l) => lg.append(h("div", { text: l })));
+  }
+  const DQ = {
+    "append(x)": () => { dq.push(dqNext); dqHit = dq.length - 1; return "q.append(" + dqNext++ + ")"; },
+    "popleft()": () => { if (!dq.length) return "q.popleft()  → IndexError"; const v = dq.shift(); dqHit = -1; return "q.popleft()  → " + v; },
+    "rotate(-1)": () => { if (dq.length) dq.push(dq.shift()); dqHit = dq.length - 1; return "q.rotate(-1)"; },
+    "appendleft(x)": () => { dq.unshift(dqNext); dqHit = 0; return "q.appendleft(" + dqNext++ + ")"; },
+    "pop()": () => { if (!dq.length) return "q.pop()  → IndexError"; const v = dq.pop(); dqHit = -1; return "q.pop()  → " + v; },
+    "rotate(1)": () => { if (dq.length) dq.unshift(dq.pop()); dqHit = 0; return "q.rotate(1)"; }
+  };
+  Object.keys(DQ).forEach((k) => $("#dq-btns").append(h("button", { text: k, onclick: () => { dqLog.push(DQ[k]()); dqDraw(); } })));
+  dqDraw();
+
+  // ---------- fila por turnos ----------
+  (function () {
+    const fr = []; let q = [["A", 3], ["B", 1], ["C", 2]], t = 0, fin = [];
+    fr.push({ q: q.map((x) => x.slice()), t, fin: [], msg: "t = 0. Llegan A, B y C." });
+    while (q.length) {
+      const [n, k] = q.shift(); t++;
+      let msg;
+      if (k > 1) { q.push([n, k - 1]); msg = n + " hace un trámite y vuelve al final con " + (k - 1) + "."; }
+      else { fin.push(n + " (" + t + ")"); msg = n + " hace su último trámite y termina en t = " + t + "."; }
+      fr.push({ q: q.map((x) => x.slice()), t, fin: fin.slice(), msg: "t = " + t + ". " + msg });
+    }
+    stepper($("#rr"), fr, (f) => {
+      const el = $("#rr-q"); el.innerHTML = "";
+      el.append(h("span", { class: "end", text: "inicio" }));
+      f.q.forEach(([n, k], i) => el.append(cell(i === 0 ? "cur" : "sel", n + "·" + k)));
+      el.append(h("span", { class: "end", text: "final" }));
+      $("#rr-cap").innerHTML = f.msg + "<br>Terminaron: <b>" + (f.fin.join(", ") || "nadie") + "</b>";
+    }, { delay: 1000 });
+  })();
+
+  // ---------- Josephus ----------
+  let joStep = null;
+  for (let n = 1; n <= 12; n++) $("#jo-n").append(h("option", { value: n, text: n, selected: n === 7 }));
+  function joFrames(n) {
+    const q = []; for (let i = 1; i <= n; i++) q.push(i);
+    const fr = [{ q: q.slice(), out: [], msg: "La fila empieza con 1, 2, …, " + n + "." }], out = [];
+    while (q.length) {
+      const s = q.shift(); q.push(s);
+      fr.push({ q: q.slice(), out: out.slice(), last: true, msg: "rotate(-1): el " + s + " se salta y pasa al final." });
+      const v = q.shift(); out.push(v);
+      fr.push({ q: q.slice(), out: out.slice(), msg: "popleft(): sale el " + v + "." });
+    }
+    return fr;
+  }
+  function joLoad() {
+    const fr = joFrames(+$("#jo-n").value);
+    if (joStep) joStep.setFrames(fr);
+    else joStep = stepper($("#jo"), fr, (f) => {
+      const el = $("#jo-q"); el.innerHTML = "";
+      el.append(h("span", { class: "end", text: "inicio" }));
+      f.q.forEach((v, i) => el.append(cell(i === 0 ? "cur" : f.last && i === f.q.length - 1 ? "ok" : "sel", v)));
+      el.append(h("span", { class: "end", text: "final" }));
+      $("#jo-cap").innerHTML = f.msg + "<br>Orden de salida: <b>" + (f.out.join(" ") || "—") + "</b>";
+    }, { delay: 700 });
+  }
+  $("#jo-n").onchange = joLoad;
+  joLoad();
+})();
+</script>
+</body>
+</html>

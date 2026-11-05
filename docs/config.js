@@ -27,10 +27,10 @@ window.CURSO = {
       nombre: "Módulo 2 · Herramientas básicas",
       semanas: "semanas 5–8",
       clases: [
-        { semana: 5, titulo: "Colecciones, pilas y colas", resumen: "set, dict, Counter, pilas con list, colas con deque", s2: "práctica", url: null, disponible: false },
-        { semana: 6, titulo: "Ordenamiento y búsqueda binaria", resumen: "sort con key, bisect, búsqueda binaria sobre la respuesta", s2: "práctica", url: null, disponible: false },
-        { semana: 7, titulo: "Parcial teórico 1", resumen: "Semanas 1 a 6", s2: "Contest 2", url: null, disponible: false },
-        { semana: 8, titulo: "Matemáticas y bits", resumen: "Divisibilidad, criba, aritmética modular, operaciones con bits", s2: "práctica", url: null, disponible: false }
+        { semana: 5, titulo: "Colecciones, pilas y colas", resumen: "set, dict, Counter, pilas con list, colas con deque", s2: "práctica", url: "semana-05-colecciones/s1-teoria.html", disponible: false },
+        { semana: 6, titulo: "Ordenamiento y búsqueda binaria", resumen: "sort con key, bisect, búsqueda binaria sobre la respuesta", s2: "práctica", url: "semana-06-ordenamiento/s1-teoria.html", disponible: false },
+        { semana: 7, titulo: "Parcial teórico 1", resumen: "Semanas 1 a 6; guía con ejemplos de preguntas", s2: "Contest 2", url: "semana-07-evaluacion/guia.html", disponible: false },
+        { semana: 8, titulo: "Matemáticas y bits", resumen: "Divisibilidad, criba, aritmética modular, operaciones con bits", s2: "práctica", url: "semana-08-matematicas/s1-teoria.html", disponible: false }
       ]
     },
     {

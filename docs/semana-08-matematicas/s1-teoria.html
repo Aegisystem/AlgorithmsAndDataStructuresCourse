@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 8 · Matemáticas y bits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .calc { display: grid; grid-template-columns: auto auto 1fr; gap: 10px 16px; align-items: center; font-family: var(--font-mono); font-size: 24px; }
+  .calc .res { color: var(--accent); font-weight: 700; }
+  .calc input { width: 120px; font-size: 22px; }
+  .sv .cell { width: 46px; height: 40px; font-size: 17px; }
+  .sv .cell.x { background: var(--soft); color: var(--muted); text-decoration: line-through; border-color: var(--line); }
+  .sv .cell.p { background: var(--ac-soft); border-color: var(--ac); font-weight: 700; }
+  .sv .cell.hit { background: var(--wa-soft); border-color: var(--wa); text-decoration: line-through; }
+  .dv { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dv .pair { display: grid; gap: 4px; justify-items: center; }
+  .dv .pair .cell { width: auto; min-width: 52px; padding: 0 8px; }
+  .timebar { display: grid; grid-template-columns: 300px 1fr 110px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .bits { display: grid; grid-template-columns: 120px repeat(8, 46px) 90px; gap: 4px; align-items: center; }
+  .bits .lab { font-family: var(--font-mono); font-size: 18px; color: var(--muted); }
+  .bits .dec { font-family: var(--font-mono); font-size: 20px; text-align: right; }
+  .bits .cell { width: 46px; height: 42px; cursor: pointer; }
+  .bits .cell.one { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
+  .bits .cell.r1 { background: var(--ac-soft); border-color: var(--ac); font-weight: 700; }
+  .bits .pos { font-family: var(--font-mono); font-size: 13px; color: var(--muted); text-align: center; }
+  .bitops { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; justify-content: start; }
+  .bitops button { font-family: var(--font-mono); font-size: 17px; }
+  .fe { border-collapse: collapse; font-family: var(--font-mono); font-size: 20px; }
+  .fe th, .fe td { border-bottom: 1px solid var(--line); padding: 5px 14px; text-align: right; }
+  .fe th { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .fe tr.cur td { background: var(--mark); color: var(--mark-ink); }
+  .board { display: grid; gap: 3px; }
+  .board .cell { width: 46px; height: 46px; cursor: pointer; font-size: 26px; }
+  .board .cell.dark { background: var(--soft); }
+  .board .cell.att { background: var(--wa-soft); border-color: var(--wa); }
+  .board .cell.kn { background: var(--mark); border-color: var(--mark); }
+  .formula { font-family: var(--font-mono); font-size: 22px; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span>
+    <span></span><span class="on"></span><span></span><span class="on"></span><span class="hl"></span><span></span>
+    <span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 8 · Sesión 1</div>
+  <h1>Matemáticas y bits</h1>
+  <div class="meta"><span>Objetivo: usar las herramientas de matemáticas y de bits que más aparecen en los problemas</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. Abre el corte 2. La sesión 2 es una práctica con los seis problemas de hoy. El Contest 3 (semana 11) cubre las semanas 8 a 10.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–15</td><td>División y módulo, techo, <code>gcd</code> y <code>lcm</code>; Theatre Square</td></tr>
+    <tr><td>15–30</td><td>Primos, divisores y criba de Eratóstenes</td></tr>
+    <tr><td>30–45</td><td>Sumas y conteo; Trailing Zeros y Coin Piles</td></tr>
+    <tr><td>45–65</td><td>Aritmética modular y <code>pow</code>; Bit Strings y Exponentiation</td></tr>
+    <tr><td>65–85</td><td>Operaciones con bits y XOR</td></tr>
+    <tr><td>85–90</td><td>Two Knights (reto) y resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Divisibilidad</h2>
+  <p>División entera, residuo, máximo común divisor y mínimo común múltiplo.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">// y %</div>
+  <h2>División entera y residuo con negativos</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="calc">
+        <span>a =</span><input type="number" id="dm-a" value="-7"><span></span>
+        <span>b =</span><input type="number" id="dm-b" value="2"><span></span>
+        <span>a // b</span><span>=</span><span class="res" id="dm-q"></span>
+        <span>a % b</span><span>=</span><span class="res" id="dm-r"></span>
+      </div>
+      <div class="caption" id="dm-cap"></div>
+    </div>
+    <div class="stack small">
+      <p>En Python, <code>a // b</code> redondea hacia abajo: <code>-7 // 2</code> es −4. Siempre se cumple <code>a == b * (a // b) + a % b</code>.</p>
+      <p>Por eso <code>a % b</code> tiene el signo de b: <code>-7 % 3</code> es 2. Con b &gt; 0, el residuo queda entre 0 y b − 1.</p>
+      <p>En C++ y Java, −7 / 2 es −3 y −7 % 3 es −1. Al leer soluciones en esos lenguajes hay que tenerlo en cuenta.</p>
+      <p><code>divmod(a, b)</code> devuelve los dos valores a la vez.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar a = −7, b = 2 y a = 7, b = −3. Que el residuo nunca sea negativo (con b &gt; 0) evita errores en aritmética modular: <code>(a - b) % m</code> ya queda entre 0 y m − 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Techo, gcd y lcm</div>
+  <h2>Redondear hacia arriba y divisores comunes</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># techo de a / b, con enteros (a, b &gt; 0)
+(a + b - 1) // b
+-(-a // b)
+
+import math
+math.gcd(48, 18)    # 6
+math.lcm(4, 6)      # 12
+math.gcd(*a)        # de toda una lista</pre>
+      <p class="small"><code>math.ceil(a / b)</code> pasa por un float. Con valores cerca de 10¹⁸ el float pierde precisión y la respuesta puede salir mal.</p>
+    </div>
+    <div class="stack small">
+      <p><code>gcd</code> usa el algoritmo de Euclides: <code>gcd(a, b) = gcd(b, a % b)</code>, hasta que b es 0.</p>
+      <table class="t" style="font-size:19px">
+        <tr><th>a</th><th>b</th><th>a % b</th></tr>
+        <tr><td>48</td><td>18</td><td>12</td></tr>
+        <tr><td>18</td><td>12</td><td>6</td></tr>
+        <tr><td>12</td><td>6</td><td>0</td></tr>
+        <tr><td>6</td><td>0</td><td>gcd = 6</td></tr>
+      </table>
+      <p>Hace O(log min(a, b)) pasos. Además, <code>lcm(a, b) = a // gcd(a, b) * b</code>.</p>
+    </div>
+  </div>
+  <aside class="notes"><p><code>math.lcm</code> existe desde Python 3.9 y PyPy 3.11 lo tiene. Dividir antes de multiplicar en la fórmula del lcm mantiene los números pequeños.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · Codeforces 1A</div>
+  <h2>Theatre Square</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una plaza mide n × m metros y se va a cubrir con baldosas de a × a metros. Las baldosas no se parten y van alineadas con los lados; pueden sobresalir de la plaza.</p>
+      <p>Hay que encontrar el mínimo de baldosas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n, m y a en una línea.</dd><dt>Salida</dt><dd>El mínimo de baldosas.</dd><dt>Restricciones</dt><dd>1 ≤ n, m, a ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>6 6 4</pre>
+      <div class="ex-lab">Salida</div><pre>4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/1/A">https://codeforces.com/problemset/problem/1/A</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: usar <code>math.ceil(n / a)</code>. Aquí funciona porque n ≤ 10⁹; con valores cerca de 10¹⁸ el float pierde precisión. Otro: calcular <code>(n * m) // (a * a)</code>, que no cuenta las baldosas que sobresalen. Caso a probar: 10⁹ 10⁹ 1, cuya respuesta es 10¹⁸.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 1A</div>
+  <h2>Theatre Square</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Cuántas baldosas hacen falta a lo largo del lado de n metros?</p></div>
+    <div class="idea-a frag">El techo de n / a: con n = 6 y a = 4 hacen falta 2. Igual para el lado de m metros.</div>
+    <div class="idea-a frag">La respuesta es el producto de los dos techos: <code>((n + a - 1) // a) * ((m + a - 1) // a)</code>.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. El resultado llega a 10¹⁸; en Python no hay desbordamiento.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Primos y divisores</h2>
+  <p>Probar hasta √n y marcar múltiplos con la criba.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Divisores</div>
+  <h2>Basta probar hasta √n</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="row"><label class="small muted" for="dv-n">n</label><input type="number" id="dv-n" value="36" style="width:140px"></div>
+      <div class="dv" id="dv-pairs"></div>
+      <div class="caption" id="dv-cap"></div>
+    </div>
+    <pre class="code sm">def es_primo(n):
+    if n &lt; 2:
+        return False
+    d = 2
+    while d * d &lt;= n:
+        if n % d == 0:
+            return False
+        d += 1
+    return True
+
+def divisores(n):
+    r = []
+    d = 1
+    while d * d &lt;= n:
+        if n % d == 0:
+            r.append(d)
+            if d != n // d:
+                r.append(n // d)
+        d += 1
+    return r</pre>
+  </div>
+  <aside class="notes"><p>Si d divide a n, también n / d lo divide, y uno de los dos es ≤ √n. Por eso se prueba solo hasta √n: con n = 10⁹ son unas 31 623 vueltas. Se usa <code>d * d &lt;= n</code> en lugar de <code>d &lt;= n ** 0.5</code> para no depender de floats. Probar con un cuadrado (36) para ver por qué hace falta el <code>if d != n // d</code>.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Criba de Eratóstenes</div>
+  <h2>Todos los primos hasta N</h2>
+  <div class="cols c-60">
+    <div class="stack" id="sv">
+      <div class="grid sv" id="sv-grid" style="grid-template-columns: repeat(10, 46px)"></div>
+      <div class="caption" id="sv-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">es = bytearray([1]) * (N + 1)
+es[0] = es[1] = 0
+i = 2
+while i * i &lt;= N:
+    if es[i]:
+        for j in range(i * i, N + 1, i):
+            es[j] = 0
+    i += 1
+# es[x] == 1 si x es primo</pre>
+      <p class="small">Cuesta O(N log log N). Con N = 10⁷ tardó 0.017 s con <code>bytearray</code> y 0.087 s con una lista de <code>True</code>/<code>False</code> (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Se empieza en i · i porque los múltiplos menores de i ya fueron tachados por un primo menor. Un <code>bytearray</code> usa 1 byte por posición: con N = 10⁷ son unos 10 MB. Hasta 10⁷ hay 664 579 primos.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Sumas y conteo</h2>
+  <p>Fórmulas que reemplazan un bucle.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Fórmulas</div>
+  <h2>Sumas y parejas en O(1)</h2>
+  <div class="cols">
+    <div class="stack small">
+      <table class="t" style="font-size:21px">
+        <tr><th>Qué</th><th>Fórmula</th></tr>
+        <tr><td>1 + 2 + … + n</td><td><code>n * (n + 1) // 2</code></td></tr>
+        <tr><td>a + (a+1) + … + b</td><td><code>(a + b) * (b - a + 1) // 2</code></td></tr>
+        <tr><td>Parejas entre n elementos</td><td><code>n * (n - 1) // 2</code></td></tr>
+        <tr><td>Strings de largo n con k letras</td><td><code>k ** n</code></td></tr>
+        <tr><td>Múltiplos de d entre 1 y n</td><td><code>n // d</code></td></tr>
+      </table>
+    </div>
+    <div class="stack small">
+      <p>Gauss sumó 1 + 2 + … + 100 juntando parejas: 1 + 100, 2 + 99, … Son 50 parejas de 101, o sea 5050.</p>
+      <p>La cantidad de parejas también se escribe C(n, 2): se escoge el primero de n formas y el segundo de n − 1, y cada pareja quedó contada dos veces.</p>
+      <p>En Missing Number (semana 1) se usó la primera fórmula: el que falta es <code>n * (n + 1) // 2 - sum(a)</code>.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Las fórmulas usan <code>//</code> porque el producto siempre es par, y así el resultado queda entero. Con <code>/</code> sale un float, que pierde precisión cerca de 10¹⁶.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1618</div>
+  <h2>Trailing Zeros</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay que calcular cuántos ceros tiene al final el número n!.</p>
+      <p>Por ejemplo, 20! = 2432902008176640000 termina en 4 ceros.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un entero n.</dd><dt>Salida</dt><dd>La cantidad de ceros al final de n!.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>20</pre>
+      <div class="ex-lab">Salida</div><pre>4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1618">https://cses.fi/problemset/task/1618</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: calcular n! con <code>math.factorial</code>. Con n = 10⁹ el número tiene miles de millones de dígitos. Otro: contar solo <code>n // 5</code>; 25 aporta dos cincos. Caso a probar: n = 25, cuya respuesta es 6.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1618</div>
+  <h2>Trailing Zeros</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Cada cero al final es un factor 10 = 2 · 5. ¿Qué factor escasea en 1 · 2 · … · n?</p></div>
+    <div class="idea-a frag">El 5: hay más factores 2 que 5. La respuesta es la cantidad de factores 5 en n!.</div>
+    <div class="idea-a frag">Los múltiplos de 5 aportan uno, los de 25 otro más, los de 125 otro más… Total: n // 5 + n // 25 + n // 125 + …</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Con n = 10⁹ son 12 términos.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1754</div>
+  <h2>Coin Piles</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay dos pilas con a y b monedas. En cada movimiento se quitan 2 monedas de una pila y 1 de la otra.</p>
+      <p>Hay que decir si se pueden vaciar las dos pilas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>t pruebas, cada una con a y b.</dd><dt>Salida</dt><dd>YES o NO para cada prueba.</dd><dt>Restricciones</dt><dd>1 ≤ t ≤ 10⁵; 0 ≤ a, b ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+2 1
+2 2
+3 3</pre>
+      <div class="ex-lab">Salida</div><pre>YES
+NO
+YES</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1754">https://cses.fi/problemset/task/1754</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: revisar solo que a + b sea múltiplo de 3; con a = 0 y b = 3 la suma es 3 y la respuesta es NO. Caso a probar: 0 0, que es YES.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1754</div>
+  <h2>Coin Piles</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Cada movimiento quita 3 monedas en total. ¿Qué tiene que cumplir a + b? ¿Y qué pasa si una pila es mucho más grande que la otra?</p></div>
+    <div class="idea-a frag">a + b debe ser múltiplo de 3.</div>
+    <div class="idea-a frag">De la pila grande salen a lo sumo 2 monedas por cada una de la pequeña, así que hace falta max(a, b) ≤ 2 · min(a, b).</div>
+    <div class="idea-a frag">Con las dos condiciones se puede: es O(1) por prueba.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p><p>Por qué alcanzan: si x movimientos quitan 2 de la pila a y y movimientos quitan 2 de la pila b, entonces 2x + y = a y x + 2y = b. Despejando, x = (2a − b) / 3 e y = (2b − a) / 3, que son enteros no negativos justo con esas dos condiciones.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1618 y 1754</div>
+  <h2>Contar factores y revisar condiciones</h2>
+  <div class="cols">
+    <div class="stack">
+      <h3>Trailing Zeros</h3>
+      <p class="small">Ceros al final de n!.</p>
+      <pre class="code sm">def main():
+    n = int(input())
+    ceros = 0
+    p = 5
+    while p &lt;= n:
+        ceros += n // p
+        p *= 5
+    print(ceros)
+
+main()</pre>
+    </div>
+    <div class="stack">
+      <h3>Coin Piles</h3>
+      <p class="small">¿Se vacían las dos pilas quitando 2 y 1?</p>
+      <pre class="code sm">def main():
+    t = int(input())
+    res = []
+    for _ in range(t):
+        a, b = map(int, input().split())
+        if (a + b) % 3 == 0 and \
+           2 * min(a, b) &gt;= max(a, b):
+            res.append("YES")
+        else:
+            res.append("NO")
+    print("\n".join(res))
+
+main()</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Las dos soluciones se compararon con una búsqueda completa en casos pequeños (n hasta 200 y pilas hasta 30). Coin Piles con 10⁵ pruebas tardó 0.06 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Aritmética modular</h2>
+  <p>Trabajar con el residuo para que los números no crezcan.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Módulo 10⁹ + 7</div>
+  <h2>Sacar el módulo en cada paso</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">MOD = 10**9 + 7
+
+(a + b) % MOD
+(a - b) % MOD       # queda entre 0 y MOD - 1
+(a * b) % MOD
+
+r = 1
+for x in a:
+    r = r * x % MOD   # no esperar al final
+
+pow(a, b, MOD)      # a^b mod MOD en O(log b)</pre>
+      <p class="small">Si la respuesta puede ser enorme, el enunciado pide imprimirla módulo 10⁹ + 7, que es primo.</p>
+    </div>
+    <div class="stack small">
+      <p>La suma, la resta y el producto se pueden reducir en cada paso y el resultado final es el mismo.</p>
+      <p>La división no funciona así: <code>(a // b) % m</code> no se obtiene de <code>a % m</code> y <code>b % m</code>. Para dividir hace falta el inverso modular, <code>pow(b, -1, MOD)</code>, que queda como extensión.</p>
+      <p>En Python los enteros no se desbordan. Cada operación con un entero cuesta según su cantidad de dígitos, así que un número enorme es lento.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medición</div>
+  <h2>Calcular (10⁹)ᵇ mod 10⁹ + 7</h2>
+  <div class="stack" style="max-width:1080px; gap:14px">
+    <div class="timebar"><span><code>a ** b % MOD</code>, b = 10⁵</span><div class="tb slow" style="width:0.6%"></div><span class="tv">0.04 s</span></div>
+    <div class="timebar"><span><code>a ** b % MOD</code>, b = 10⁶</span><div class="tb slow" style="width:2.6%"></div><span class="tv">1.51 s</span></div>
+    <div class="timebar"><span><code>a ** b % MOD</code>, b = 10⁷</span><div class="tb slow" style="width:100%"></div><span class="tv">57.6 s</span></div>
+    <div class="timebar"><span><code>pow(a, b, MOD)</code>, b = 10⁷</span><div class="tb" style="width:0.5%"></div><span class="tv">0.000004 s</span></div>
+  </div>
+  <p class="small"><code>a ** b</code> calcula el número completo: con b = 10⁶ tiene unos 3·10⁷ bits. <code>pow</code> con tres argumentos reduce en cada paso y nunca pasa de MOD².</p>
+  <p class="small muted">PyPy 3.11, Apple M4.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Exponenciación rápida</div>
+  <h2>Cómo calcula <code style="background:none;padding:0">pow</code> en O(log b)</h2>
+  <div class="cols">
+    <div class="stack" id="fe">
+      <div class="row"><span class="small muted">a = 3, m = 1000, b =</span><select id="fe-b"></select></div>
+      <table class="fe" id="fe-tab"></table>
+      <div class="caption" id="fe-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">def potencia(a, b, m):
+    r = 1
+    a %= m
+    while b &gt; 0:
+        if b &amp; 1:          # bit más bajo de b
+            r = r * a % m
+        a = a * a % m      # a, a², a⁴, a⁸, ...
+        b &gt;&gt;= 1            # quitar ese bit
+    return r</pre>
+      <p class="small">3¹³ = 3⁸ · 3⁴ · 3¹, porque 13 = 1101 en binario. El bucle recorre los bits de b: con b ≤ 10⁹ son 30 vueltas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Los operadores <code>&amp;</code> y <code>&gt;&gt;</code> se ven en la parte 5. Aquí basta saber que <code>b &amp; 1</code> es el último bit de b y que <code>b &gt;&gt;= 1</code> lo quita. En los problemas se usa <code>pow(a, b, m)</code>, que hace lo mismo.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1617</div>
+  <h2>Bit Strings</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay que contar cuántos strings de bits de longitud n existen. Por ejemplo, con n = 3 son 000, 001, 010, 011, 100, 101, 110 y 111.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un entero n.</dd><dt>Salida</dt><dd>La cantidad, módulo 10⁹ + 7.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3</pre>
+      <div class="ex-lab">Salida</div><pre>8</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1617">https://cses.fi/problemset/task/1617</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: olvidar el módulo. Caso a probar: n = 10⁶.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1095</div>
+  <h2>Exponentiation</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay que calcular n potencias aᵇ, cada una módulo 10⁹ + 7. Se toma 0⁰ = 1.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y luego n líneas con a y b.</dd><dt>Salida</dt><dd>aᵇ mod 10⁹ + 7 para cada línea.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 0 ≤ a, b ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+3 4
+2 8
+123 123</pre>
+      <div class="ex-lab">Salida</div><pre>81
+256
+921450052</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1095">https://cses.fi/problemset/task/1095</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: escribir <code>a ** b % MOD</code>, que da TLE (ver la medición). Caso a probar: 0 0, que debe dar 1; <code>pow(0, 0, MOD)</code> ya devuelve 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1617 y 1095</div>
+  <h2>Bit Strings y Exponentiation</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>En un string de bits, cada posición tiene 2 opciones. ¿Cuántos strings de largo n hay?</p></div>
+    <div class="idea-a frag">2 · 2 · … · 2 = 2ⁿ. La respuesta es <code>pow(2, n, MOD)</code>.</div>
+    <div class="idea-a frag">Exponentiation es lo mismo con a y b variables: <code>pow(a, b, MOD)</code> en cada línea, O(log b).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1617 y 1095</div>
+  <h2>Potencias módulo 10⁹ + 7</h2>
+  <div class="cols">
+    <div class="stack">
+      <h3>Bit Strings</h3>
+      <p class="small">Cantidad de strings de bits de largo n.</p>
+      <pre class="code sm">MOD = 10**9 + 7
+
+def main():
+    n = int(input())
+    print(pow(2, n, MOD))
+
+main()</pre>
+    </div>
+    <div class="stack">
+      <h3>Exponentiation</h3>
+      <p class="small">n potencias aᵇ módulo 10⁹ + 7.</p>
+      <pre class="code sm">MOD = 10**9 + 7
+
+def main():
+    n = int(input())
+    res = []
+    for _ in range(n):
+        a, b = map(int, input().split())
+        res.append(pow(a, b, MOD))
+    print("\n".join(map(str, res)))
+
+main()</pre>
+      <p class="small">Con n = 2·10⁵ tardó 0.14 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Bits</h2>
+  <p>Un entero es una fila de bits, y se puede operar bit por bit.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Operadores de bits</div>
+  <h2><code style="background:none;padding:0">&amp; | ^ ~ &lt;&lt; &gt;&gt;</code></h2>
+  <div class="cols c-60 fill">
+    <div class="stack">
+      <div class="bits" id="bt"></div>
+      <div class="bitops" id="bt-ops"></div>
+      <div class="caption" id="bt-cap"></div>
+    </div>
+    <div class="stack small">
+      <ul>
+        <li><code>a &amp; b</code>: 1 donde los dos tienen 1.</li>
+        <li><code>a | b</code>: 1 donde alguno tiene 1.</li>
+        <li><code>a ^ b</code>: 1 donde son distintos.</li>
+        <li><code>~a</code>: invierte todos los bits; vale <code>-a - 1</code>.</li>
+        <li><code>a &lt;&lt; k</code>: corre k posiciones a la izquierda; vale a · 2ᵏ.</li>
+        <li><code>a &gt;&gt; k</code>: corre k a la derecha; vale a // 2ᵏ.</li>
+      </ul>
+      <p><code>bin(13)</code> es <code>'0b1101'</code> e <code>int("1101", 2)</code> es 13.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Haga clic en los bits de a y b para cambiarlos. Los bits se numeran desde 0, de derecha a izquierda; el bit i vale 2ⁱ. <code>~a</code> sale negativo porque en Python los enteros no tienen un número fijo de bits.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Un bit</div>
+  <h2>Consultar, encender y apagar el bit i</h2>
+  <div class="cols">
+    <pre class="code sm">x &gt;&gt; i &amp; 1       # 1 si el bit i está encendido
+x | (1 &lt;&lt; i)     # encender el bit i
+x &amp; ~(1 &lt;&lt; i)    # apagar el bit i
+x ^ (1 &lt;&lt; i)     # cambiar el bit i
+
+x.bit_count()    # cantidad de bits en 1
+x.bit_length()   # cuántos bits tiene en binario
+
+# x es potencia de 2
+x &gt; 0 and x &amp; (x - 1) == 0</pre>
+    <div class="stack small">
+      <p>Un entero de n bits puede representar un subconjunto de n elementos: el bit i indica si el elemento i está. En la semana 11 se recorren todos los subconjuntos con <code>range(1 &lt;&lt; n)</code>.</p>
+      <p><code>x &amp; (x - 1)</code> apaga el bit 1 más bajo de x. Si queda 0, x tenía un solo bit encendido.</p>
+      <p>Con 10⁶ números, <code>x.bit_count()</code> tardó 0.018 s y <code>bin(x).count("1")</code> 0.13 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>En Python, <code>&gt;&gt;</code> tiene más prioridad que <code>&amp;</code>, así que <code>x &gt;&gt; i &amp; 1</code> es <code>(x &gt;&gt; i) &amp; 1</code>. Ante la duda, poner paréntesis. Ejemplo para la potencia de 2: 8 = 1000 y 7 = 0111, así que 8 &amp; 7 = 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">XOR</div>
+  <h2>Propiedades del XOR</h2>
+  <div class="cols">
+    <div class="stack small">
+      <ul>
+        <li><code>a ^ a == 0</code> y <code>a ^ 0 == a</code>.</li>
+        <li>El orden no importa: <code>a ^ b ^ a == b</code>.</li>
+        <li>Si se hace XOR de una lista, los valores que aparecen un número par de veces se cancelan.</li>
+      </ul>
+      <p>Missing Number (semana 1) sale también con XOR: se hace XOR de 1 a n y de los n − 1 números leídos. Todos se cancelan menos el que falta.</p>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    a = list(map(int, input().split()))
+    x = 0
+    for i in range(1, n + 1):
+        x ^= i
+    for v in a:
+        x ^= v
+    print(x)      # el número que falta
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Ejemplo con n = 5 y la lista 2 3 1 5: (1^2^3^4^5) ^ (2^3^1^5) = 4. La misma idea encuentra el único número sin pareja en una lista donde todos los demás aparecen dos veces.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1072 · Reto</div>
+  <h2>Two Knights</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Para cada k = 1, 2, …, n hay que contar de cuántas formas se pueden poner dos caballos iguales en un tablero de k × k sin que se ataquen.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un entero n.</dd><dt>Salida</dt><dd>n líneas: la respuesta para k = 1, …, n.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁴</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8</pre>
+      <div class="ex-lab">Salida</div><pre>0
+6
+28
+96
+252
+550
+1056
+1848</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1072">https://cses.fi/problemset/task/1072</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver k = 2 y k = 3 a mano.</p><p>Error común: probar todas las parejas de casillas, que con k = 10⁴ son unas 5·10¹⁵. Otro: contar dos veces cada pareja. Caso a probar: k = 3, cuya respuesta es 28.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1072</div>
+  <h2>Two Knights</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Cuántas parejas de casillas hay en total? ¿Cuántas de ellas se atacan?</p></div>
+    <div class="idea-a frag">En total hay k² · (k² − 1) / 2 parejas, la fórmula de parejas con n = k².</div>
+    <div class="idea-a frag">Dos caballos que se atacan ocupan esquinas opuestas de un rectángulo de 2 × 3 o de 3 × 2. Cada rectángulo tiene 2 de esas parejas.</div>
+    <div class="idea-a frag">Hay (k − 1)(k − 2) rectángulos de cada forma. La respuesta es k²(k² − 1)/2 − 4(k − 1)(k − 2).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1072 · Two Knights</div>
+  <h2>Todas las parejas menos las que se atacan</h2>
+  <div class="cols c-40">
+    <div class="stack">
+      <div class="board" id="kn" style="grid-template-columns: repeat(6, 46px)"></div>
+      <div class="caption" id="kn-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">def main():
+    n = int(input())
+    res = []
+    for k in range(1, n + 1):
+        total = k * k * (k * k - 1) // 2
+        ataques = 4 * (k - 1) * (k - 2)
+        res.append(total - ataques)
+    print("\n".join(map(str, res)))
+
+main()</pre>
+      <p class="formula">k = 6: 36 · 35 / 2 − 4 · 5 · 4 = 630 − 80 = 550</p>
+      <p class="small">Es O(n). La fórmula se comparó con una búsqueda completa para k ≤ 12.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Haga clic en una casilla para poner el caballo; las casillas en rojo son las que ataca. Sumar los ataques de todas las casillas da 160 = 2 · 80, porque cada pareja se cuenta desde sus dos casillas. Otra forma de llegar a la fórmula es sumar esos ataques casilla por casilla y dividir entre 2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://codeforces.com/problemset/problem/1/A">CF 1A · Theatre Square</a></li>
+    <li><a href="https://cses.fi/problemset/task/1618">CSES 1618 · Trailing Zeros</a></li>
+    <li><a href="https://cses.fi/problemset/task/1754">CSES 1754 · Coin Piles</a></li>
+    <li><a href="https://cses.fi/problemset/task/1617">CSES 1617 · Bit Strings</a></li>
+    <li><a href="https://cses.fi/problemset/task/1095">CSES 1095 · Exponentiation</a></li>
+    <li><a href="https://cses.fi/problemset/task/1072">CSES 1072 · Two Knights</a> (reto)</li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas de matemáticas y bits en Python</h2>
+  <ol>
+    <li><code>//</code> redondea hacia abajo y <code>a % b</code> tiene el signo de b.</li>
+    <li>Techo de a / b con enteros: <code>(a + b - 1) // b</code>.</li>
+    <li>Divisores y primalidad hasta √n; muchos primos, con la criba en un <code>bytearray</code>.</li>
+    <li>Con 10⁹ + 7, sacar el módulo en cada paso y usar <code>pow(a, b, MOD)</code>.</li>
+    <li>Bit i de x: <code>x &gt;&gt; i &amp; 1</code>. Contar unos: <code>x.bit_count()</code>.</li>
+    <li>XOR cancela los valores que aparecen dos veces.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const fdiv = (a, b) => Math.floor(a / b);
+
+  // ---------- // y % ----------
+  function dmDraw() {
+    const a = parseInt($("#dm-a").value, 10), b = parseInt($("#dm-b").value, 10);
+    if (isNaN(a) || isNaN(b) || b === 0) { $("#dm-q").textContent = $("#dm-r").textContent = "—"; $("#dm-cap").textContent = b === 0 ? "b = 0: ZeroDivisionError" : ""; return; }
+    const q = fdiv(a, b), r = a - b * q;
+    $("#dm-q").textContent = q; $("#dm-r").textContent = r;
+    $("#dm-cap").innerHTML = "Comprobación: " + b + " · (" + q + ") + " + r + " = <b>" + (b * q + r) + "</b>";
+  }
+  ["#dm-a", "#dm-b"].forEach((s) => $(s).addEventListener("input", dmDraw));
+  dmDraw();
+
+  // ---------- divisores ----------
+  function dvDraw() {
+    let n = parseInt($("#dv-n").value, 10);
+    const el = $("#dv-pairs"); el.innerHTML = "";
+    if (!(n >= 1) || n > 1e12) { $("#dv-cap").textContent = "Escriba un n entre 1 y 10¹²."; return; }
+    let d = 1, steps = 0, cnt = 0;
+    for (; d * d <= n; d++) {
+      steps++;
+      if (n % d === 0) {
+        cnt += d === n / d ? 1 : 2;
+        if (el.children.length < 14) el.append(h("div", { class: "pair" }, cell("cur", d), cell(d === n / d ? "ok" : "sel", n / d)));
+      }
+    }
+    $("#dv-cap").innerHTML = "Arriba: d ≤ √n. Abajo: n / d. <b>" + cnt + "</b> divisores" + (cnt === 2 ? " (n es primo)" : n === 1 ? "" : "") + " con <b>" + steps + "</b> vueltas del bucle." + (el.children.length >= 14 ? " Se muestran las primeras 14 parejas." : "");
+  }
+  $("#dv-n").addEventListener("input", dvDraw);
+  dvDraw();
+
+  // ---------- criba ----------
+  (function () {
+    const N = 60, fr = [];
+    const st = new Array(N + 1).fill(1); st[0] = st[1] = 0;
+    fr.push({ st: st.slice(), p: null, hit: [], msg: "Todos empiezan como posibles primos (el 1 no es primo)." });
+    for (let i = 2; i * i <= N; i++) {
+      if (!st[i]) continue;
+      const hit = [];
+      for (let j = i * i; j <= N; j += i) { if (st[j]) hit.push(j); st[j] = 0; }
+      fr.push({ st: st.slice(), p: i, hit, msg: i + " es primo: se tachan sus múltiplos desde " + i + "² = " + i * i + "." });
+    }
+    fr.push({ st: st.slice(), p: null, hit: [], done: true, msg: "8 · 8 = 64 > 60, así que se termina. Quedan " + st.filter((x, k) => x && k <= N).length + " primos." });
+    stepper($("#sv"), fr, (f) => {
+      const g = $("#sv-grid"); g.innerHTML = "";
+      for (let x = 1; x <= N; x++) {
+        let cls = f.hit.includes(x) ? "hit" : !f.st[x] ? "x" : x === f.p ? "cur" : (f.done || (f.p && x <= f.p) || (f.p && x < f.p * f.p)) ? "p" : "";
+        if (x === 1) cls = "x";
+        g.append(cell(cls, x));
+      }
+      $("#sv-cap").textContent = f.msg;
+    }, { delay: 1300 });
+  })();
+
+  // ---------- exponenciación rápida ----------
+  let feStep = null;
+  [5, 10, 13, 22, 100].forEach((b) => $("#fe-b").append(h("option", { value: b, text: b, selected: b === 13 })));
+  function feFrames(b0) {
+    const m = 1000; let a = 3, b = b0, r = 1; const rows = [];
+    const fr = [{ rows: [], msg: "r = 1, a = 3, b = " + b0 + " = " + b0.toString(2) + " en binario." }];
+    while (b > 0) {
+      const bit = b & 1, prevA = a;
+      if (bit) r = r * a % m;
+      rows.push({ b: b.toString(2), bit, a: prevA, r });
+      a = a * a % m; b >>= 1;
+      fr.push({ rows: rows.slice(), msg: bit ? "El bit es 1: r = r · " + prevA + " mod 1000 = " + r + ". Luego a = a² mod 1000." : "El bit es 0: r no cambia. Luego a = a² mod 1000." });
+    }
+    fr.push({ rows: rows.slice(), done: true, msg: "b = 0. 3^" + b0 + " mod 1000 = <b>" + r + "</b>" });
+    return fr;
+  }
+  function feRender(f) {
+    const t = $("#fe-tab"); t.innerHTML = "";
+    t.append(h("tr", null, ["b (binario)", "último bit", "a", "r"].map((x) => h("th", { text: x }))));
+    f.rows.forEach((rw, i) => t.append(h("tr", { class: i === f.rows.length - 1 && !f.done ? "cur" : "" }, h("td", { text: rw.b }), h("td", { text: rw.bit }), h("td", { text: rw.a }), h("td", { text: rw.r }))));
+    $("#fe-cap").innerHTML = f.msg;
+  }
+  function feLoad() { const fr = feFrames(+$("#fe-b").value); if (feStep) feStep.setFrames(fr); else feStep = stepper($("#fe"), fr, feRender, { delay: 1100 }); }
+  $("#fe-b").onchange = feLoad;
+  feLoad();
+
+  // ---------- bits ----------
+  let A = 13, B = 10, op = "&";
+  const OPS = {
+    "a & b": (a, b) => a & b, "a | b": (a, b) => a | b, "a ^ b": (a, b) => a ^ b,
+    "a << 1": (a) => (a << 1), "a >> 1": (a) => a >> 1, "~a": (a) => ~a
+  };
+  let cur = "a & b";
+  const bitsOf = (v) => { const r = []; for (let i = 7; i >= 0; i--) r.push((v >> i) & 1); return r; };
+  function btDraw() {
+    const el = $("#bt"); el.innerHTML = "";
+    el.append(h("span"));
+    for (let i = 7; i >= 0; i--) el.append(h("span", { class: "pos", text: i }));
+    el.append(h("span"));
+    const row = (lab, v, cls, click) => {
+      el.append(h("span", { class: "lab", text: lab }));
+      bitsOf(v).forEach((bit, k) => el.append(cell(bit ? cls : "", bit, click ? { onclick: () => click(7 - k) } : { style: { cursor: "default" } })));
+      el.append(h("span", { class: "dec", text: v }));
+    };
+    row("a", A, "one", (i) => { A ^= 1 << i; btDraw(); });
+    const usesB = !["a << 1", "a >> 1", "~a"].includes(cur);
+    if (usesB) row("b", B, "one", (i) => { B ^= 1 << i; btDraw(); });
+    const r = OPS[cur](A, B);
+    if (cur === "~a") {
+      el.append(h("span", { class: "lab", text: cur }));
+      for (let k = 0; k < 8; k++) el.append(h("span", { class: "pos", text: k === 3 ? "…" : "" }));
+      el.append(h("span", { class: "dec", text: r }));
+      $("#bt-cap").innerHTML = "~" + A + " = −" + A + " − 1 = <b>" + r + "</b>. En Python el resultado es negativo.";
+    } else {
+      row(cur, r & 255, "r1", null);
+      $("#bt-cap").innerHTML = cur.replace("a", A).replace("b", B) + " = <b>" + r + "</b>" + (r > 255 ? " (se muestran 8 bits)" : "");
+    }
+    Array.from($("#bt-ops").children).forEach((b) => b.classList.toggle("on", b.textContent === cur));
+  }
+  Object.keys(OPS).forEach((k) => $("#bt-ops").append(h("button", { text: k, onclick: () => { cur = k; btDraw(); } })));
+  btDraw();
+
+  // ---------- Two Knights ----------
+  const K = 6; let kp = [2, 1];
+  function knDraw() {
+    const el = $("#kn"); el.innerHTML = "";
+    const att = new Set();
+    [[1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1]].forEach(([di, dj]) => {
+      const i = kp[0] + di, j = kp[1] + dj; if (i >= 0 && i < K && j >= 0 && j < K) att.add(i + "," + j);
+    });
+    for (let i = 0; i < K; i++) for (let j = 0; j < K; j++) {
+      const isK = i === kp[0] && j === kp[1];
+      el.append(cell(isK ? "kn" : att.has(i + "," + j) ? "att" : (i + j) % 2 ? "dark" : "", isK ? "♞" : "", { onclick: () => { kp = [i, j]; knDraw(); } }));
+    }
+    $("#kn-cap").innerHTML = "El caballo ataca <b>" + att.size + "</b> casillas. Puede ir con " + (K * K - 1 - att.size) + " de las otras " + (K * K - 1) + ".";
+  }
+  knDraw();
+})();
+</script>
+</body>
+</html>

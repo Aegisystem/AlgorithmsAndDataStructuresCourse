@@ -1,0 +1,44 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-05-colecciones/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-05T15:42:36.319Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-4) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-06-ordenamiento/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-05T16:07:37.247Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-4) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-07-evaluacion/guia.html"
+        ],
+        "createdAt": "2026-11-05T16:07:37.263Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-4) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-08-matematicas/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-05T16:07:37.277Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-4) and carries content such as problem source and part number"
+      }
+    ]
+  }
+}

@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 6 · Ordenamiento y búsqueda binaria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .keys { display: grid; grid-template-columns: repeat(2, auto); gap: 6px; justify-content: start; }
+  .keys button { font-family: var(--font-mono); font-size: 16px; text-align: left; }
+  .stab { border-collapse: collapse; font-family: var(--font-mono); font-size: 20px; }
+  .stab th, .stab td { border-bottom: 1px solid var(--line); padding: 5px 16px; text-align: left; }
+  .stab th { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .stab td.o { color: var(--muted); }
+  .stab tr.tie td { background: var(--accent-soft); }
+  .arr .cell { width: 50px; height: 50px; }
+  .arr { margin-top: 24px; margin-bottom: 26px; }
+  .ptr { position: absolute; bottom: -26px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--accent); }
+  .ptr.top { bottom: auto; top: -24px; }
+  .timebar { display: grid; grid-template-columns: 330px 1fr 90px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .pred { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 24px; margin-bottom: 26px; }
+  .pred .cell { width: 42px; height: 42px; font-size: 15px; }
+  .pred .cell .idx { font-size: 11px; }
+  .pred .cell.f { background: var(--wa-soft); border-color: var(--wa); }
+  .pred .cell.t { background: var(--ac-soft); border-color: var(--ac); }
+  .pred .cell.out { opacity: .3; }
+  .ev { display: grid; grid-template-columns: 80px 1fr; gap: 8px 12px; align-items: center; font-family: var(--font-mono); font-size: 18px; }
+  .ev .lab { color: var(--muted); font-size: 15px; }
+  .tl { position: relative; height: 150px; border-bottom: 2px solid var(--line); }
+  .tl .seg { position: absolute; height: 22px; border-radius: 4px; background: var(--accent-soft); border: 1.5px solid var(--accent); font-family: var(--font-mono); font-size: 13px; display: grid; place-items: center; }
+  .tl .seg.in { background: var(--mark); border-color: var(--tle); }
+  .tl .now { position: absolute; top: 0; bottom: -6px; width: 2px; background: var(--wa); }
+  .tl .tick { position: absolute; bottom: -24px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); transform: translateX(-50%); }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span class="on"></span>
+    <span></span><span></span><span></span><span class="on"></span><span class="on"></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="hl"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 6 · Sesión 1</div>
+  <h1>Ordenamiento y búsqueda binaria</h1>
+  <div class="meta"><span>Objetivo: usar el orden de los datos para resolver más rápido</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 es una práctica con los cinco problemas de hoy. Es la última clase de teoría antes del parcial teórico 1 y del Contest 2 (semana 7, semanas 1 a 6).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–20</td><td><code>sort</code>, <code>sorted</code>, <code>key</code>, varios criterios y estabilidad</td></tr>
+    <tr><td>20–35</td><td>Ordenar para emparejar: Ferris Wheel y Apartments</td></tr>
+    <tr><td>35–45</td><td>Ordenar eventos: Restaurant Customers</td></tr>
+    <tr><td>45–65</td><td>Búsqueda binaria, <code>bisect</code> e Interesting Drink</td></tr>
+    <tr><td>65–85</td><td>Búsqueda binaria sobre la respuesta: Factory Machines</td></tr>
+    <tr><td>85–90</td><td>Resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Ordenar</h2>
+  <p>Ordenar cuesta O(n log n) y muchas veces deja el resto del problema en O(n).</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">sort y sorted</div>
+  <h2>Ordenar una lista</h2>
+  <div class="cols">
+    <pre class="code sm">a = [5, 2, 9, 1]
+a.sort()             # cambia a, devuelve None
+b = sorted(a)        # lista nueva, a queda igual
+a.sort(reverse=True) # de mayor a menor
+s = sorted("banana") # ['a','a','a','b','n','n']
+
+a = a.sort()         # error: a queda en None</pre>
+    <div class="stack small">
+      <p><code>a.sort()</code> ordena la lista en su lugar. <code>sorted</code> recibe cualquier iterable (lista, string, set, <code>map</code>) y devuelve una lista nueva.</p>
+      <p>Los dos cuestan O(n log n). Con n = 2·10⁵ son unas 3.5·10⁶ comparaciones.</p>
+      <p>Las tuplas y los strings se comparan en orden lexicográfico, como se vio en la semana 3: primero el primer elemento y, si empatan, el segundo.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>El error <code>a = a.sort()</code> es frecuente: el programa sigue y falla después con <code>TypeError</code> al usar <code>a</code>.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">key</div>
+  <h2>Ordenar con <code style="background:none;padding:0">key</code></h2>
+  <div class="cols c-40 fill">
+    <div class="stack">
+      <div class="keys" id="ky-btns"></div>
+      <pre class="code sm" id="ky-code" data-lang="none"></pre>
+      <p class="small" id="ky-cap"></p>
+    </div>
+    <div class="stack">
+      <table class="stab" id="ky-tab"></table>
+    </div>
+  </div>
+  <aside class="notes"><p><code>key</code> recibe una función que se aplica a cada elemento una vez; la lista se ordena por esos valores. Para varios criterios se devuelve una tupla. <code>-nota</code> invierte un solo criterio; <code>reverse=True</code> invierte todos.</p><p>Las filas en azul tienen la misma clave. Fijarse en la columna "pos." para ver la estabilidad.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Estabilidad e índices</div>
+  <h2>Los empates conservan su orden original</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>El ordenamiento de Python es <b>estable</b>: si dos elementos tienen la misma clave, quedan en el orden en que estaban.</p>
+      <p>A veces hace falta saber de qué posición venía cada valor. Para eso se ordenan los índices:</p>
+      <pre class="code sm">a = [30, 10, 50, 20]
+idx = sorted(range(len(a)), key=lambda i: a[i])
+# idx = [1, 3, 0, 2]
+# a[idx[0]] es el menor y venía de la posición 1</pre>
+      <p>Otra forma es ordenar parejas: <code>sorted((a[i], i) for i in range(n))</code>.</p>
+    </div>
+    <div class="stack">
+      <span class="small muted">a</span>
+      <div class="cells arr" id="ix-a"></div>
+      <span class="small muted">sorted(range(4), key=lambda i: a[i])</span>
+      <div class="cells arr" id="ix-i"></div>
+      <div class="caption" id="ix-cap">Pase el cursor sobre un índice.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medición</div>
+  <h2>Ordenar 10⁶ valores</h2>
+  <div class="stack" style="max-width:1080px; gap:14px">
+    <div class="timebar"><span><code>sorted(a)</code></span><div class="tb" style="width:10.6%"></div><span class="tv">0.09 s</span></div>
+    <div class="timebar"><span><code>sorted(a, reverse=True)</code></span><div class="tb" style="width:11.1%"></div><span class="tv">0.10 s</span></div>
+    <div class="timebar"><span><code>key=lambda x: -x</code></span><div class="tb slow" style="width:56%"></div><span class="tv">0.48 s</span></div>
+    <div class="timebar"><span>índices con <code>key</code></span><div class="tb slow" style="width:55%"></div><span class="tv">0.48 s</span></div>
+    <div class="timebar"><span>lista de tuplas <code>(a, b)</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.86 s</span></div>
+  </div>
+  <p class="small">Una lista de enteros es lo más rápido de ordenar. Con <code>key</code> el tiempo sube unas 5 veces y con tuplas unas 9 veces. Para orden descendente simple, <code>reverse=True</code> cuesta lo mismo que el orden normal.</p>
+  <p class="small muted">10⁶ enteros aleatorios hasta 10⁹. PyPy 3.11, Apple M4.</p>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Ordenar para emparejar</h2>
+  <p>Con los datos ordenados, dos índices recorren la lista una sola vez.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1090</div>
+  <h2>Ferris Wheel</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>n niños quieren subir a una rueda de Chicago. Cada góndola lleva uno o dos niños y aguanta un peso total de x.</p>
+      <p>Hay que encontrar el mínimo de góndolas para subir a todos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y x, y luego los n pesos.</dd><dt>Salida</dt><dd>El mínimo de góndolas.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ pᵢ ≤ x ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4 10
+7 2 3 9</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1090">https://cses.fi/problemset/task/1090</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: emparejar a los dos más livianos, que gasta la mejor pareja posible del más pesado. Otro: olvidar que una góndola lleva a lo sumo dos niños. Caso a probar: n = 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1090</div>
+  <h2>Ferris Wheel</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>El niño más pesado tiene que subir en alguna góndola. ¿Con quién conviene que suba?</p></div>
+    <div class="idea-a frag">Con el más liviano, si caben juntos. Si el más liviano no cabe con él, nadie cabe, y sube solo.</div>
+    <div class="idea-a frag">Se ordenan los pesos y se usan dos índices: i en el más liviano y j en el más pesado. Cada góndola mueve j, y a veces i.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1090 · Ferris Wheel</div>
+  <h2>El más pesado con el más liviano</h2>
+  <div class="cols">
+    <div class="stack" id="fw">
+      <p class="small">Pesos ordenados, x = <span id="fw-x"></span>. Cada góndola lleva hasta dos niños.</p>
+      <div class="cells arr" id="fw-arr"></div>
+      <div class="caption" id="fw-cap"></div>
+    </div>
+    <pre class="code sm">def main():
+    n, x = map(int, input().split())
+    p = sorted(map(int, input().split()))
+    i, j = 0, n - 1
+    gondolas = 0
+    while i &lt;= j:
+        if i &lt; j and p[i] + p[j] &lt;= x:
+            i += 1      # el más liviano sube con él
+        j -= 1          # el más pesado sube
+        gondolas += 1
+    print(gondolas)
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>El ejemplo cargado es x = 10 con pesos 7 2 3 9 más dos niños extra (5 y 8) para ver más pasos. Ordenar cuesta O(n log n) y los dos índices O(n). Con n = 2·10⁵ tardó 0.06 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1084</div>
+  <h2>Apartments</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n solicitantes y m apartamentos. El solicitante i quiere un apartamento de tamaño aᵢ y acepta cualquiera con tamaño entre aᵢ − k y aᵢ + k.</p>
+      <p>Cada apartamento es para un solo solicitante. Hay que maximizar cuántos reciben apartamento.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n, m y k; los n tamaños deseados; los m tamaños de los apartamentos.</dd><dt>Salida</dt><dd>El máximo de solicitantes con apartamento.</dd><dt>Restricciones</dt><dd>1 ≤ n, m ≤ 2·10⁵; 0 ≤ k ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4 3 5
+60 45 80 60
+30 60 75</pre>
+      <div class="ex-lab">Salida</div><pre>2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1084">https://cses.fi/problemset/task/1084</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: para cada solicitante, buscar un apartamento entre todos, que es O(n · m). Caso a probar: k = 0, donde el tamaño tiene que ser exacto.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1084</div>
+  <h2>Apartments</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Con las dos listas ordenadas, se compara el menor solicitante con el menor apartamento. ¿Qué se hace en cada caso?</p></div>
+    <div class="idea-a frag">Apartamento menor que a − k: no le sirve a nadie de los que faltan, que quieren más. Se descarta el apartamento.</div>
+    <div class="idea-a frag">Apartamento mayor que a + k: a este solicitante no le sirve ninguno de los que faltan. Se descarta el solicitante.</div>
+    <div class="idea-a frag">Si está en el rango, se asignan y avanzan los dos índices.</div>
+  </div>
+  <aside class="notes"><p>Traza del ejemplo: a = 45 60 60 80, b = 30 60 75, k = 5. El 30 se descarta (menor que 40). Para el 45, el 60 es mayor que 50: se descarta el 45. El 60 recibe el 60. Para el otro 60, el 75 es mayor que 65: se descarta. El 80 recibe el 75. Respuesta 2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1084 · Apartments</div>
+  <h2>Dos listas ordenadas, dos índices</h2>
+  <div class="cols">
+    <pre class="code sm">def main():
+    n, m, k = map(int, input().split())
+    a = sorted(map(int, input().split()))
+    b = sorted(map(int, input().split()))
+    i = j = 0
+    parejas = 0
+    while i &lt; n and j &lt; m:
+        if b[j] &lt; a[i] - k:
+            j += 1          # apartamento muy pequeño
+        elif b[j] &gt; a[i] + k:
+            i += 1          # nada le sirve a a[i]
+        else:
+            parejas += 1
+            i += 1
+            j += 1
+    print(parejas)
+
+main()</pre>
+    <div class="stack small">
+      <p>Hay que asignar apartamentos con tamaño entre a − k y a + k al mayor número de solicitantes.</p>
+      <p>Cada vuelta avanza i, j o los dos. El bucle hace a lo sumo n + m vueltas.</p>
+      <p>El total es O(n log n + m log m) por los dos ordenamientos. Con n = m = 2·10⁵ tardó 0.09 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1619</div>
+  <h2>Restaurant Customers</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Se conocen la hora de llegada y la de salida de n clientes de un restaurante. Hay que encontrar el máximo de clientes que estuvieron dentro al mismo tiempo.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y luego, para cada cliente, su llegada a y su salida b.</dd><dt>Salida</dt><dd>El máximo de clientes a la vez.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ a &lt; b ≤ 10⁹; todas las horas son distintas</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+5 8
+2 4
+3 9</pre>
+      <div class="ex-lab">Salida</div><pre>2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1619">https://cses.fi/problemset/task/1619</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: crear un arreglo con una posición por cada hora, que tendría 10⁹ posiciones. Caso a probar: dos clientes que no se cruzan, como 1 2 y 3 4; la respuesta es 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1619</div>
+  <h2>Restaurant Customers</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿En qué momentos cambia la cantidad de clientes dentro del restaurante?</p></div>
+    <div class="idea-a frag">Solo cuando alguien llega (+1) o sale (−1). Son 2n eventos.</div>
+    <div class="idea-a frag">Se recorren los eventos en orden de hora, llevando la cuenta. La respuesta es el valor más alto de la cuenta.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1619 · Restaurant Customers</div>
+  <h2>Recorrer llegadas y salidas en orden</h2>
+  <div class="cols">
+    <div class="stack" id="rc">
+      <p class="small">Máximo de clientes dentro al mismo tiempo.</p>
+      <div class="tl" id="rc-tl"></div>
+      <div class="caption" id="rc-cap" style="margin-top:28px"></div>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    llega, sale = [], []
+    for _ in range(n):
+        a, b = map(int, input().split())
+        llega.append(a)
+        sale.append(b)
+    llega.sort()
+    sale.sort()
+    j = dentro = mejor = 0
+    for a in llega:
+        while sale[j] &lt; a:    # salieron antes
+            dentro -= 1
+            j += 1
+        dentro += 1
+        mejor = max(mejor, dentro)
+    print(mejor)
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Los eventos también se pueden guardar como tuplas <code>(hora, +1)</code> y <code>(hora, -1)</code> en una sola lista. Ordenar 4·10⁵ tuplas es más lento que ordenar dos listas de enteros: ese programa tardó 0.37 s y este 0.10 s (PyPy 3.11, Apple M4, entrada máxima). El límite de CSES es 1 s.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Búsqueda binaria</h2>
+  <p>En una lista ordenada, cada pregunta descarta la mitad de las posiciones.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Búsqueda binaria</div>
+  <h2>Primera posición con a[i] ≥ x</h2>
+  <div class="stack" id="bs">
+    <div class="row"><label class="small muted" for="bs-x">x</label><input type="number" id="bs-x" value="23" style="width:90px"><button id="bs-load">Buscar</button></div>
+    <div class="cells arr" id="bs-arr"></div>
+    <div class="caption" id="bs-cap"></div>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">lo, hi = 0, n
+# la respuesta está en [lo, hi]
+while lo &lt; hi:
+    mid = (lo + hi) // 2
+    if a[mid] &gt;= x:
+        hi = mid      # mid sirve
+    else:
+        lo = mid + 1  # mid no sirve
+# lo == hi: la respuesta (n si no hay)</pre>
+    </div>
+    <div class="stack small">
+      <p>Cada vuelta deja el rango en la mitad. Con n = 10⁶ son unas 20 vueltas.</p>
+      <p>Si <code>a[mid] &gt;= x</code>, mid puede ser la respuesta y también puede haber otra antes. Si no, mid y todo lo anterior quedan descartados.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar con x = 23 (no está; la respuesta es la posición del 25), x = 18 (hay repetidos; la respuesta es el primero), x = 1 (respuesta 0) y x = 99 (respuesta n = 12).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Invariante</div>
+  <h2>Cómo evitar los errores de ±1</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>El <b>invariante</b> es lo que se cumple al empezar cada vuelta: la respuesta está entre <code>lo</code> y <code>hi</code>. Las dos ramas lo conservan.</p>
+      <ul>
+        <li><code>a[mid] &gt;= x</code>: mid podría ser la respuesta, así que se guarda con <code>hi = mid</code>.</li>
+        <li><code>a[mid] &lt; x</code>: mid y todo lo anterior quedan descartados, así que <code>lo = mid + 1</code>.</li>
+      </ul>
+      <p>Como <code>mid &lt; hi</code>, las dos ramas achican el rango y el bucle termina.</p>
+    </div>
+    <div class="stack small">
+      <h3>Errores frecuentes</h3>
+      <ul>
+        <li><code>while lo &lt;= hi</code> con <code>hi = mid</code>: cuando <code>lo == hi</code>, el bucle no avanza.</li>
+        <li><code>lo = mid</code> en lugar de <code>mid + 1</code>: con <code>hi = lo + 1</code>, mid es lo y el bucle no avanza.</li>
+        <li>Empezar con <code>hi = n - 1</code>: si ningún valor es ≥ x, la respuesta n no está en el rango.</li>
+        <li>Buscar en una lista sin ordenar.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Recomendar una sola plantilla (esta) y usarla siempre. La búsqueda de "último valor ≤ x" sale de esta misma: es la primera posición con a[i] &gt; x, menos 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">bisect</div>
+  <h2><code style="background:none;padding:0">bisect_left</code> y <code style="background:none;padding:0">bisect_right</code></h2>
+  <div class="stack">
+    <div class="row"><label class="small muted" for="bi-x">x</label><input type="number" id="bi-x" value="18" style="width:90px"></div>
+    <div class="cells arr" id="bi-arr"></div>
+    <div class="caption" id="bi-cap"></div>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="row"><label class="small muted" for="bi-l">contar en [</label><input type="number" id="bi-l" value="10" style="width:80px"><span class="small muted">,</span><input type="number" id="bi-r" value="25" style="width:80px"><span class="small muted">]</span></div>
+      <div class="caption" id="bi-cnt"></div>
+      <p class="small">Se importan con <code>from bisect import bisect_left, bisect_right</code>. Cada llamada es O(log n) y la lista debe estar ordenada.</p>
+    </div>
+    <div class="stack">
+      <pre class="code sm">bisect_left(a, x)    # primera posición con a[i] &gt;= x
+bisect_right(a, x)   # primera posición con a[i] &gt; x
+
+# cuántos valores son iguales a x
+bisect_right(a, x) - bisect_left(a, x)
+# cuántos valores hay en [l, r]
+bisect_right(a, r) - bisect_left(a, l)
+# cuántos valores son &lt;= x
+bisect_right(a, x)</pre>
+    </div>
+  </div>
+  <aside class="notes"><p><code>bisect_left</code> hace lo mismo que la búsqueda manual de la diapositiva anterior. Con 10⁶ consultas sobre 10⁶ valores, la manual tardó 0.14 s y <code>bisect_left</code> 0.16 s (PyPy 3.11, Apple M4). Contar recorriendo la lista tardó 1.47 s con solo 10³ consultas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · Codeforces 706B</div>
+  <h2>Interesting Drink</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>n tiendas venden la misma bebida; la tienda i la vende a xᵢ. Durante q días Vasiliy tiene mᵢ monedas.</p>
+      <p>Para cada día hay que decir en cuántas tiendas le alcanza para comprar la bebida.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n, los n precios, q y luego un mᵢ por línea.</dd><dt>Salida</dt><dd>Una respuesta por día.</dd><dt>Restricciones</dt><dd>1 ≤ n, q ≤ 10⁵; xᵢ ≤ 10⁵; mᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+3 10 8 6 11
+4
+1
+10
+3
+11</pre>
+      <div class="ex-lab">Salida</div><pre>0
+4
+1
+5</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://codeforces.com/problemset/problem/706/B">https://codeforces.com/problemset/problem/706/B</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: contar recorriendo los n precios en cada día, que son 10¹⁰ operaciones. Otro: usar <code>bisect_left</code>, que no cuenta las tiendas con precio igual a m. Caso a probar: m = 10 en el ejemplo, que debe contar la tienda de precio 10.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · Codeforces 706B</div>
+  <h2>Interesting Drink</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si los precios están ordenados, ¿cómo se ven las tiendas donde le alcanza?</p></div>
+    <div class="idea-a frag">Son un prefijo de la lista: todos los precios ≤ m quedan al principio.</div>
+    <div class="idea-a frag">El largo de ese prefijo es <code>bisect_right(x, m)</code>. Cada día cuesta O(log n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p><p>Como los precios son ≤ 10⁵, también se puede hacer con un conteo acumulado por precio (sumas prefijas, semana 9).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · Codeforces 706B · Interesting Drink</div>
+  <h2>Contar precios ≤ m</h2>
+  <div class="cols">
+    <pre class="code sm">from bisect import bisect_right
+
+def main():
+    n = int(input())
+    x = sorted(map(int, input().split()))
+    q = int(input())
+    res = []
+    for _ in range(q):
+        m = int(input())
+        res.append(bisect_right(x, m))
+    print("\n".join(map(str, res)))
+
+main()</pre>
+    <div class="stack small">
+      <p>Para cada día hay que contar en cuántas tiendas el precio es ≤ m.</p>
+      <p>Se ordena una vez, O(n log n), y cada día es O(log n). El total es O((n + q) log n).</p>
+      <p>Con n = q = 10⁵ tardó 0.07 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Búsqueda binaria sobre la respuesta</h2>
+  <p>Buscar el menor valor que cumple una condición.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Búsqueda sobre la respuesta</div>
+  <h2>Cuando la condición pasa de falso a verdadero una sola vez</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>Muchos problemas piden "el mínimo T tal que se puede…". Si con T se puede, con T + 1 también. Entonces la condición es <b>monótona</b>:</p>
+      <p class="mono" style="font-size:24px"><span style="color:var(--wa)">F F F F F</span> <span style="color:var(--ac)">V V V V V V</span></p>
+      <p>La respuesta es el primer V. Se encuentra con la misma búsqueda binaria, con la pregunta <code>puede(mid)</code> en el <code>if</code>.</p>
+      <p>Si <code>puede</code> cuesta O(n) y la respuesta está entre 1 y H, el total es O(n log H).</p>
+    </div>
+    <pre class="code sm">def puede(T):
+    ...   # True si con T alcanza
+
+lo, hi = 1, H        # puede(H) es True
+while lo &lt; hi:
+    mid = (lo + hi) // 2
+    if puede(mid):
+        hi = mid
+    else:
+        lo = mid + 1
+print(lo)</pre>
+  </div>
+  <aside class="notes"><p>Dos decisiones: escribir <code>puede</code> y elegir un H con <code>puede(H)</code> verdadero. Con H = 10¹⁸ son unas 60 vueltas, así que H puede ser holgado.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1620</div>
+  <h2>Factory Machines</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una fábrica tiene n máquinas. La máquina i hace un producto cada kᵢ segundos, y todas trabajan al mismo tiempo.</p>
+      <p>Hay que encontrar el menor tiempo para hacer t productos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y t, y luego los n tiempos kᵢ.</dd><dt>Salida</dt><dd>El menor tiempo.</dd><dt>Restricciones</dt><dd>1 ≤ n, t ≤ 2·10⁵; 1 ≤ kᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3 7
+3 2 5</pre>
+      <div class="ex-lab">Salida</div><pre>8</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1620">https://cses.fi/problemset/task/1620</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: en 8 segundos las máquinas hacen 2 + 4 + 1 = 7.</p><p>Error común: simular segundo a segundo; la respuesta puede llegar a 2·10¹⁴. Caso a probar: una sola máquina con k = 10⁹ y t = 1; la respuesta es 10⁹.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1620</div>
+  <h2>Factory Machines</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si el tiempo es T, ¿cuántos productos se hacen? ¿Qué pasa con esa cantidad cuando T crece?</p></div>
+    <div class="idea-a frag">Se hacen T // k₁ + T // k₂ + … + T // kₙ. La suma nunca baja cuando T crece.</div>
+    <div class="idea-a frag">Se busca el menor T con suma ≥ t. Con la máquina más rápida sola se llega en min(k) · t, así que ese es H.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1620 · Factory Machines</div>
+  <h2>El menor T que alcanza</h2>
+  <div class="cols c-60">
+    <div class="stack" id="fm">
+      <p class="small">k = 3 2 5, t = 7. Cada celda es un T con los productos que se hacen.</p>
+      <div class="pred" id="fm-pred"></div>
+      <div class="caption" id="fm-cap"></div>
+    </div>
+    <pre class="code sm" style="font-size:15px">def main():
+    n, t = map(int, input().split())
+    k = list(map(int, input().split()))
+
+    def alcanza(T):
+        total = 0
+        for x in k:
+            total += T // x
+            if total &gt;= t:
+                return True
+        return False
+
+    lo, hi = 1, min(k) * t
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if alcanza(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    print(lo)
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>H = min(k) · t ≤ 2·10¹⁴, así que son unas 48 vueltas de O(n): cerca de 10⁷ operaciones. Con la entrada máxima tardó 0.05 s (PyPy 3.11, Apple M4). El <code>return True</code> adelantado evita sumar números grandes sin necesidad.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1090">CSES 1090 · Ferris Wheel</a></li>
+    <li><a href="https://cses.fi/problemset/task/1084">CSES 1084 · Apartments</a></li>
+    <li><a href="https://cses.fi/problemset/task/1619">CSES 1619 · Restaurant Customers</a></li>
+    <li><a href="https://cses.fi/problemset/task/1620">CSES 1620 · Factory Machines</a></li>
+    <li><a href="https://codeforces.com/problemset/problem/706/B">CF 706B · Interesting Drink</a></li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana. La semana 7 tiene el parcial teórico 1 y el Contest 2, sobre las semanas 1 a 6.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para ordenar y buscar</h2>
+  <ol>
+    <li>Ordenar cuesta O(n log n). Después, dos índices recorren la lista en O(n).</li>
+    <li>Ordenar enteros es lo más rápido; <code>key</code> y las tuplas cuestan más.</li>
+    <li>La búsqueda binaria necesita una lista ordenada o una condición monótona.</li>
+    <li>Usar una sola plantilla: <code>lo, hi = 0, n</code>, <code>while lo &lt; hi</code>, <code>hi = mid</code> o <code>lo = mid + 1</code>.</li>
+    <li><code>bisect_left</code> da la primera posición ≥ x y <code>bisect_right</code> la primera &gt; x.</li>
+    <li>"El mínimo T tal que se puede" suele ser búsqueda binaria sobre la respuesta.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const hl = (el, code) => { el.textContent = code; if (window.hljs) el.innerHTML = hljs.highlight(code, { language: "python" }).value; };
+  const cmp = (x, y) => {
+    if (Array.isArray(x)) { for (let i = 0; i < x.length; i++) { const c = cmp(x[i], y[i]); if (c) return c; } return 0; }
+    return x < y ? -1 : x > y ? 1 : 0;
+  };
+
+  // ---------- key ----------
+  const EST = [["Ana", 4.5, 20], ["Luis", 3.8, 22], ["Eva", 4.5, 19], ["Juan", 3.8, 20], ["Sara", 5.0, 21], ["Iván", 3.8, 19]];
+  const KEYS = [
+    { b: "sin key", code: "sorted(est)", k: (e) => e, cap: "Las tuplas se comparan por el primer elemento, el nombre." },
+    { b: "nota", code: "sorted(est, key=lambda e: e[1])", k: (e) => e[1], cap: "De menor a mayor nota. Los empates quedan en su orden original." },
+    { b: "nota, reverse", code: "sorted(est, key=lambda e: e[1],\n       reverse=True)", k: (e) => e[1], rev: true, cap: "De mayor a menor. reverse=True también conserva el orden de los empates." },
+    { b: "(-nota, nombre)", code: "sorted(est, key=lambda e: (-e[1], e[0]))", k: (e) => [-e[1], e[0]], cap: "Nota de mayor a menor y, si empatan, nombre de A a Z." },
+    { b: "(edad, nombre)", code: "sorted(est, key=lambda e: (e[2], e[0]))", k: (e) => [e[2], e[0]], cap: "Edad de menor a mayor y, si empatan, nombre." },
+    { b: "len(nombre)", code: "sorted(est, key=lambda e: len(e[0]))", k: (e) => e[0].length, cap: "Por cantidad de letras del nombre." }
+  ];
+  function kyDraw(i) {
+    const K = KEYS[i];
+    Array.from($("#ky-btns").children).forEach((b, j) => b.classList.toggle("on", j === i));
+    hl($("#ky-code"), "est = [(nombre, nota, edad), ...]\nr = " + K.code);
+    $("#ky-cap").textContent = K.cap;
+    const idx = EST.map((e, p) => p).sort((p, q) => (K.rev ? -1 : 1) * cmp(K.k(EST[p]), K.k(EST[q])));
+    const t = $("#ky-tab"); t.innerHTML = "";
+    t.append(h("tr", null, ["pos.", "nombre", "nota", "edad", "clave"].map((x) => h("th", { text: x }))));
+    const keyStr = (v) => Array.isArray(v) ? "(" + v.join(", ") + ")" : typeof v === "string" ? v : String(v);
+    idx.forEach((p) => {
+      const kv = keyStr(K.k(EST[p]));
+      const tie = idx.filter((q) => keyStr(K.k(EST[q])) === kv).length > 1;
+      t.append(h("tr", { class: tie && i > 0 ? "tie" : "" }, h("td", { class: "o", text: p }), h("td", { text: EST[p][0] }), h("td", { text: EST[p][1].toFixed(1) }), h("td", { text: EST[p][2] }), h("td", { class: "o", text: i ? kv : "" })));
+    });
+  }
+  KEYS.forEach((K, i) => $("#ky-btns").append(h("button", { text: K.b, onclick: () => kyDraw(i) })));
+  kyDraw(1);
+
+  // ---------- índices ----------
+  const IA = [30, 10, 50, 20], II = [1, 3, 0, 2];
+  function ixDraw(s) {
+    const a = $("#ix-a"), b = $("#ix-i"); a.innerHTML = b.innerHTML = "";
+    IA.forEach((v, i) => { const c = cell(s !== null && II[s] === i ? "cur" : "", v); c.append(h("span", { class: "idx", text: i })); a.append(c); });
+    II.forEach((v, k) => { const c = cell(s === k ? "cur" : "sel", v, { onmouseenter: () => ixDraw(k), onclick: () => ixDraw(k) }); c.append(h("span", { class: "idx", text: k })); b.append(c); });
+    if (s !== null) $("#ix-cap").innerHTML = "idx[" + s + "] = " + II[s] + " → a[" + II[s] + "] = <b>" + IA[II[s]] + "</b>, el " + (s + 1) + "º menor";
+  }
+  ixDraw(null);
+
+  // ---------- Ferris Wheel ----------
+  (function () {
+    const x = 10, p = [7, 2, 3, 9, 5, 8].sort((a, b) => a - b);
+    $("#fw-x").textContent = x;
+    const fr = [{ i: 0, j: p.length - 1, g: [], who: {}, msg: "i en el más liviano, j en el más pesado." }];
+    let i = 0, j = p.length - 1; const g = [], who = {};
+    while (i <= j) {
+      let msg;
+      if (i < j && p[i] + p[j] <= x) { msg = p[i] + " + " + p[j] + " = " + (p[i] + p[j]) + " ≤ " + x + ": suben juntos."; who[i] = who[j] = g.length + 1; g.push([p[i], p[j]]); i++; }
+      else { msg = i === j ? "Queda solo " + p[j] + ": sube solo." : p[i] + " + " + p[j] + " = " + (p[i] + p[j]) + " > " + x + ": " + p[j] + " sube solo."; who[j] = g.length + 1; g.push([p[j]]); }
+      j--;
+      fr.push({ i, j, g: g.slice(), who: Object.assign({}, who), msg });
+    }
+    stepper($("#fw"), fr, (f) => {
+      const el = $("#fw-arr"); el.innerHTML = "";
+      p.forEach((v, k) => {
+        const c = cell(f.who[k] ? "ok" : k === f.i || k === f.j ? "cur" : "sel", v);
+        c.append(h("span", { class: "idx", text: f.who[k] ? "g" + f.who[k] : "" }));
+        if (k === f.i && f.i <= f.j) c.append(h("span", { class: "ptr", text: "i" }));
+        if (k === f.j && f.i <= f.j) c.append(h("span", { class: "ptr", text: k === f.i ? "i j" : "j" }));
+        el.append(c);
+      });
+      $("#fw-cap").innerHTML = f.msg + "<br>Góndolas: <b>" + f.g.length + "</b> " + f.g.map((q) => "[" + q.join(", ") + "]").join(" ");
+    }, { delay: 1000 });
+  })();
+
+  // ---------- Restaurant Customers ----------
+  (function () {
+    const C = [[5, 8], [2, 4], [3, 9], [6, 11], [10, 13]];
+    const ev = []; C.forEach(([a, b], c) => { ev.push([a, 1, c]); ev.push([b, -1, c]); });
+    ev.sort((u, v) => u[0] - v[0]);
+    const T0 = 1, T1 = 14, X = (t) => ((t - T0) / (T1 - T0)) * 100 + "%";
+    const fr = [{ k: -1, d: 0, best: 0, msg: "Eventos ordenados por hora." }];
+    let d = 0, best = 0;
+    ev.forEach((e, k) => { d += e[1]; best = Math.max(best, d); fr.push({ k, d, best, msg: "t = " + e[0] + ": " + (e[1] > 0 ? "llega" : "sale") + " el cliente " + (e[2] + 1) + "." }); });
+    stepper($("#rc"), fr, (f) => {
+      const tl = $("#rc-tl"); tl.innerHTML = "";
+      const t = f.k >= 0 ? ev[f.k][0] : null;
+      C.forEach(([a, b], c) => {
+        const inside = t !== null && a <= t && t < b;
+        tl.append(h("div", { class: "seg" + (inside ? " in" : ""), style: { left: X(a), width: "calc(" + X(b) + " - " + X(a) + ")", top: (8 + c * 27) + "px" }, text: (c + 1) }));
+      });
+      for (let x = 2; x <= 13; x++) tl.append(h("span", { class: "tick", style: { left: X(x) }, text: x }));
+      if (t !== null) tl.append(h("div", { class: "now", style: { left: X(t) } }));
+      $("#rc-cap").innerHTML = f.msg + "<br>Dentro: <b>" + f.d + "</b> · máximo: <b>" + f.best + "</b>";
+    }, { delay: 900 });
+  })();
+
+  // ---------- búsqueda binaria ----------
+  const BA = [3, 7, 9, 12, 18, 18, 18, 25, 31, 40, 44, 52];
+  let bsStep = null;
+  function bsFrames(x) {
+    const fr = []; let lo = 0, hi = BA.length;
+    fr.push({ lo, hi, mid: null, msg: "lo = 0, hi = n = " + BA.length + "." });
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (BA[mid] >= x) { fr.push({ lo, hi, mid, msg: "mid = " + mid + ": a[mid] = " + BA[mid] + " ≥ " + x + " → hi = " + mid }); hi = mid; }
+      else { fr.push({ lo, hi, mid, msg: "mid = " + mid + ": a[mid] = " + BA[mid] + " < " + x + " → lo = " + (mid + 1) }); lo = mid + 1; }
+    }
+    fr.push({ lo, hi, mid: null, done: true, msg: "lo == hi = <b>" + lo + "</b>" + (lo < BA.length ? " (a[" + lo + "] = " + BA[lo] + ")" : " (ningún valor es ≥ " + x + ")") });
+    return fr;
+  }
+  function bsRender(f) {
+    const el = $("#bs-arr"); el.innerHTML = "";
+    BA.forEach((v, i) => {
+      const inR = i >= f.lo && i < f.hi;
+      const c = cell(f.done && i === f.lo ? "ok" : i === f.mid ? "cur" : inR ? "sel" : "dim", v);
+      c.append(h("span", { class: "idx", text: i }));
+      const lab = [i === f.lo ? "lo" : "", i === f.hi ? "hi" : "", i === f.mid ? "mid" : ""].filter(Boolean).join(" ");
+      if (lab) c.append(h("span", { class: "ptr", text: lab }));
+      el.append(c);
+    });
+    if (f.hi === BA.length) { const c = cell("dim", ""); c.style.borderStyle = "dashed"; c.append(h("span", { class: "idx", text: BA.length })); c.append(h("span", { class: "ptr", text: f.lo === BA.length ? "lo hi" : "hi" })); el.append(c); }
+    $("#bs-cap").innerHTML = f.msg;
+  }
+  function bsLoad() {
+    const fr = bsFrames(+$("#bs-x").value);
+    if (bsStep) bsStep.setFrames(fr); else bsStep = stepper($("#bs"), fr, bsRender, { delay: 1000 });
+  }
+  $("#bs-load").onclick = bsLoad;
+  $("#bs-x").addEventListener("keydown", (e) => { if (e.key === "Enter") bsLoad(); });
+  bsLoad();
+
+  // ---------- bisect ----------
+  const bl = (a, x) => { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] >= x) hi = m; else lo = m + 1; } return lo; };
+  const br = (a, x) => { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] > x) hi = m; else lo = m + 1; } return lo; };
+  function biDraw() {
+    const x = +$("#bi-x").value, L = bl(BA, x), R = br(BA, x);
+    const el = $("#bi-arr"); el.innerHTML = "";
+    for (let i = 0; i <= BA.length; i++) {
+      const c = i < BA.length ? cell(BA[i] === x ? "cur" : BA[i] < x ? "sel" : "", BA[i]) : cell("dim", "");
+      if (i === BA.length) c.style.borderStyle = "dashed";
+      c.append(h("span", { class: "idx", text: i }));
+      const lab = [i === L ? "left" : "", i === R ? "right" : ""].filter(Boolean).join(" ");
+      if (lab) c.append(h("span", { class: "ptr", text: lab }));
+      el.append(c);
+    }
+    $("#bi-cap").innerHTML = "bisect_left = <b>" + L + "</b>, bisect_right = <b>" + R + "</b> → hay <b>" + (R - L) + "</b> valores iguales a " + x;
+    const l = +$("#bi-l").value, r = +$("#bi-r").value;
+    $("#bi-cnt").innerHTML = "bisect_right(a, " + r + ") − bisect_left(a, " + l + ") = " + br(BA, r) + " − " + bl(BA, l) + " = <b>" + Math.max(0, br(BA, r) - bl(BA, l)) + "</b>";
+  }
+  ["#bi-x", "#bi-l", "#bi-r"].forEach((s) => $(s).addEventListener("input", biDraw));
+  biDraw();
+
+  // ---------- Factory Machines ----------
+  (function () {
+    const K = [3, 2, 5], t = 7, H = Math.min(...K) * t;
+    const prod = (T) => K.reduce((s, k) => s + Math.floor(T / k), 0);
+    const fr = []; let lo = 1, hi = H;
+    fr.push({ lo, hi, mid: null, msg: "lo = 1, hi = min(k) · t = " + H + "." });
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1, ok = prod(mid) >= t;
+      fr.push({ lo, hi, mid, msg: "mid = " + mid + ": " + K.map((k) => mid + "//" + k).join(" + ") + " = " + prod(mid) + (ok ? " ≥ 7 → hi = " + mid : " < 7 → lo = " + (mid + 1)) });
+      if (ok) hi = mid; else lo = mid + 1;
+    }
+    fr.push({ lo, hi, mid: null, done: true, msg: "Respuesta: <b>" + lo + "</b>" });
+    stepper($("#fm"), fr, (f) => {
+      const el = $("#fm-pred"); el.innerHTML = "";
+      for (let T = 1; T <= H; T++) {
+        const known = f.done || T < f.lo || T >= f.hi || T === f.mid;
+        const c = cell((known ? (prod(T) >= t ? "t" : "f") : "") + (T === f.mid ? " cur" : "") + (!f.done && (T < f.lo || T > f.hi) ? " out" : ""), prod(T));
+        c.append(h("span", { class: "idx", text: "T=" + T }));
+        const lab = [T === f.lo ? "lo" : "", T === f.hi ? "hi" : ""].filter(Boolean).join(" ");
+        if (lab) c.append(h("span", { class: "ptr", text: lab }));
+        el.append(c);
+      }
+      $("#fm-cap").innerHTML = f.msg;
+    }, { delay: 1100 });
+  })();
+})();
+</script>
+</body>
+</html>

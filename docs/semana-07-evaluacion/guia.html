@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 7 · Parcial teórico 1 y Contest 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .quiz { display: grid; grid-template-columns: 1fr 300px; gap: 12px 28px; align-items: baseline; font-size: 23px; }
+  .quiz .frag { font-family: var(--font-mono); font-size: 20px; color: var(--accent); }
+  .ans { color: var(--accent); }
+  .trace { border-collapse: collapse; font-family: var(--font-mono); font-size: 20px; }
+  .trace th, .trace td { border: 1px solid var(--line); padding: 5px 14px; text-align: center; min-width: 54px; }
+  .trace th { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .trace td.frag { color: var(--accent); }
+  .q { font-size: 23px; }
+  .fragcode.frag { margin-top: 4px; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+    <span class="on"></span><span></span><span></span><span></span><span></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 7</div>
+  <h1>Parcial teórico 1 y Contest 2</h1>
+  <div class="meta"><span>Guía de estudio: formato, temas y ejemplos de preguntas de las semanas 1 a 6</span></div>
+  <aside class="notes"><p>Esta guía es material de repaso. En la semana 7, la sesión 1 es el parcial y la sesión 2 es el Contest 2. Conviene habilitarla en <code>config.js</code> al terminar la semana 6, o repasarla en los últimos minutos de esa semana.</p><p>Las preguntas de esta guía son ejemplos públicos. Las del parcial deben ser otras.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Evaluaciones</div>
+  <h2>Las dos evaluaciones de la semana 7</h2>
+  <table class="t" style="font-size:21px">
+    <tr><th></th><th>Parcial teórico 1</th><th>Contest 2</th></tr>
+    <tr><td>Sesión</td><td>Sesión 1</td><td>Sesión 2</td></tr>
+    <tr><td>Formato</td><td>Escrito, sin computador</td><td>4 a 6 problemas en un juez en línea, 90 minutos</td></tr>
+    <tr><td>Temas</td><td>Semanas 1 a 6</td><td>Semanas 1 a 6, con énfasis en 5 y 6</td></tr>
+    <tr><td>Peso</td><td>10 %</td><td>10 %</td></tr>
+    <tr><td>Fecha</td><td>[fecha pendiente]</td><td>[fecha pendiente]</td></tr>
+    <tr><td>Lugar</td><td>[salón pendiente]</td><td>Grupo del curso: [enlace pendiente]</td></tr>
+  </table>
+  <p class="small">Con el Contest 1 (5 %), el corte 1 vale el 25 % de la nota. Las dos evaluaciones son presenciales.</p>
+  <aside class="notes"><p>Completar fecha, salón y enlace antes de habilitar la guía.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Temas</div>
+  <h2>Qué entra en el parcial</h2>
+  <table class="t" style="font-size:20px">
+    <tr><th>Sem</th><th>Tema</th><th>Qué hay que saber hacer</th></tr>
+    <tr><td>1</td><td>Introducción y jueces</td><td>Veredictos, partes de un enunciado, formato de salida</td></tr>
+    <tr><td>2</td><td>Complejidad y simulación</td><td>Calcular la complejidad de un código; tabla de restricciones; costos ocultos</td></tr>
+    <tr><td>3</td><td>Strings</td><td>Slicing, <code>join</code>, frecuencias, cambio de base, orden lexicográfico</td></tr>
+    <tr><td>4</td><td>Matrices</td><td>Crear y recorrer, vecinos y límites, transpuesta y rotación</td></tr>
+    <tr><td>5</td><td>Colecciones, pilas y colas</td><td>Elegir entre <code>set</code>, <code>dict</code>, pila y <code>deque</code>; tabla de complejidades</td></tr>
+    <tr><td>6</td><td>Ordenamiento y búsqueda binaria</td><td><code>key</code>, dos índices, traza de búsqueda binaria, <code>bisect</code>, búsqueda sobre la respuesta</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Formato del parcial</div>
+  <h2>Tipos de pregunta</h2>
+  <ol>
+    <li>Calcular la complejidad de fragmentos de código.</li>
+    <li>Hacer a mano la traza de un algoritmo, como una búsqueda binaria o una pila.</li>
+    <li>Leer un enunciado, decir qué técnica o estructura usar y justificar la elección.</li>
+    <li>Encontrar el error en un código dado.</li>
+    <li>Escribir a mano una solución corta en Python o en pseudocódigo.</li>
+  </ol>
+  <p class="small muted">Las diapositivas siguientes tienen un ejemplo de cada tipo. Avance con → para ver las respuestas.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 1 · Complejidad</div>
+  <h2>¿Cuál es la complejidad de cada fragmento?</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># a)
+for i in range(n):
+    for j in range(i, n):
+        total += 1</pre>
+      <span class="ans frag">O(n²): son n + (n − 1) + … + 1 = n(n + 1)/2 vueltas.</span>
+      <pre class="code sm"># b)
+i = 1
+while i &lt; n:
+    i *= 2</pre>
+      <span class="ans frag">O(log n): i se duplica en cada vuelta.</span>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># c) b es una lista de m elementos
+for x in a:          # a tiene n elementos
+    if x in b:
+        c += 1</pre>
+      <span class="ans frag">O(n · m), por el <code>in</code> sobre una lista. Con <code>sb = set(b)</code> queda O(n + m).</span>
+      <pre class="code sm"># d) t es un string de largo n
+s = ""
+for ch in t:
+    s += ch</pre>
+      <span class="ans frag">O(n²) en PyPy, porque cada <code>+=</code> copia el string. Con una lista y <code>"".join</code> es O(n).</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 1 · Restricciones</div>
+  <h2>¿Qué complejidad se necesita?</h2>
+  <div class="quiz">
+    <span>n ≤ 20; hay que revisar todos los subconjuntos.</span><span class="frag">O(2ⁿ · n)</span>
+    <span>n ≤ 5000.</span><span class="frag">O(n²)</span>
+    <span>n ≤ 2·10⁵.</span><span class="frag">O(n log n)</span>
+    <span>n ≤ 2·10⁵ y q ≤ 2·10⁵ consultas.</span><span class="frag">O((n + q) log n)</span>
+    <span>Una sola consulta con n ≤ 10¹⁸.</span><span class="frag">O(log n) u O(1)</span>
+  </div>
+  <p class="small muted">En el parcial también puede aparecer al revés: dada una idea, decir si cabe en 1 segundo.</p>
+  <aside class="notes"><p>Recordar la regla de la semana 2: con PyPy, unas 10⁸ operaciones simples por segundo, con margen.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 2 · Traza</div>
+  <h2>Búsqueda binaria a mano</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>a = [2, 5, 5, 8, 11, 14, 20] y x = 9. Complete una fila por vuelta y dé el valor final de <code>lo</code>.</p>
+      <pre class="code sm">lo, hi = 0, len(a)
+while lo &lt; hi:
+    mid = (lo + hi) // 2
+    if a[mid] &gt;= x:
+        hi = mid
+    else:
+        lo = mid + 1
+print(lo)</pre>
+    </div>
+    <div class="stack">
+      <table class="trace">
+        <tr><th>lo</th><th>hi</th><th>mid</th><th>a[mid]</th><th>cambio</th></tr>
+        <tr><td>0</td><td>7</td><td class="frag">3</td><td class="frag">8</td><td class="frag">lo = 4</td></tr>
+        <tr><td class="frag">4</td><td class="frag">7</td><td class="frag">5</td><td class="frag">14</td><td class="frag">hi = 5</td></tr>
+        <tr><td class="frag">4</td><td class="frag">5</td><td class="frag">4</td><td class="frag">11</td><td class="frag">hi = 4</td></tr>
+      </table>
+      <p class="ans frag" style="font-size:22px">lo = 4: la primera posición con a[i] ≥ 9 (a[4] = 11).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 2 · Traza</div>
+  <h2>Una pila a mano</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>Se evalúa la expresión posfija <code>5 1 2 + 4 * + 3 -</code> con una pila. Escriba la pila después de cada elemento, con el tope a la derecha.</p>
+      <p>Con un operador se sacan b (el tope) y luego a, y se apila a op b.</p>
+    </div>
+    <table class="trace">
+      <tr><th>elemento</th><th>pila</th></tr>
+      <tr><td>5</td><td class="frag">5</td></tr>
+      <tr><td>1</td><td class="frag">5 1</td></tr>
+      <tr><td>2</td><td class="frag">5 1 2</td></tr>
+      <tr><td>+</td><td class="frag">5 3</td></tr>
+      <tr><td>4</td><td class="frag">5 3 4</td></tr>
+      <tr><td>*</td><td class="frag">5 12</td></tr>
+      <tr><td>+</td><td class="frag">17</td></tr>
+      <tr><td>3</td><td class="frag">17 3</td></tr>
+      <tr><td>-</td><td class="frag">14</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 3 · Técnica</div>
+  <h2>¿Qué técnica o estructura usaría?</h2>
+  <div class="quiz">
+    <span>Dadas 2·10⁵ palabras, imprimir cuántas son distintas.</span><span class="frag">set</span>
+    <span>Formar el máximo de parejas con suma ≤ x entre 2·10⁵ números, cada número en a lo sumo una pareja.</span><span class="frag">ordenar + dos índices</span>
+    <span>10⁵ consultas: ¿cuántos valores de una lista fija están entre l y r?</span><span class="frag">ordenar + bisect</span>
+    <span>Menor tiempo para que n máquinas hagan t productos.</span><span class="frag">búsqueda sobre la respuesta</span>
+    <span>Atender trabajos de impresión en el orden de llegada.</span><span class="frag">deque</span>
+    <span>Revisar que las etiquetas de un documento cierren en orden.</span><span class="frag">pila</span>
+  </div>
+  <aside class="notes"><p>En el parcial se pide además justificar: qué operación se repite y cuánto cuesta con la estructura elegida.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 4 · Error</div>
+  <h2>¿Qué está mal en cada código?</h2>
+  <div class="cols c3">
+    <div class="stack">
+      <pre class="code sm">M = [[0] * m] * n
+M[0][0] = 1</pre>
+      <span class="ans frag small">Las n filas son la misma lista, así que el 1 aparece en toda la columna 0. Se crea con <code>[[0] * m for _ in range(n)]</code>.</span>
+    </div>
+    <div class="stack">
+      <pre class="code sm">lo, hi = 0, n
+while lo &lt;= hi:
+    mid = (lo + hi) // 2
+    if a[mid] &gt;= x:
+        hi = mid
+    else:
+        lo = mid + 1</pre>
+      <span class="ans frag small">Con lo == hi el bucle no termina, y con mid = n da <code>IndexError</code>. La condición es <code>lo &lt; hi</code>.</span>
+    </div>
+    <div class="stack">
+      <pre class="code sm">q = list(range(n))
+while q:
+    x = q.pop(0)
+    ...</pre>
+      <span class="ans frag small"><code>pop(0)</code> es O(n), así que el bucle es O(n²). Con <code>deque</code> y <code>popleft()</code> es O(n).</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 5 · Escribir</div>
+  <h2>Escribir una solución a mano</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p class="q">Lea n palabras, una por línea, e imprima la que más se repite. Si hay empate, la que apareció primero.</p>
+      <pre class="code sm frag">from collections import Counter
+
+def main():
+    n = int(input())
+    w = [input() for _ in range(n)]
+    print(Counter(w).most_common(1)[0][0])
+
+main()</pre>
+      <p class="frag"><code>most_common</code> deja los empates en el orden en que aparecieron. Es O(n).</p>
+    </div>
+    <div class="stack small">
+      <p class="q">Sin usar <code>bisect</code>, escriba una función que reciba una lista ordenada y un x, y devuelva cuántos valores son ≤ x.</p>
+      <pre class="code sm frag">def cuantos(a, x):
+    lo, hi = 0, len(a)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if a[mid] &gt; x:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo</pre>
+      <p class="frag">Es la primera posición con a[i] &gt; x, igual que <code>bisect_right</code>. Es O(log n).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Repaso</div>
+  <h2>Las dos tablas que hay que saber</h2>
+  <div class="cols">
+    <table class="t" style="font-size:19px">
+      <tr><th>Restricción</th><th>Complejidad</th></tr>
+      <tr><td>n ≤ 10</td><td>O(n!)</td></tr>
+      <tr><td>n ≤ 20</td><td>O(2ⁿ)</td></tr>
+      <tr><td>n ≤ 500</td><td>O(n³)</td></tr>
+      <tr><td>n ≤ 5000</td><td>O(n²)</td></tr>
+      <tr><td>n ≤ 2·10⁵</td><td>O(n log n)</td></tr>
+      <tr><td>n ≤ 10⁶ o más</td><td>O(n) u O(log n)</td></tr>
+    </table>
+    <table class="t" style="font-size:19px">
+      <tr><th>Operación</th><th>list</th><th>deque</th><th>set / dict</th></tr>
+      <tr><td>Final: agregar o quitar</td><td>O(1)</td><td>O(1)</td><td>—</td></tr>
+      <tr><td>Inicio: agregar o quitar</td><td>O(n)</td><td>O(1)</td><td>—</td></tr>
+      <tr><td>Posición i</td><td>O(1)</td><td>O(n)</td><td>—</td></tr>
+      <tr><td><code>x in ...</code></td><td>O(n)</td><td>O(n)</td><td>O(1)*</td></tr>
+      <tr><td>Borrar un valor x</td><td>O(n)</td><td>O(n)</td><td>O(1)*</td></tr>
+      <tr><td>Ordenar</td><td>O(n log n)</td><td>—</td><td>—</td></tr>
+    </table>
+  </div>
+  <p class="small muted">* En promedio.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Contest 2</h2>
+  <div class="cols">
+    <ul>
+      <li>Cubre las semanas 1 a 6, con énfasis en las semanas 5 y 6.</li>
+      <li>Dura 90 minutos y es presencial.</li>
+      <li>Tiene de 4 a 6 problemas, ordenados de menor a mayor dificultad.</li>
+      <li>Vale el 10 % de la nota.</li>
+      <li>Se hace en el grupo del curso: <span class="mono">[enlace pendiente]</span>.</li>
+    </ul>
+    <div class="box soft stack small">
+      <h3>Qué repasar</h3>
+      <ul>
+        <li>Leer la entrada y escribir la salida con el formato pedido.</li>
+        <li><code>set</code>, <code>dict</code>, <code>Counter</code>, pila y <code>deque</code>.</li>
+        <li><code>sort</code> con <code>key</code> y dos índices sobre una lista ordenada.</li>
+        <li>La plantilla de búsqueda binaria y <code>bisect</code>.</li>
+        <li>Medir con un caso grande antes de enviar.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Definir antes los problemas del contest y el enlace. Conviene que ninguno sea de los resueltos en clase o en los talleres. Cada problema asignado debe tener una solución en Python que pase el límite de tiempo con PyPy.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Preparación</div>
+  <h2>Cómo prepararse</h2>
+  <ol>
+    <li>Volver a resolver, sin mirar la solución, los problemas de las prácticas de las semanas 5 y 6.</li>
+    <li>Hacer en papel la traza de una búsqueda binaria y de una pila con datos propios.</li>
+    <li>Para cada problema de los talleres, escribir en una línea la técnica y la complejidad.</li>
+    <li>Repasar los resúmenes de las clases de las semanas 1 a 6.</li>
+  </ol>
+  <aside class="notes"><p>Si el grupo lo necesita, el parcial puede ir en la S1 de la semana 6, siempre que quede dentro del corte 1 (ver PROGRAMA.md, sección 5).</p></aside>
+</section>
+
+</main>
+</body>
+</html>
