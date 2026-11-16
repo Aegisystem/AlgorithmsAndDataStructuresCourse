@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 14 · Programación dinámica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .stat { font-family: var(--font-mono); font-size: 20px; }
+  pre.code.xs { font-size: 14.5px; line-height: 1.42; padding: 12px 16px; }
+  .codelab { font-family: var(--font-mono); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .lrow { display: grid; grid-template-columns: 50px 1fr; gap: 10px; align-items: center; }
+  .lrow .lab { font-family: var(--font-mono); font-size: 17px; color: var(--muted); }
+  .arr { margin-top: 24px; margin-bottom: 4px; }
+  .arr .cell { width: 52px; height: 46px; font-size: 18px; }
+  .timebar { display: grid; grid-template-columns: 300px 1fr 90px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .ctab { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; }
+  .ctab th, .ctab td { border-bottom: 1px solid var(--line); padding: 3px 12px; text-align: right; }
+  .ctab th { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .ctab tr.cur td { background: var(--mark); color: var(--mark-ink); font-weight: 700; }
+  .gg .cell { width: 52px; height: 46px; font-size: 18px; }
+  .gg .cell.trap { background: var(--ink); color: var(--stage); }
+  .pieces { border-collapse: collapse; font-size: 21px; }
+  .pieces th, .pieces td { border-bottom: 1px solid var(--line); padding: 8px 14px; text-align: left; vertical-align: top; }
+  .pieces th { font-family: var(--font-mono); font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .pieces td:first-child { font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="hl"></span><span></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 14 · Sesión 1</div>
+  <h1>Programación dinámica</h1>
+  <div class="meta"><span>Objetivo: guardar la respuesta de cada subproblema y llenar una tabla en orden</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 es una práctica con Frog 1, Dice Combinations, Minimizing Coins, Grid Paths y Knapsack 1; Coin Combinations II y LCS son retos. La tarea de DP tiene cinco problemas más.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–15</td><td>De la recursión a la memoización y a la tabla</td></tr>
+    <tr><td>15–25</td><td>Las cinco piezas de una DP; Frog 1</td></tr>
+    <tr><td>25–45</td><td>DP en 1D: Dice Combinations y monedas</td></tr>
+    <tr><td>45–55</td><td>DP en 2D: Grid Paths</td></tr>
+    <tr><td>55–75</td><td>Mochila 0/1 y su versión en 1D</td></tr>
+    <tr><td>75–90</td><td>Cómo reconocer una DP; LCS (reto) y resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>De la recursión a la tabla</h2>
+  <p>El mismo subproblema aparece muchas veces: se calcula una vez y se guarda.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Subproblemas repetidos</div>
+  <h2>Formas de sumar n con un dado</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">def formas(s):          # formas de sumar s
+    if s == 0:
+        return 1
+    total = 0
+    for d in range(1, 7):   # el último dado
+        if d &lt;= s:
+            total += formas(s - d)
+    return total</pre>
+      <div class="row small"><label for="rc-n">n =</label><input type="range" id="rc-n" min="4" max="30" value="10" style="width:260px"><span class="stat" id="rc-v"></span></div>
+      <div class="caption" id="rc-cap"></div>
+    </div>
+    <div class="stack">
+      <div class="timebar" style="grid-template-columns: 170px 1fr 80px"><span>sin memoria, n = 20</span><div class="tb slow" style="width:6%"></div><span class="tv">0.09 s</span></div>
+      <div class="timebar" style="grid-template-columns: 170px 1fr 80px"><span>sin memoria, n = 25</span><div class="tb slow" style="width:100%"></div><span class="tv">1.53 s</span></div>
+      <div class="timebar" style="grid-template-columns: 170px 1fr 80px"><span>tabla, n = 10⁶</span><div class="tb" style="width:1%"></div><span class="tv">0.012 s</span></div>
+      <p class="small">formas(20) llama a formas(19), …, formas(14); formas(19) vuelve a llamar a formas(18), …, formas(13). Los mismos valores se calculan una y otra vez y la cantidad de llamadas crece de forma exponencial.</p>
+      <p class="tiny muted">Solo el cálculo. PyPy 3.11, Apple M4.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Mover el control para ver cuántas llamadas hace la versión sin memoria. Solo hay n + 1 valores distintos de s; todo lo demás es trabajo repetido.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Memoización y tabla</div>
+  <h2>Guardar cada respuesta</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Memoización: recursión con caché</span>
+      <pre class="code sm">from functools import cache
+
+@cache
+def formas(s):
+    if s == 0:
+        return 1
+    total = 0
+    for d in range(1, 7):
+        if d &lt;= s:
+            total += formas(s - d)
+    return total % MOD</pre>
+      <p class="small">Cada s se calcula una vez: O(6n). Pero la recursión llega a profundidad n. Con <code>setrecursionlimit(10**6)</code>, n = 5000 funcionó y n = 6000 dio RecursionError.</p>
+    </div>
+    <div class="stack">
+      <span class="codelab">Tabla: de los casos pequeños a los grandes</span>
+      <pre class="code sm">dp = [0] * (n + 1)
+dp[0] = 1
+for s in range(1, n + 1):
+    total = 0
+    for d in range(1, 7):
+        if d &lt;= s:
+            total += dp[s - d]
+    dp[s] = total % MOD</pre>
+      <p class="small">Es la misma fórmula, en un bucle. Cuando se calcula dp[s], los dp[s − d] ya están en la tabla. No hay recursión ni límite de profundidad.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>En el curso se usa la tabla (bottom-up). La memoización sirve para pensar la fórmula; después se traduce a un bucle. Además, cada llamada a función cuesta más que una vuelta de un bucle. Mediciones con PyPy 3.11 en un Apple M4.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Las cinco piezas</div>
+  <h2>Qué hay que decidir en toda DP</h2>
+  <table class="pieces">
+    <tr><th>Pieza</th><th>Pregunta</th><th>Dice Combinations</th></tr>
+    <tr><td>Estado</td><td>¿Qué significa dp[s]?</td><td>Formas de sumar s.</td></tr>
+    <tr><td>Transición</td><td>¿Cómo sale de estados más pequeños?</td><td>dp[s] = dp[s − 1] + … + dp[s − 6], según el último dado.</td></tr>
+    <tr><td>Caso base</td><td>¿Qué se sabe sin calcular?</td><td>dp[0] = 1: la forma vacía.</td></tr>
+    <tr><td>Orden</td><td>¿En qué orden se llena la tabla?</td><td>s de 1 a n, porque dp[s] usa valores menores.</td></tr>
+    <tr><td>Respuesta</td><td>¿Dónde queda?</td><td>dp[n].</td></tr>
+  </table>
+  <p class="small">El costo es la cantidad de estados por el costo de cada transición: aquí n · 6.</p>
+  <aside class="notes"><p>Escribir las cinco piezas en el tablero antes de programar cada problema de hoy. El estado es la decisión más difícil: tiene que guardar todo lo necesario para seguir y nada más.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · AtCoder EDPC A</div>
+  <h2>Frog 1</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay N piedras con alturas h₁, …, h_N. Una rana empieza en la piedra 1 y salta a la piedra i + 1 o i + 2. Cada salto de i a j cuesta |hᵢ − hⱼ|.</p>
+      <p>Hay que encontrar el costo mínimo para llegar a la piedra N.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>N; las N alturas.</dd><dt>Salida</dt><dd>El costo mínimo.</dd><dt>Restricciones</dt><dd>2 ≤ N ≤ 10⁵; 1 ≤ hᵢ ≤ 10⁴</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>6
+30 10 60 10 60 50</pre>
+      <div class="ex-lab">Salida</div><pre>40</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/dp/tasks/dp_a">https://atcoder.jp/contests/dp/tasks/dp_a</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: 1 → 3 → 5 → 6 cuesta 30 + 0 + 10 = 40.</p><p>Error común: un greedy que siempre salta a la piedra de altura más cercana. Con 5 4 1 9 salta 5 → 4 → 1 → 9 y paga 1 + 3 + 8 = 12; la respuesta es 6 (5 → 4 → 9). Caso a probar: N = 2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · AtCoder EDPC A</div>
+  <h2>Frog 1</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Desde qué piedras se puede llegar a la piedra i? ¿Qué hay que saber de ellas?</p></div>
+    <div class="idea-a frag">Desde i − 1 o desde i − 2. Hace falta el costo mínimo para llegar a cada una.</div>
+    <div class="idea-a frag">dp[i] = min(dp[i − 1] + |hᵢ − hᵢ₋₁|, dp[i − 2] + |hᵢ − hᵢ₋₂|), con dp[0] = 0 y la respuesta en dp[N − 1]. Es O(N).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Nombrar las cinco piezas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · AtCoder EDPC A · Frog 1</div>
+  <h2>El mejor de los dos saltos</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="lrow"><span class="lab">h</span><div class="cells arr" id="f1-h"></div></div>
+      <div class="lrow"><span class="lab">dp</span><div class="cells arr" id="f1-d"></div></div>
+      <p class="small">Con las piedras indexadas desde 0. Por ejemplo, dp[2] = min(20 + 50, 0 + 30) = 30.</p>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    h = list(map(int, input().split()))
+    dp = [0] * n
+    dp[1] = abs(h[1] - h[0])
+    for i in range(2, n):
+        dp[i] = min(dp[i - 1] + abs(h[i] - h[i - 1]),
+                    dp[i - 2] + abs(h[i] - h[i - 2]))
+    print(dp[n - 1])
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Con N = 10⁵ tardó 0.03 s (PyPy 3.11, Apple M4). Frog 2, de la tarea, permite saltos de hasta K piedras: el <code>min</code> recorre K opciones y el costo es O(N · K).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>DP en 1D</h2>
+  <p>Un arreglo dp indexado por una cantidad: una suma, una posición.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1633</div>
+  <h2>Dice Combinations</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay que contar de cuántas formas se obtiene la suma n lanzando un dado una o más veces. El orden de los lanzamientos importa: 1 + 2 y 2 + 1 son formas distintas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n.</dd><dt>Salida</dt><dd>La cantidad de formas, módulo 10⁹ + 7.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3</pre>
+      <div class="ex-lab">Salida</div><pre>4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1633">https://cses.fi/problemset/task/1633</a></p>
+  <aside class="notes"><p>Las 4 formas de sumar 3 son 1+1+1, 1+2, 2+1 y 3. La idea es la de la parte 1.</p><p>Error común: la recursión sin memoria, o con memoria pero con n = 10⁶ de profundidad. Otro: olvidar el módulo. Caso a probar: n = 7, cuya respuesta es 63 (no 64: falta la forma "7", que no existe).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1633 · Dice Combinations</div>
+  <h2>dp[s] suma los seis anteriores</h2>
+  <div class="cols">
+    <div class="stack" id="dc">
+      <div class="cells arr" id="dc-a"></div>
+      <div class="caption" id="dc-cap"></div>
+    </div>
+    <pre class="code sm">MOD = 10**9 + 7
+
+def main():
+    n = int(input())
+    dp = [0] * (n + 1)
+    dp[0] = 1
+    for s in range(1, n + 1):
+        total = 0
+        for d in range(1, 7):
+            if d &lt;= s:
+                total += dp[s - d]
+        dp[s] = total % MOD
+    print(dp[n])
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso: en amarillo la casilla que se calcula y en azul las que se suman. O(6n). Con n = 10⁶ tardó 0.04 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Monedas</div>
+  <h2>Tres preguntas sobre las mismas monedas</h2>
+  <div class="cols c-40">
+    <table class="ctab" id="co"></table>
+    <div class="stack small">
+      <p>Monedas 2, 3 y 5. Para cada suma s:</p>
+      <ul>
+        <li><strong>Mínimo de monedas</strong> (Minimizing Coins): dp[s] = 1 + min(dp[s − m]).</li>
+        <li><strong>Secuencias ordenadas</strong> (Coin Combinations I, de la tarea): dp[s] = Σ dp[s − m]. 2 + 3 y 3 + 2 cuentan como dos.</li>
+        <li><strong>Formas sin orden</strong> (Coin Combinations II): se procesa moneda por moneda, así que 2 + 3 y 3 + 2 son una sola.</li>
+      </ul>
+      <p>Para s = 9: mínimo 3 (2 + 2 + 5), 8 secuencias y 3 formas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>"—" en la columna del mínimo indica que esa suma no se puede formar (s = 1). Las tres usan la misma tabla de 0 a x; cambia la transición y, en el último caso, el orden de los bucles.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1634</div>
+  <h2>Minimizing Coins</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n monedas de valores distintos, y de cada una se pueden usar todas las que se quiera. Hay que formar la suma x con el mínimo de monedas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y x; los n valores.</dd><dt>Salida</dt><dd>El mínimo de monedas, o −1.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 100; 1 ≤ x ≤ 10⁶; 1 ≤ cᵢ ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3 11
+1 5 7</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1634">https://cses.fi/problemset/task/1634</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: 5 + 5 + 1.</p><p>Error común: el greedy de la semana 10 (con 1, 5, 7 y x = 11 da 7 + 1 + 1 + 1 + 1, cinco monedas). Caso a probar: 1 3 con la moneda 2, cuya respuesta es −1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1634</div>
+  <h2>Minimizing Coins</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si la última moneda de una solución óptima para s es m, ¿qué se sabe del resto?</p></div>
+    <div class="idea-a frag">El resto forma s − m con el mínimo de monedas. Así que dp[s] = 1 + min(dp[s − m]) sobre las monedas m ≤ s.</div>
+    <div class="idea-a frag">Las sumas imposibles quedan en un valor grande (INF). Son x · n = 10⁸ pasos, así que el bucle tiene que ser simple.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1634 · Minimizing Coins</div>
+  <h2>Una moneda menos en cada paso</h2>
+  <div class="cols c-60">
+    <pre class="code">def main():
+    n, x = map(int, input().split())
+    c = list(map(int, input().split()))
+    INF = x + 1
+    dp = [INF] * (x + 1)
+    dp[0] = 0
+    for m in c:
+        for s in range(m, x + 1):
+            if dp[s - m] + 1 &lt; dp[s]:
+                dp[s] = dp[s - m] + 1
+    print(dp[x] if dp[x] &lt; INF else -1)
+
+main()</pre>
+    <div class="stack small">
+      <p>El bucle externo recorre las monedas y el interno las sumas. Para el mínimo, el orden de los bucles no cambia la respuesta.</p>
+      <p>Con n = 100 y x = 10⁶ (10⁸ pasos) tardó 0.12 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>INF = x + 1 sirve porque ninguna solución usa más de x monedas. Con la moneda m fija, s crece, así que dp[s − m] ya puede incluir monedas m: se pueden repetir, como pide el problema.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1636 · Reto</div>
+  <h2>Coin Combinations II</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Con las mismas reglas de monedas, hay que contar de cuántas formas se forma la suma x, sin importar el orden: 2 + 3 y 3 + 2 son la misma forma.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y x; los n valores.</dd><dt>Salida</dt><dd>La cantidad de formas, módulo 10⁹ + 7.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 100; 1 ≤ x ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3 9
+2 3 5</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1636">https://cses.fi/problemset/task/1636</a></p>
+  <aside class="notes"><p>Las tres formas son 2+2+5, 3+3+3 y 2+2+2+3.</p><p>Error común: el bucle de sumas por fuera, que cuenta secuencias ordenadas (da 8, la respuesta de Coin Combinations I). Caso a probar: 1 5 con la moneda 2, cuya respuesta es 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1636 · Coin Combinations II</div>
+  <h2>Moneda por moneda</h2>
+  <div class="cols c-60">
+    <pre class="code">MOD = 10**9 + 7
+
+def main():
+    n, x = map(int, input().split())
+    c = list(map(int, input().split()))
+    dp = [0] * (x + 1)
+    dp[0] = 1
+    for m in c:
+        for s in range(m, x + 1):
+            dp[s] = (dp[s] + dp[s - m]) % MOD
+    print(dp[x])
+
+main()</pre>
+    <div class="stack small">
+      <p>Después de procesar las monedas c₁, …, cₖ, dp[s] cuenta las formas de sumar s usando solo esas. Cada forma se arma en el orden de las monedas, así que se cuenta una vez.</p>
+      <p>Con n = 100 y x = 10⁶ tardó 0.16 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Con la resta condicional (<code>if v &gt;= MOD: v -= MOD</code>) en lugar de <code>%</code> tardó 0.46 s: en PyPy el <code>%</code> fue más rápido. En Coin Combinations I (tarea) las sumas van por fuera; con las monedas ordenadas y un <code>break</code> cuando m &gt; s tardó 0.11 s.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>DP en 2D</h2>
+  <p>El estado tiene dos números: una fila y una columna.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1638</div>
+  <h2>Grid Paths I</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una grilla de n × n tiene casillas libres (<code>.</code>) y trampas (<code>*</code>). Hay que contar los caminos de la esquina superior izquierda a la inferior derecha, moviéndose solo a la derecha o hacia abajo y sin pisar trampas.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; n líneas de n caracteres.</dd><dt>Salida</dt><dd>La cantidad de caminos, módulo 10⁹ + 7.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 1000</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4
+....
+.*..
+...*
+*...</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1638">https://cses.fi/problemset/task/1638</a></p>
+  <aside class="notes"><p>En CSES el problema se llama ahora Grid Paths I. Leer el enunciado con el grupo.</p><p>Error común: no revisar si la casilla inicial es una trampa. Caso a probar: 1 con <code>*</code>, cuya respuesta es 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1638</div>
+  <h2>Grid Paths I</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Desde qué casillas se llega a (i, j) en un paso?</p></div>
+    <div class="idea-a frag">Desde (i − 1, j), arriba, y desde (i, j − 1), a la izquierda. dp[i][j] = dp[i − 1][j] + dp[i][j − 1], y 0 si (i, j) es trampa.</div>
+    <div class="idea-a frag">Se llena fila por fila, de izquierda a derecha: así arriba e izquierda ya están calculadas. Son n² = 10⁶ estados.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1638 · Grid Paths I</div>
+  <h2>Arriba más izquierda</h2>
+  <div class="cols c-40">
+    <div class="stack">
+      <div class="grid gg" id="gp" style="grid-template-columns: repeat(4, 52px)"></div>
+      <p class="small">dp del ejemplo. Las casillas negras son trampas.</p>
+    </div>
+    <pre class="code sm">MOD = 10**9 + 7
+
+def main():
+    n = int(input())
+    g = [input() for _ in range(n)]
+    dp = [[0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if g[i][j] == "*":
+                continue
+            if i == 0 and j == 0:
+                dp[i][j] = 1
+            else:
+                arriba = dp[i - 1][j] if i &gt; 0 else 0
+                izq = dp[i][j - 1] if j &gt; 0 else 0
+                dp[i][j] = (arriba + izq) % MOD
+    print(dp[n - 1][n - 1])
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>O(n²). Con n = 1000 tardó 0.04 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Mochila 0/1</h2>
+  <p>Escoger objetos con un límite de peso.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · AtCoder EDPC D</div>
+  <h2>Knapsack 1</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay N objetos; el objeto i pesa wᵢ y vale vᵢ. Una mochila aguanta un peso total W. Hay que escoger objetos, cada uno a lo sumo una vez, con el mayor valor total.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>N y W; N líneas con w y v.</dd><dt>Salida</dt><dd>El mayor valor.</dd><dt>Restricciones</dt><dd>1 ≤ N ≤ 100; 1 ≤ W ≤ 10⁵; 1 ≤ vᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3 8
+3 30
+4 50
+5 60</pre>
+      <div class="ex-lab">Salida</div><pre>90</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/dp/tasks/dp_d">https://atcoder.jp/contests/dp/tasks/dp_d</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: objetos 1 y 3, peso 8 y valor 90.</p><p>Error común: un greedy por valor/peso. Con W = 10 y objetos (6, 60), (5, 45), (5, 45) toma el de 60 y la respuesta es 90. Otro: probar los 2¹⁰⁰ subconjuntos. Caso a probar: el ejemplo 2, con respuesta 5·10⁹.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · AtCoder EDPC D</div>
+  <h2>Knapsack 1</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Con los primeros i objetos y capacidad c, ¿qué dos opciones hay para el objeto i?</p></div>
+    <div class="idea-a frag">No tomarlo: dp[i − 1][c]. Tomarlo, si cabe: dp[i − 1][c − wᵢ] + vᵢ. dp[i][c] es el mayor de los dos.</div>
+    <div class="idea-a frag">La tabla tiene N · W = 10⁷ estados. La respuesta es dp[N][W].</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. dp[0][c] = 0 para todo c: sin objetos, valor 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Mochila en 1D</div>
+  <h2>Una sola fila, recorrida al revés</h2>
+  <div class="cols c-60">
+    <div class="stack" id="kn">
+      <div class="row small"><label for="kn-d">Recorrido de c</label><select id="kn-d"></select></div>
+      <div class="lrow"><span class="lab">c</span><div class="cells" id="kn-c"></div></div>
+      <div class="lrow"><span class="lab">dp</span><div class="cells" id="kn-a"></div></div>
+      <div class="caption" id="kn-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">dp = [0] * (W + 1)
+for w, v in objetos:
+    for c in range(W, w - 1, -1):
+        if dp[c - w] + v &gt; dp[c]:
+            dp[c] = dp[c - w] + v</pre>
+      <p class="small">dp[i][c] solo usa la fila i − 1, así que basta una fila. Al ir de W hacia abajo, dp[c − w] todavía tiene el valor sin el objeto i.</p>
+      <p class="small">Al derecho, dp[c − w] ya puede incluir el objeto i, y el objeto se usa varias veces.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar con los objetos del ejemplo: (3, 30), (4, 50) y (5, 60), W = 8. Al revés da 90. Al derecho da 100 (dos veces el objeto de peso 4), que es la respuesta de otro problema: la mochila con repetición. La memoria baja de N · W a W.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · AtCoder EDPC D · Knapsack 1</div>
+  <h2>Mochila 0/1 en una fila</h2>
+  <div class="cols c-60">
+    <pre class="code">def main():
+    n, W = map(int, input().split())
+    dp = [0] * (W + 1)
+    for _ in range(n):
+        w, v = map(int, input().split())
+        for c in range(W, w - 1, -1):
+            if dp[c - w] + v &gt; dp[c]:
+                dp[c] = dp[c - w] + v
+    print(dp[W])
+
+main()</pre>
+    <div class="stack small">
+      <p>O(N · W) = 10⁷ pasos y O(W) de memoria.</p>
+      <p>Los objetos se procesan al leerlos: no hace falta guardarlos.</p>
+      <p>Con N = 100 y W = 10⁵ tardó 0.04 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>dp[c] es el mayor valor con peso total a lo sumo c. Por eso la respuesta es dp[W] y no hace falta buscar el máximo de la fila.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Reconocer una DP</h2>
+  <p>Señales en el enunciado y un reto con dos strings.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Reconocer una DP</div>
+  <h2>Cuándo pensar en programación dinámica</h2>
+  <div class="cols">
+    <div class="stack small">
+      <ul>
+        <li>Pide un mínimo, un máximo o una cantidad de formas.</li>
+        <li>La solución es una secuencia de decisiones: qué dado, qué moneda, tomar o no un objeto.</li>
+        <li>Después de decidir, queda el mismo problema más pequeño.</li>
+        <li>Probar todas las opciones es exponencial, pero hay pocos estados distintos.</li>
+        <li>Un greedy tiene contraejemplo.</li>
+      </ul>
+    </div>
+    <div class="box soft stack small">
+      <h3>Antes de programar</h3>
+      <ol>
+        <li>Escribir las cinco piezas.</li>
+        <li>Contar estados × costo de la transición y compararlo con 10⁸.</li>
+        <li>Resolver a mano los casos pequeños y comparar con la tabla.</li>
+      </ol>
+    </div>
+  </div>
+  <aside class="notes"><p>En Python, la tabla bottom-up evita el límite de recursión y el costo de las llamadas. La DP con bitmask, la de intervalos y LIS en O(n log n) quedan fuera del programa.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · AtCoder EDPC F · Reto</div>
+  <h2>LCS</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Dados dos strings s y t, hay que encontrar una subsecuencia común de largo máximo. Una subsecuencia se obtiene borrando caracteres sin cambiar el orden de los demás.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>s y t, en dos líneas.</dd><dt>Salida</dt><dd>Una subsecuencia común más larga. Se acepta cualquiera.</dd><dt>Restricciones</dt><dd>1 ≤ |s|, |t| ≤ 3000</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>axyb
+abyxb</pre>
+      <div class="ex-lab">Salida</div><pre>axb</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/dp/tasks/dp_f">https://atcoder.jp/contests/dp/tasks/dp_f</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo. ayb también es correcta.</p><p>Error común: calcular solo el largo y no reconstruir el string. Otro: armar la respuesta con <code>+=</code>. Caso a probar: a y z, cuya respuesta es la línea vacía.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · AtCoder EDPC F</div>
+  <h2>LCS</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Sea dp[i][j] el largo de la LCS de s[:i] y t[:j]. ¿Qué pasa si s[i − 1] == t[j − 1]? ¿Y si son distintos?</p></div>
+    <div class="idea-a frag">Si son iguales, ese carácter entra: dp[i − 1][j − 1] + 1. Si no, se descarta el último de uno de los dos: max(dp[i − 1][j], dp[i][j − 1]).</div>
+    <div class="idea-a frag">Para el string, se vuelve desde (n, m) por las decisiones que dieron cada valor, y se invierte. Son 3000² = 9·10⁶ estados.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · AtCoder EDPC F · LCS</div>
+  <h2>Llenar la tabla y volver por ella</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Llenar</span>
+      <pre class="code xs">def main():
+    s = input()
+    t = input()
+    n, m = len(s), len(t)
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            if s[i - 1] == t[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j],
+                               dp[i][j - 1])</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Reconstruir</span>
+      <pre class="code xs">    res = []
+    i, j = n, m
+    while i &gt; 0 and j &gt; 0:
+        if s[i - 1] == t[j - 1]:
+            res.append(s[i - 1])
+            i -= 1
+            j -= 1
+        elif dp[i - 1][j] &gt;= dp[i][j - 1]:
+            i -= 1
+        else:
+            j -= 1
+    print("".join(reversed(res)))
+
+main()</pre>
+      <p class="small">O(n · m). Con dos strings de 3000 letras tardó 0.12 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2 y taller</div>
+  <h2>Problemas de la semana</h2>
+  <div class="cols">
+    <div class="stack small">
+      <h3>Práctica</h3>
+      <ul>
+        <li><a href="https://atcoder.jp/contests/dp/tasks/dp_a">EDPC A · Frog 1</a></li>
+        <li><a href="https://cses.fi/problemset/task/1633">CSES 1633 · Dice Combinations</a></li>
+        <li><a href="https://cses.fi/problemset/task/1634">CSES 1634 · Minimizing Coins</a></li>
+        <li><a href="https://cses.fi/problemset/task/1638">CSES 1638 · Grid Paths I</a></li>
+        <li><a href="https://atcoder.jp/contests/dp/tasks/dp_d">EDPC D · Knapsack 1</a></li>
+        <li><a href="https://cses.fi/problemset/task/1636">CSES 1636 · Coin Combinations II</a> (reto)</li>
+        <li><a href="https://atcoder.jp/contests/dp/tasks/dp_f">EDPC F · LCS</a> (reto)</li>
+      </ul>
+    </div>
+    <div class="stack small">
+      <h3>Tarea de DP</h3>
+      <ul>
+        <li><a href="https://cses.fi/problemset/task/1637">CSES 1637 · Removing Digits</a></li>
+        <li><a href="https://cses.fi/problemset/task/1635">CSES 1635 · Coin Combinations I</a></li>
+        <li><a href="https://atcoder.jp/contests/dp/tasks/dp_b">EDPC B · Frog 2</a></li>
+        <li><a href="https://atcoder.jp/contests/dp/tasks/dp_c">EDPC C · Vacation</a></li>
+        <li><a href="https://cses.fi/problemset/task/1746">CSES 1746 · Array Description</a> (reto)</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Pistas para la tarea. Removing Digits: dp[x] = 1 + min(dp[x − d]) sobre los dígitos d &gt; 0 de x. Vacation: tres valores por día, uno por la actividad del día anterior. Array Description: dp[v] = arreglos que terminan en el valor v; el nuevo dp[v] suma los v − 1, v y v + 1 anteriores. Como retos extra, Book Shop y Edit Distance también pasan con PyPy (0.20 s y 0.22 s según PROGRAMA.md).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para programación dinámica</h2>
+  <ol>
+    <li>Escribir estado, transición, caso base, orden y respuesta antes de programar.</li>
+    <li>Costo = estados × costo de cada transición.</li>
+    <li>En Python, tabla bottom-up; la memoización con recursión puede fallar desde unas 6000 llamadas anidadas.</li>
+    <li>Contar con orden: sumas por fuera. Sin orden: monedas por fuera.</li>
+    <li>Mochila 0/1 en una fila: recorrer la capacidad de mayor a menor.</li>
+    <li>Para reconstruir la solución, volver por la tabla desde la respuesta.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const withIdx = (c, i) => { c.append(h("span", { class: "idx", text: i })); return c; };
+
+  // ---------- llamadas sin memoria ----------
+  (function () {
+    const calls = [1];
+    for (let s = 1; s <= 30; s++) { let t = 1; for (let d = 1; d <= 6 && d <= s; d++) t += calls[s - d]; calls.push(t); }
+    function draw() {
+      const n = +$("#rc-n").value; $("#rc-v").textContent = n;
+      $("#rc-cap").innerHTML = "formas(" + n + ") sin memoria hace <b>" + calls[n].toLocaleString("es") + "</b> llamadas. Solo hay " + (n + 1) + " valores distintos de s.";
+    }
+    $("#rc-n").oninput = draw;
+    draw();
+  })();
+
+  // ---------- Frog 1 ----------
+  (function () {
+    const hh = [30, 10, 60, 10, 60, 50], dp = [0, 20];
+    for (let i = 2; i < hh.length; i++) dp.push(Math.min(dp[i - 1] + Math.abs(hh[i] - hh[i - 1]), dp[i - 2] + Math.abs(hh[i] - hh[i - 2])));
+    hh.forEach((v, i) => $("#f1-h").append(withIdx(cell("", v), i)));
+    dp.forEach((v, i) => $("#f1-d").append(withIdx(cell(i === dp.length - 1 ? "ok" : "sel", v), i)));
+  })();
+
+  // ---------- Dice Combinations ----------
+  (function () {
+    const n = 8, dp = [1], fr = [{ s: 0, dp: [1], msg: "dp[0] = 1." }];
+    for (let s = 1; s <= n; s++) {
+      let t = 0; const us = [];
+      for (let d = 1; d <= 6 && d <= s; d++) { t += dp[s - d]; us.push(dp[s - d]); }
+      dp.push(t);
+      fr.push({ s, dp: dp.slice(), msg: "dp[" + s + "] = " + us.join(" + ") + " = <b>" + t + "</b>" });
+    }
+    stepper($("#dc"), fr, (f) => {
+      const el = $("#dc-a"); el.innerHTML = "";
+      for (let i = 0; i <= n; i++) el.append(withIdx(cell(i === f.s ? "cur" : i < f.s && i >= f.s - 6 ? "sel" : i > f.s ? "dim" : "", i <= f.s ? f.dp[i] : ""), i));
+      $("#dc-cap").innerHTML = f.msg;
+    }, { delay: 1100 });
+  })();
+
+  // ---------- monedas ----------
+  (function () {
+    const c = [2, 3, 5], X = 9, INF = 99;
+    const mn = [0], ord = [1], sin = Array(X + 1).fill(0); sin[0] = 1;
+    for (let s = 1; s <= X; s++) { let b = INF, t = 0; c.forEach((m) => { if (m <= s) { b = Math.min(b, mn[s - m] + 1); t += ord[s - m]; } }); mn.push(b); ord.push(t); }
+    c.forEach((m) => { for (let s = m; s <= X; s++) sin[s] += sin[s - m]; });
+    const t = $("#co");
+    t.append(h("tr", null, ["s", "mínimo", "ordenadas", "sin orden"].map((x) => h("th", { text: x }))));
+    for (let s = 0; s <= X; s++) t.append(h("tr", { class: s === X ? "cur" : "" }, h("td", { text: s }), h("td", { text: mn[s] >= INF ? "—" : mn[s] }), h("td", { text: ord[s] }), h("td", { text: sin[s] })));
+  })();
+
+  // ---------- Grid Paths ----------
+  (function () {
+    const G = ["....", ".*..", "...*", "*..."], n = 4, dp = Array.from({ length: n }, () => Array(n).fill(0));
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      if (G[i][j] === "*") continue;
+      dp[i][j] = i === 0 && j === 0 ? 1 : (i ? dp[i - 1][j] : 0) + (j ? dp[i][j - 1] : 0);
+    }
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) $("#gp").append(G[i][j] === "*" ? cell("trap", "*") : cell(i === n - 1 && j === n - 1 ? "ok" : "sel", dp[i][j]));
+  })();
+
+  // ---------- mochila al revés / al derecho ----------
+  (function () {
+    const items = [[3, 30], [4, 50], [5, 60]], W = 8;
+    ["al revés (0/1)", "al derecho (con repetición)"].forEach((k, i) => $("#kn-d").append(h("option", { value: i, text: k })));
+    let st = null;
+    function frames(rev) {
+      const dp = Array(W + 1).fill(0), fr = [{ dp: dp.slice(), ch: [], msg: "dp empieza en 0: sin objetos, valor 0." }];
+      items.forEach(([w, v], k) => {
+        const ch = [];
+        const cs = []; if (rev) for (let c = W; c >= w; c--) cs.push(c); else for (let c = w; c <= W; c++) cs.push(c);
+        cs.forEach((c) => { if (dp[c - w] + v > dp[c]) { dp[c] = dp[c - w] + v; ch.push(c); } });
+        fr.push({ dp: dp.slice(), ch, msg: "Objeto " + (k + 1) + " (peso " + w + ", valor " + v + "): cambian dp[" + ch.join("], dp[") + "]." });
+      });
+      fr.push({ dp: dp.slice(), ch: [W], msg: rev ? "dp[8] = <b>" + dp[W] + "</b>: objetos 1 y 3." : "dp[8] = <b>" + dp[W] + "</b>: usa dos veces el objeto de peso 4. Es otro problema." });
+      return fr;
+    }
+    const render = (f) => {
+      const ec = $("#kn-c"), ea = $("#kn-a"); ec.innerHTML = ea.innerHTML = "";
+      for (let c = 0; c <= W; c++) { ec.append(cell("dim", c)); ea.append(cell(f.ch.includes(c) ? "cur" : "", f.dp[c])); }
+      $("#kn-cap").innerHTML = f.msg;
+    };
+    function load() { const fr = frames($("#kn-d").value === "0"); if (st) st.setFrames(fr); else st = stepper($("#kn"), fr, render, { delay: 1400 }); }
+    $("#kn-d").onchange = load;
+    load();
+  })();
+})();
+</script>
+</body>
+</html>

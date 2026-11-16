@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 12 · Grafos I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .stat { font-family: var(--font-mono); font-size: 20px; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opts button { font-size: 16px; }
+  .mat { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; }
+  .mat td, .mat th { border: 1px solid var(--line); width: 34px; height: 32px; text-align: center; }
+  .mat th { color: var(--muted); font-weight: 500; font-size: 15px; border-color: transparent; }
+  .mat td.one { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .repr { font-family: var(--font-mono); font-size: 18px; line-height: 1.6; }
+  .gg .cell { width: 44px; height: 44px; font-size: 16px; }
+  .gg .cell.wall { background: var(--ink); }
+  .gg .cell.r1 { background: var(--accent-soft); border-color: var(--accent); }
+  .gg .cell.r2 { background: var(--ac-soft); border-color: var(--ac); }
+  .gg .cell.r3 { background: var(--re-soft); border-color: var(--re); }
+  .gg .cell.out { border-style: dashed; opacity: .5; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span>
+    <span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span>
+    <span class="on"></span><span></span><span class="on"></span><span></span><span class="hl"></span><span></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 12 · Sesión 1</div>
+  <h1>Grafos I</h1>
+  <div class="meta"><span>Objetivo: representar un grafo en Python y recorrerlo con DFS</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. Abre el corte 3. Esta semana no hay práctica: en la sesión 2 el docente explica BFS y resuelve en vivo Counting Rooms, Building Roads, Message Route y Labyrinth. La tarea de la semana es Building Teams.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–15</td><td>Vocabulario: nodo, arista, grado, camino, ciclo y árbol</td></tr>
+    <tr><td>15–35</td><td>Representaciones y cómo leer un grafo en Python</td></tr>
+    <tr><td>35–60</td><td>DFS iterativo y componentes conexas</td></tr>
+    <tr><td>60–85</td><td>Grillas como grafos y flood fill</td></tr>
+    <tr><td>85–90</td><td>Resumen y plan de la sesión 2</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Vocabulario</h2>
+  <p>Nodos unidos por aristas.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Grafos</div>
+  <h2>Un grafo tiene nodos y aristas</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <svg class="graph" id="vo-g" viewBox="0 0 580 330" width="580" height="330"></svg>
+      <div class="opts" id="vo-b"></div>
+      <div class="caption" id="vo-cap"></div>
+    </div>
+    <div class="stack small">
+      <p><strong>Nodo</strong> (o vértice): un elemento, como una ciudad. <strong>Arista</strong>: una conexión entre dos nodos, como una carretera.</p>
+      <p><strong>Grado</strong>: cantidad de aristas de un nodo. <strong>Camino</strong>: secuencia de nodos unidos por aristas. <strong>Ciclo</strong>: camino que vuelve al nodo inicial sin repetir aristas.</p>
+      <p><strong>Conexo</strong>: hay camino entre cualquier par de nodos. <strong>Árbol</strong>: grafo conexo sin ciclos; con n nodos tiene n − 1 aristas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Usar los botones para marcar cada concepto en el grafo. Este grafo tiene n = 8 nodos y m = 9 aristas. En los enunciados, n suele ser la cantidad de nodos y m la de aristas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipos de grafo</div>
+  <h2>Dirigidos y ponderados</h2>
+  <div class="cols">
+    <div class="stack">
+      <svg class="graph" id="di-g" viewBox="0 0 480 220" width="480" height="220"></svg>
+      <p class="small"><strong>Dirigido</strong>: cada arista tiene sentido. a → b no permite ir de b a a. Ejemplo: el curso 1 es requisito del curso 2.</p>
+    </div>
+    <div class="stack">
+      <svg class="graph" id="po-g" viewBox="0 0 480 220" width="480" height="220"></svg>
+      <p class="small"><strong>Ponderado</strong>: cada arista tiene un peso, como la longitud de una carretera. El camino más corto ya no es el de menos aristas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>En el grafo ponderado, de 1 a 4 el camino directo pesa 9 y el camino 1, 2, 3, 4 pesa 2 + 3 + 1 = 6. Los grafos ponderados se ven en la semana 13 con Dijkstra.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Representaciones</h2>
+  <p>Cómo guardar un grafo en Python.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Representaciones</div>
+  <h2>El mismo grafo de tres formas</h2>
+  <div class="cols c3">
+    <div class="stack">
+      <svg class="graph" id="re-g" viewBox="0 0 300 220" width="300" height="220"></svg>
+      <div class="repr">aristas = [(1, 2), (1, 3),<br>&nbsp;&nbsp;(2, 3), (3, 4)]</div>
+    </div>
+    <div class="stack">
+      <h3 class="small muted">Lista de adyacencia</h3>
+      <div class="repr">adj[1] = [2, 3]<br>adj[2] = [1, 3]<br>adj[3] = [1, 2, 4]<br>adj[4] = [3]</div>
+      <p class="small">Para cada nodo, la lista de sus vecinos. Es la que más se usa.</p>
+    </div>
+    <div class="stack">
+      <h3 class="small muted">Matriz de adyacencia</h3>
+      <table class="mat" id="re-m"></table>
+      <p class="small">M[a][b] = 1 si hay arista. Ocupa n² casillas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>La lista de aristas es la forma en que llega la entrada. Se usa tal cual en Kruskal (semana 13). En un grafo no dirigido, cada arista aparece en la lista de adyacencia de sus dos extremos, y la matriz es simétrica.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Leer un grafo</div>
+  <h2>Lista de adyacencia en Python</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">n, m = map(int, input().split())
+adj = [[] for _ in range(n + 1)]   # nodos 1..n
+for _ in range(m):
+    a, b = map(int, input().split())
+    adj[a].append(b)
+    adj[b].append(a)      # quitar si es dirigido
+
+# ponderado: guardar (vecino, peso)
+#   adj[a].append((b, c))</pre>
+    </div>
+    <div class="stack">
+      <table class="t" style="font-size:19px">
+        <tr><th></th><th>Lista</th><th>Matriz</th><th>Aristas</th></tr>
+        <tr><td>Memoria</td><td>O(n + m)</td><td>O(n²)</td><td>O(m)</td></tr>
+        <tr><td>Vecinos de u</td><td>O(grado)</td><td>O(n)</td><td>O(m)</td></tr>
+        <tr><td>¿Hay arista a–b?</td><td>O(grado)</td><td>O(1)</td><td>O(m)</td></tr>
+      </table>
+      <p class="small">Con n = 10⁵ la matriz tendría 10¹⁰ casillas, así que se usa la lista. La matriz sirve con n ≤ 1000 más o menos.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Se crea con n + 1 listas para usar los números de nodo del enunciado (1 a n) sin restar 1. Igual que con las matrices de la semana 4, <code>[[]] * (n + 1)</code> crearía n + 1 referencias a la misma lista.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>DFS</h2>
+  <p>Recorrer todo lo que se alcanza desde un nodo.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">DFS iterativo</div>
+  <h2>Recorrido en profundidad con una pila</h2>
+  <div class="cols c-60">
+    <div class="stack" id="df">
+      <svg class="graph" id="df-g" viewBox="0 0 580 330" width="560" height="318"></svg>
+      <div class="stat" id="df-s"></div>
+      <div class="caption" id="df-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">visto = [False] * (n + 1)
+visto[s] = True
+pila = [s]
+while pila:
+    u = pila.pop()
+    for v in adj[u]:
+        if not visto[v]:
+            visto[v] = True
+            pila.append(v)</pre>
+      <p class="small">Cada nodo entra una vez a la pila y cada arista se revisa dos veces (una por extremo). Es O(n + m).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso desde el nodo 1. En azul: nodos marcados que esperan en la pila. En amarillo: el nodo que se saca. En verde: nodos ya procesados. Se marca al meter en la pila para que ningún nodo entre dos veces. Este recorrido visita los mismos nodos que un DFS recursivo, pero no siempre en el mismo orden. Para componentes y flood fill el orden no importa.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">DFS en Python</div>
+  <h2>Por qué una pila y no recursión</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># recursivo: profundidad hasta n
+def dfs(u):
+    visto[u] = True
+    for v in adj[u]:
+        if not visto[v]:
+            dfs(v)</pre>
+    </div>
+    <div class="stack small">
+      <p>En un grafo que es un camino 1 – 2 – … – n, la versión recursiva hace n llamadas anidadas. Con n = 10⁵ eso es 10⁵ de profundidad.</p>
+      <p>En la semana 11 PyPy falló antes de 1.2·10⁴ llamadas anidadas, aun con <code>sys.setrecursionlimit(10**6)</code>.</p>
+      <p>La versión con una lista como pila no tiene ese límite: la lista crece en la memoria normal del programa.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Con grafos pequeños, por ejemplo n ≤ 1000, la versión recursiva funciona. En el curso se usa siempre la iterativa para no depender del tamaño de la pila del juez.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Componentes conexas</div>
+  <h2>Un DFS desde cada nodo sin visitar</h2>
+  <div class="cols c-60">
+    <div class="stack" id="cc">
+      <svg class="graph" id="cc-g" viewBox="0 0 580 320" width="560" height="309"></svg>
+      <div class="caption" id="cc-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">visto = [False] * (n + 1)
+comp = 0
+for s in range(1, n + 1):
+    if visto[s]:
+        continue
+    comp += 1          # componente nueva
+    visto[s] = True
+    pila = [s]
+    while pila:
+        u = pila.pop()
+        for v in adj[u]:
+            if not visto[v]:
+                visto[v] = True
+                pila.append(v)</pre>
+      <p class="small">Todos los DFS juntos visitan cada nodo una vez: O(n + m).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Una <strong>componente conexa</strong> es un grupo de nodos con camino entre cualquier par, que no se puede agrandar. Un nodo sin aristas, como el 10, es una componente de un solo nodo. Este código es la base de Building Roads en la sesión 2.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Grillas como grafos</h2>
+  <p>Cada celda es un nodo y sus vecinas son las aristas.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Grafo implícito</div>
+  <h2>Los vecinos salen de dx y dy</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="grid gg" id="gi" style="grid-template-columns: repeat(8, 44px)"></div>
+      <div class="caption" id="gi-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+    nx, ny = x + dx, y + dy
+    if 0 &lt;= nx &lt; n and 0 &lt;= ny &lt; m:
+        if g[nx][ny] == ".":
+            ...   # (nx, ny) es una vecina libre</pre>
+      <p class="small">No hace falta construir una lista de adyacencia: los vecinos de cada celda se calculan cuando se necesitan, como en la semana 4.</p>
+      <p class="small">Una grilla de n × m tiene n · m nodos y cada uno a lo sumo 4 aristas. Un recorrido cuesta O(n · m).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Hacer clic en una celda: en verde las vecinas a las que se puede pasar, en rojo las paredes y con borde punteado las posiciones fuera de la grilla. La grilla es el ejemplo de Counting Rooms.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Flood fill</div>
+  <h2>Pintar una región con DFS</h2>
+  <div class="cols">
+    <div class="stack" id="ff">
+      <div class="grid gg" id="ff-g" style="grid-template-columns: repeat(8, 44px)"></div>
+      <div class="stat" id="ff-s"></div>
+      <div class="caption" id="ff-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">visto = [[False] * m for _ in range(n)]
+regiones = 0
+for i in range(n):
+    for j in range(m):
+        if g[i][j] == "." and not visto[i][j]:
+            regiones += 1
+            visto[i][j] = True
+            pila = [(i, j)]
+            while pila:
+                x, y = pila.pop()
+                # meter las vecinas libres
+                # y no visitadas</pre>
+      <p class="small"><strong>Flood fill</strong>: desde una celda, marcar todas las celdas libres que se alcanzan. Cada región es una componente conexa de la grilla.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. Cada color es una región. El bucle que falta es el de la diapositiva anterior. En la sesión 2 este código resuelve Counting Rooms, con una grilla de hasta 1000 × 1000.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>BFS y problemas en vivo</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>En la sesión 2 el docente explica BFS y resuelve en vivo:</p>
+      <ul>
+        <li><a href="https://cses.fi/problemset/task/1192">CSES 1192 · Counting Rooms</a> (flood fill)</li>
+        <li><a href="https://cses.fi/problemset/task/1666">CSES 1666 · Building Roads</a> (componentes)</li>
+        <li><a href="https://cses.fi/problemset/task/1667">CSES 1667 · Message Route</a> (BFS)</li>
+        <li><a href="https://cses.fi/problemset/task/1193">CSES 1193 · Labyrinth</a> (BFS en grilla)</li>
+      </ul>
+    </div>
+    <div class="box soft stack small">
+      <h3>Tarea de la semana</h3>
+      <p><a href="https://cses.fi/problemset/task/1668">CSES 1668 · Building Teams</a>: repartir alumnos en dos equipos sin que dos amigos queden juntos. Se resuelve con la bipartición que se ve en la sesión 2.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para grafos en Python</h2>
+  <ol>
+    <li>Leer con lista de adyacencia: <code>adj = [[] for _ in range(n + 1)]</code>.</li>
+    <li>En un grafo no dirigido, agregar la arista en los dos sentidos.</li>
+    <li>DFS con una lista como pila; marcar el nodo al meterlo.</li>
+    <li>Componentes: un DFS desde cada nodo sin visitar.</li>
+    <li>En una grilla, los vecinos salen de dx y dy, revisando los límites.</li>
+    <li>Un recorrido completo cuesta O(n + m), y O(n · m) en una grilla.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper, grafo } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const A = {
+    pos: { 1: [60, 70], 2: [200, 40], 3: [110, 230], 4: [270, 160], 5: [400, 70], 6: [460, 270], 7: [530, 140], 8: [260, 295] },
+    edges: [[1, 2], [1, 3], [2, 4], [3, 4], [4, 5], [4, 8], [5, 6], [5, 7], [6, 7]]
+  };
+  const adjOf = (G, n) => { const adj = Array.from({ length: n + 1 }, () => []); G.edges.forEach(([a, b]) => { adj[a].push(b); adj[b].push(a); }); return adj; };
+
+  // ---------- vocabulario ----------
+  (function () {
+    const opts = {
+      "grado de 4": { node: { 4: "cur", 2: "sel", 3: "sel", 5: "sel", 8: "sel" }, edge: { "2-4": "on", "3-4": "on", "4-5": "on", "4-8": "on" }, msg: "El nodo 4 tiene grado 4: sus vecinos son 2, 3, 5 y 8." },
+      "camino de 1 a 7": { node: { 1: "cur", 3: "sel", 4: "sel", 5: "sel", 7: "cur" }, edge: { "1-3": "on", "3-4": "on", "4-5": "on", "5-7": "on" }, msg: "1, 3, 4, 5, 7 es un camino de 4 aristas. 1, 2, 4, 5, 7 es otro." },
+      "ciclo": { node: { 5: "ok", 6: "ok", 7: "ok" }, edge: { "5-6": "ok", "6-7": "ok", "5-7": "ok" }, msg: "5, 6, 7, 5 es un ciclo. 1, 2, 4, 3, 1 es otro." },
+      "árbol": { node: {}, edge: { "1-2": "ok", "1-3": "ok", "2-4": "ok", "4-5": "ok", "4-8": "ok", "5-6": "ok", "5-7": "ok", "3-4": "dim", "6-7": "dim" }, msg: "Sin las aristas 3–4 y 6–7 queda un árbol: conexo, sin ciclos y con 8 − 1 = 7 aristas." }
+    };
+    function show(k) {
+      grafo($("#vo-g"), A, opts[k] || {});
+      $("#vo-cap").innerHTML = opts[k] ? opts[k].msg : "n = 8 nodos y m = 9 aristas.";
+      Array.from($("#vo-b").children).forEach((b) => b.classList.toggle("on", b.textContent === k));
+    }
+    Object.keys(opts).forEach((k) => $("#vo-b").append(h("button", { text: k, onclick: () => show(k) })));
+    show(null);
+  })();
+
+  // ---------- dirigido y ponderado ----------
+  grafo($("#di-g"), { dir: true, pos: { 1: [60, 110], 2: [220, 40], 3: [220, 180], 4: [400, 110] }, edges: [[1, 2], [1, 3], [3, 4], [2, 4]] });
+  grafo($("#po-g"), { pos: { 1: [60, 110], 2: [180, 30], 3: [320, 40], 4: [420, 160] }, edges: [[1, 2, 2], [2, 3, 3], [3, 4, 1], [1, 4, 9]] }, { edge: { "1-2": "ok", "2-3": "ok", "3-4": "ok" } });
+
+  // ---------- representaciones ----------
+  (function () {
+    const G = { pos: { 1: [50, 50], 2: [50, 180], 3: [170, 115], 4: [270, 115] }, edges: [[1, 2], [1, 3], [2, 3], [3, 4]] };
+    grafo($("#re-g"), G);
+    const t = $("#re-m"), M = [[0, 1, 1, 0], [1, 0, 1, 0], [1, 1, 0, 1], [0, 0, 1, 0]];
+    t.append(h("tr", null, h("th"), [1, 2, 3, 4].map((x) => h("th", { text: x }))));
+    M.forEach((r, i) => t.append(h("tr", null, h("th", { text: i + 1 }), r.map((v) => h("td", { class: v ? "one" : "", text: v })))));
+  })();
+
+  // ---------- DFS ----------
+  (function () {
+    const adj = adjOf(A, 8), vis = Array(9).fill(false), done = Array(9).fill(false);
+    const snap = (u, pila, msg) => {
+      const node = {};
+      for (let x = 1; x <= 8; x++) if (done[x]) node[x] = "ok"; else if (vis[x]) node[x] = "sel";
+      if (u) node[u] = "cur";
+      return { st: { node }, pila: pila.slice(), msg };
+    };
+    const fr = [];
+    vis[1] = true; let pila = [1];
+    fr.push(snap(0, pila, "Se marca el 1 y se mete en la pila."));
+    while (pila.length) {
+      const u = pila.pop(), nuevos = [];
+      adj[u].forEach((v) => { if (!vis[v]) { vis[v] = true; pila.push(v); nuevos.push(v); } });
+      fr.push(snap(u, pila, "Sale " + u + ". " + (nuevos.length ? "Se marcan y se meten " + nuevos.join(", ") + "." : "No tiene vecinos sin marcar.")));
+      done[u] = true;
+    }
+    fr.push(snap(0, pila, "La pila quedó vacía: se visitaron los 8 nodos."));
+    stepper($("#df"), fr, (f) => {
+      grafo($("#df-g"), A, f.st);
+      $("#df-s").innerHTML = "pila = [" + f.pila.join(", ") + "]";
+      $("#df-cap").innerHTML = f.msg;
+    }, { delay: 1200 });
+  })();
+
+  // ---------- componentes ----------
+  (function () {
+    const B = {
+      pos: { 1: [60, 60], 2: [190, 50], 3: [110, 170], 4: [290, 70], 5: [270, 210], 6: [410, 60], 7: [520, 120], 8: [500, 250], 9: [390, 190], 10: [110, 285] },
+      edges: [[1, 2], [2, 3], [1, 3], [4, 5], [6, 7], [7, 8], [8, 9], [9, 6]]
+    };
+    const n = 10, adj = adjOf(B, n), comp = Array(n + 1).fill(0), fr = [];
+    const snap = (cur, msg) => { const node = {}; for (let x = 1; x <= n; x++) if (comp[x]) node[x] = "c" + comp[x]; if (cur) node[cur] = "cur"; return { st: { node }, msg }; };
+    fr.push(snap(0, "Ningún nodo visitado. comp = 0."));
+    let c = 0;
+    for (let s = 1; s <= n; s++) {
+      if (comp[s]) { continue; }
+      c++; comp[s] = c; const pila = [s];
+      while (pila.length) { const u = pila.pop(); adj[u].forEach((v) => { if (!comp[v]) { comp[v] = c; pila.push(v); } }); }
+      const nodos = []; for (let x = 1; x <= n; x++) if (comp[x] === c) nodos.push(x);
+      fr.push(snap(s, "s = " + s + " no está visitado: comp = " + c + ". El DFS marca " + nodos.join(", ") + "."));
+    }
+    fr.push(snap(0, "Hay <b>" + c + "</b> componentes. Los demás valores de s ya estaban visitados."));
+    stepper($("#cc"), fr, (f) => { grafo($("#cc-g"), B, f.st); $("#cc-cap").innerHTML = f.msg; }, { delay: 1400 });
+  })();
+
+  // ---------- grilla ----------
+  const GR = ["########", "#..#...#", "####.#.#", "#..#...#", "########"], GN = 5, GM = 8;
+  (function () {
+    let sel = [1, 5];
+    function draw() {
+      const el = $("#gi"); el.innerHTML = "";
+      const nb = {};
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const x = sel[0] + dx, y = sel[1] + dy; nb[x + "," + y] = x >= 0 && x < GN && y >= 0 && y < GM ? (GR[x][y] === "." ? "ok" : "bad") : "out"; });
+      for (let i = 0; i < GN; i++) for (let j = 0; j < GM; j++) {
+        const k = nb[i + "," + j];
+        const cls = i === sel[0] && j === sel[1] ? "cur" : k === "ok" ? "ok" : k === "bad" ? "bad" : GR[i][j] === "#" ? "wall" : "";
+        el.append(cell(cls, "", { onclick: () => { sel = [i, j]; draw(); }, style: { cursor: "pointer" } }));
+      }
+      const libres = Object.values(nb).filter((v) => v === "ok").length;
+      $("#gi-cap").innerHTML = "Celda (" + sel[0] + ", " + sel[1] + "): " + (GR[sel[0]][sel[1]] === "#" ? "es pared. " : "") + libres + " vecina" + (libres === 1 ? "" : "s") + " libre" + (libres === 1 ? "" : "s") + ".";
+    }
+    draw();
+  })();
+
+  // ---------- flood fill ----------
+  (function () {
+    const reg = Array.from({ length: GN }, () => Array(GM).fill(0)), fr = [];
+    const snap = (cur, pila, r, msg) => ({ reg: reg.map((x) => x.slice()), cur, pila: pila.map((p) => "(" + p.join(", ") + ")"), r, msg });
+    fr.push(snap(null, [], 0, "Se recorre la grilla fila por fila buscando celdas libres sin región."));
+    let r = 0;
+    for (let i = 0; i < GN; i++) for (let j = 0; j < GM; j++) {
+      if (GR[i][j] !== "." || reg[i][j]) continue;
+      r++; reg[i][j] = r; const pila = [[i, j]];
+      fr.push(snap([i, j], pila, r, "(" + i + ", " + j + ") es libre y no tiene región: región " + r + "."));
+      while (pila.length) {
+        const [x, y] = pila.pop(), nuevas = [];
+        [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].forEach(([a, b]) => { if (a >= 0 && a < GN && b >= 0 && b < GM && GR[a][b] === "." && !reg[a][b]) { reg[a][b] = r; pila.push([a, b]); nuevas.push("(" + a + ", " + b + ")"); } });
+        fr.push(snap([x, y], pila, r, "Sale (" + x + ", " + y + "). " + (nuevas.length ? "Entran " + nuevas.join(" ") + "." : "No tiene vecinas nuevas.")));
+      }
+    }
+    fr.push(snap(null, [], r, "Hay <b>" + r + "</b> regiones."));
+    stepper($("#ff"), fr, (f) => {
+      const el = $("#ff-g"); el.innerHTML = "";
+      for (let i = 0; i < GN; i++) for (let j = 0; j < GM; j++) {
+        const cur = f.cur && f.cur[0] === i && f.cur[1] === j;
+        el.append(cell(cur ? "cur" : GR[i][j] === "#" ? "wall" : f.reg[i][j] ? "r" + f.reg[i][j] : ""));
+      }
+      $("#ff-s").innerHTML = "regiones = " + f.r + " · pila = [" + f.pila.join(" ") + "]";
+      $("#ff-cap").innerHTML = f.msg;
+    }, { delay: 900 });
+  })();
+})();
+</script>
+</body>
+</html>

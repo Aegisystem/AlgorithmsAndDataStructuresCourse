@@ -10,6 +10,8 @@
 //   https://algo.aegisystem.xyz/semana-02-complejidad/s1-teoria.html?docente
 //
 // `url: null` significa que la clase todavía no tiene material.
+// `sesion: 2` marca una clase de la sesión 2 (la de BFS de la semana 12); en el
+// índice aparece como una fila aparte de la misma semana.
 
 window.CURSO = {
   modulos: [
@@ -37,20 +39,21 @@ window.CURSO = {
       nombre: "Módulo 3 · Técnicas",
       semanas: "semanas 9–11",
       clases: [
-        { semana: 9, titulo: "Sumas prefijas, diferencias y two pointers", resumen: "Prefijas 1D y 2D, arreglo de diferencias, ventana deslizante", s2: "práctica", url: null, disponible: false },
-        { semana: 10, titulo: "Greedy y colas de prioridad", resumen: "Intervalos, Kadane, heapq", s2: "práctica", url: null, disponible: false },
-        { semana: 11, titulo: "Recursión y búsqueda completa", resumen: "Subconjuntos con bitmask, itertools, backtracking con poda", s2: "Contest 3", url: null, disponible: false }
+        { semana: 9, titulo: "Sumas prefijas, diferencias y two pointers", resumen: "Prefijas 1D y 2D, arreglo de diferencias, ventana deslizante", s2: "práctica", url: "semana-09-prefijas/s1-teoria.html", disponible: false },
+        { semana: 10, titulo: "Greedy y colas de prioridad", resumen: "Intervalos, Kadane, heapq", s2: "práctica", url: "semana-10-greedy/s1-teoria.html", disponible: false },
+        { semana: 11, titulo: "Recursión y búsqueda completa", resumen: "Subconjuntos con bitmask, itertools, backtracking con poda", s2: "Contest 3", url: "semana-11-busqueda-completa/s1-teoria.html", disponible: false }
       ]
     },
     {
       nombre: "Módulo 4 · Temas avanzados",
       semanas: "semanas 12–16",
       clases: [
-        { semana: 12, titulo: "Grafos I", resumen: "Representaciones, DFS iterativo, grillas como grafos, BFS", s2: "el docente resuelve", url: null, disponible: false },
-        { semana: 13, titulo: "Grafos II", resumen: "Dijkstra, orden topológico, Union-Find, Kruskal", s2: "práctica", url: null, disponible: false },
-        { semana: 14, titulo: "Programación dinámica", resumen: "Memoización, DP 1D y 2D, mochila 0/1", s2: "práctica", url: null, disponible: false },
-        { semana: 15, titulo: "Consultas de rango", resumen: "Árbol de Fenwick y sparse table", s2: "práctica", url: null, disponible: false },
-        { semana: 16, titulo: "Parcial teórico 2", resumen: "Semanas 8 a 15", s2: "Contest final", url: null, disponible: false }
+        { semana: 12, titulo: "Grafos I", resumen: "Representaciones, DFS iterativo, componentes, grillas como grafos", s2: "el docente resuelve", url: "semana-12-grafos/s1-teoria.html", disponible: false },
+        { semana: 12, sesion: 2, titulo: "Grafos I: BFS", resumen: "BFS, camino con padres, multifuente, bipartición y cuatro problemas en vivo", url: "semana-12-grafos/s2-bfs.html", disponible: false },
+        { semana: 13, titulo: "Grafos II", resumen: "Dijkstra, orden topológico, Union-Find, Kruskal", s2: "práctica", url: "semana-13-grafos-ii/s1-teoria.html", disponible: false },
+        { semana: 14, titulo: "Programación dinámica", resumen: "Memoización, DP 1D y 2D, mochila 0/1", s2: "práctica", url: "semana-14-dp/s1-teoria.html", disponible: false },
+        { semana: 15, titulo: "Consultas de rango", resumen: "Árbol de Fenwick y sparse table", s2: "práctica", url: "semana-15-rangos/s1-teoria.html", disponible: false },
+        { semana: 16, titulo: "Parcial teórico 2", resumen: "Semanas 8 a 15; guía con ejemplos de preguntas", s2: "Contest final", url: "semana-16-evaluacion/guia.html", disponible: false }
       ]
     }
   ]

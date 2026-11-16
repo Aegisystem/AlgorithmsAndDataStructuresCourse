@@ -75,6 +75,47 @@
     };
   }
 
+  // ---------- grafos en SVG ----------
+  // G = { pos: { id: [x, y] }, edges: [[a, b, peso?], ...], dir: true si es dirigido, r: radio }
+  // st = { node: { id: clase }, edge: { "a-b": clase }, sub: { id: texto debajo del nodo } }
+  // Clases de nodo: sel, cur, ok, bad, dim, c1 a c4. Clases de arista: on, ok, bad, dim.
+  const SVGNS = "http://www.w3.org/2000/svg";
+  let flechas = 0;
+  function sv(tag, attrs, text) {
+    const el = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) if (attrs[k] !== null && attrs[k] !== undefined) el.setAttribute(k, attrs[k]);
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+  function grafo(svg, G, st) {
+    st = st || {};
+    const r = G.r || 22, node = st.node || {}, edge = st.edge || {}, sub = st.sub || {};
+    svg.innerHTML = "";
+    let marca = null;
+    if (G.dir) {
+      marca = "flecha-" + (++flechas);
+      const m = sv("marker", { id: marca, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" });
+      m.append(sv("path", { d: "M0,0 L10,5 L0,10 z", class: "arrow" }));
+      const defs = sv("defs"); defs.append(m); svg.append(defs);
+    }
+    G.edges.forEach((e) => {
+      const a = e[0], b = e[1], w = e[2];
+      const [x1, y1] = G.pos[a], [x2, y2] = G.pos[b];
+      const cls = edge[a + "-" + b] || (!G.dir && edge[b + "-" + a]) || "";
+      let X2 = x2, Y2 = y2;
+      if (G.dir) { const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy); X2 = x2 - dx / L * (r + 3); Y2 = y2 - dy / L * (r + 3); }
+      svg.append(sv("line", { x1, y1, x2: X2, y2: Y2, class: "ge " + cls, "marker-end": marca ? "url(#" + marca + ")" : null }));
+      if (w !== undefined) svg.append(sv("text", { x: (x1 + x2) / 2, y: (y1 + y2) / 2, class: "gw" }, w));
+    });
+    Object.keys(G.pos).forEach((id) => {
+      const [x, y] = G.pos[id];
+      const g = sv("g", { class: "gn " + (node[id] || "") });
+      g.append(sv("circle", { cx: x, cy: y, r }), sv("text", { x, y }, id));
+      if (sub[id] !== undefined && sub[id] !== null) g.append(sv("text", { x, y: y + r + 15, class: "gsub" }, sub[id]));
+      svg.append(g);
+    });
+  }
+
   // ---------- motor del mazo ----------
   function initDeck() {
     const slides = $$(".slide");
@@ -198,7 +239,7 @@
     });
   }
 
-  window.Curso = { h, $, $$, stepper };
+  window.Curso = { h, $, $$, stepper, grafo };
   document.addEventListener("DOMContentLoaded", () => {
     if (bloqueada()) return mostrarAviso();
     highlight();

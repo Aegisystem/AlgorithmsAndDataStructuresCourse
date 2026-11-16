@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 11 · Recursión y búsqueda completa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .callstack { display: flex; flex-direction: column-reverse; gap: 6px; min-height: 250px; justify-content: flex-start; }
+  .frame { border: 1.5px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 6px 14px; font-family: var(--font-mono); font-size: 19px; width: 330px; }
+  .frame.top { background: var(--mark); border-color: var(--tle); }
+  .frame.ret { background: var(--ac-soft); border-color: var(--ac); }
+  .pegs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end; height: 190px; border-bottom: 3px solid var(--ink); }
+  .peg { display: flex; flex-direction: column-reverse; align-items: center; gap: 4px; height: 100%; position: relative; }
+  .peg::before { content: ""; position: absolute; bottom: 0; width: 6px; height: 92%; background: var(--line); border-radius: 3px; }
+  .disk { height: 28px; border-radius: 6px; background: var(--accent); position: relative; color: #fff; font-family: var(--font-mono); font-size: 14px; display: grid; place-items: center; }
+  .disk.mv { background: var(--tle); }
+  .peglab { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; font-family: var(--font-mono); font-size: 16px; color: var(--muted); }
+  .mtab { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; }
+  .mtab th, .mtab td { border-bottom: 1px solid var(--line); padding: 3px 14px; text-align: left; }
+  .mtab th { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .mtab tr.cur td { background: var(--mark); color: var(--mark-ink); }
+  .mtab tr { cursor: pointer; }
+  .mtab .b1 { color: var(--accent); font-weight: 700; }
+  .stat { font-family: var(--font-mono); font-size: 20px; }
+  pre.code.xs { font-size: 14.5px; line-height: 1.42; padding: 12px 16px; }
+  .outlist { font-family: var(--font-mono); font-size: 18px; color: var(--muted); }
+  .board { display: grid; gap: 3px; }
+  .board .cell { width: 44px; height: 44px; font-size: 24px; }
+  .board .cell.dark { background: var(--soft); }
+  .board .cell.res { background: var(--ink); }
+  .board .cell.q { background: var(--mark); border-color: var(--mark); }
+  .board .cell.try { background: var(--wa-soft); border-color: var(--wa); }
+  .gray { border-collapse: collapse; font-family: var(--font-mono); font-size: 20px; }
+  .gray td { padding: 2px 12px; }
+  .gray td.z { color: var(--accent); font-weight: 700; }
+  .gray td.o { color: var(--re); font-weight: 700; }
+  .gray tr.sep td { border-top: 2px dashed var(--line); }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span></span><span class="on"></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span class="on"></span><span></span><span></span>
+    <span class="on"></span><span></span><span></span><span></span><span></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 11 · Sesión 1</div>
+  <h1>Recursión y búsqueda completa</h1>
+  <div class="meta"><span>Objetivo: explorar todas las opciones cuando n es pequeño</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 es el Contest 3, que cubre las semanas 8 a 10 y cierra el corte 2. Los problemas de hoy son la tarea de búsqueda completa (taller de la semana).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–15</td><td>Recursión: caso base, pila de llamadas y límite; Tower of Hanoi</td></tr>
+    <tr><td>15–35</td><td>Subconjuntos con bitmask y con recursión; Apple Division</td></tr>
+    <tr><td>35–50</td><td><code>itertools</code>; Creating Strings y Gray Code</td></tr>
+    <tr><td>50–75</td><td>Backtracking con poda; Chessboard and Queens</td></tr>
+    <tr><td>75–85</td><td>Estimar si la búsqueda completa cabe en el tiempo</td></tr>
+    <tr><td>85–90</td><td>Contest 3 y resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Recursión</h2>
+  <p>Una función que se llama a sí misma con un problema más pequeño.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Recursión</div>
+  <h2>Caso base y pila de llamadas</h2>
+  <div class="cols">
+    <div class="stack" id="cs">
+      <div class="callstack" id="cs-s"></div>
+      <div class="caption" id="cs-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code">def fact(n):
+    if n == 0:          # caso base
+        return 1
+    return n * fact(n - 1)
+
+print(fact(4))      # 24</pre>
+      <p class="small">El <strong>caso base</strong> se responde sin llamar a la función. Las demás llamadas se acercan a él.</p>
+      <p class="small">Cada llamada que espera una respuesta queda en la <strong>pila de llamadas</strong>, con sus variables. Sin caso base la pila crece hasta que Python la corta.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. La pila crece hasta fact(0) y después cada llamada termina en orden inverso. El ejemplo es pequeño a propósito: el factorial se calcula mejor con un bucle.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Recursión en Python</div>
+  <h2>El límite de la pila</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm">import sys
+sys.setrecursionlimit(10**6)
+
+def suma(i):
+    if i == 0:
+        return 0
+    return i + suma(i - 1)
+
+suma(10000)     # funciona
+suma(12000)     # RecursionError</pre>
+      <p class="small">Medido con PyPy 3.11 en un Apple M4, con la pila de 8 MB del sistema.</p>
+    </div>
+    <div class="stack small">
+      <p>Python corta la recursión a unas 1000 llamadas anidadas. <code>sys.setrecursionlimit</code> sube ese número, pero la pila del sistema tiene un tamaño fijo.</p>
+      <p>Con el límite en 10⁶, PyPy llegó a una profundidad de 10⁴ y falló antes de 1.2·10⁴.</p>
+      <p>Regla del curso: recursión solo cuando la profundidad es pequeña, por ejemplo n ≤ 20 en una búsqueda completa. Con profundidad de 10⁵ (un DFS en un grafo grande) se usa un bucle con una pila propia.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>El juez puede tener otra pila y otro límite, así que un programa que funciona en el computador puede dar RE en el juez. En la semana 12 el DFS se hace con una pila explícita por esta razón.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 2165</div>
+  <h2>Tower of Hanoi</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay tres torres y n discos de tamaños distintos, todos en la torre 1, del más grande abajo al más pequeño arriba.</p>
+      <p>Hay que pasarlos todos a la torre 3 con el mínimo de movimientos. Cada movimiento lleva el disco de arriba de una torre a otra, y nunca un disco grande puede quedar sobre uno pequeño.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n.</dd><dt>Salida</dt><dd>k y luego k movimientos "a b".</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 16</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>2</pre>
+      <div class="ex-lab">Salida</div><pre>3
+1 2
+1 3
+2 3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/2165">https://cses.fi/problemset/task/2165</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver n = 2 y n = 3 a mano.</p><p>Error común: imprimir cada movimiento con <code>print</code> dentro de la recursión; con n = 16 son 65 535 líneas. Funciona con PyPy, pero conviene juntarlas y escribir una vez. Caso a probar: n = 1, con un solo movimiento 1 3.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 2165</div>
+  <h2>Tower of Hanoi</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Para mover el disco más grande a la torre 3, ¿dónde tienen que estar los otros n − 1 discos?</p></div>
+    <div class="idea-a frag">En la torre 2. Entonces: mover n − 1 discos de 1 a 2, mover el grande de 1 a 3 y mover los n − 1 de 2 a 3.</div>
+    <div class="idea-a frag">Mover n − 1 discos es el mismo problema con otras torres: una llamada recursiva. El caso base es n = 0, que no hace nada.</div>
+    <div class="idea-a frag">Son 2ⁿ − 1 movimientos: con n = 16, 65 535. La recursión tiene profundidad n.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Si m(n) son los movimientos, m(n) = 2 · m(n − 1) + 1 y m(0) = 0, así que m(n) = 2ⁿ − 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 2165 · Tower of Hanoi</div>
+  <h2>Mover n − 1, el grande y otra vez n − 1</h2>
+  <div class="cols c-40">
+    <div class="stack" id="hn">
+      <div class="pegs" id="hn-p"></div>
+      <div class="peglab"><span>1</span><span>2</span><span>3</span></div>
+      <div class="caption" id="hn-cap"></div>
+    </div>
+    <pre class="code sm">def hanoi(n, origen, destino, aux, movs):
+    if n == 0:
+        return
+    hanoi(n - 1, origen, aux, destino, movs)
+    movs.append(f"{origen} {destino}")
+    hanoi(n - 1, aux, destino, origen, movs)
+
+def main():
+    n = int(input())
+    movs = []
+    hanoi(n, 1, 3, 2, movs)
+    print(len(movs))
+    print("\n".join(movs))
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>La animación usa n = 3: 7 movimientos. Con n = 16 tardó 0.04 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Subconjuntos</h2>
+  <p>Con n elementos hay 2ⁿ subconjuntos: con n = 20, un poco más de 10⁶.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Bitmask</div>
+  <h2>Cada entero entre 0 y 2ⁿ − 1 es un subconjunto</h2>
+  <div class="cols">
+    <div class="stack">
+      <table class="mtab" id="bm"></table>
+    </div>
+    <div class="stack">
+      <pre class="code sm">a = [3, 2, 7]
+n = len(a)
+for mask in range(1 &lt;&lt; n):
+    sub = [a[i] for i in range(n) if mask &gt;&gt; i &amp; 1]
+    print(mask, sub)</pre>
+      <p class="small">El bit i de mask dice si el elemento i está en el subconjunto. Es lo que se vio en la semana 8: <code>mask &gt;&gt; i &amp; 1</code>.</p>
+      <p class="small">Recorrer los 2ⁿ subconjuntos y revisar los n bits de cada uno cuesta O(2ⁿ · n).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Hacer clic en una fila para marcarla. El bit 0 es el de la derecha, así que corresponde a a[0] = 3.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Recursión</div>
+  <h2>Subconjuntos: tomar o no tomar cada elemento</h2>
+  <div class="cols">
+    <div class="stack" id="sr">
+      <div class="stat" id="sr-s"></div>
+      <div class="outlist" id="sr-o"></div>
+      <div class="caption" id="sr-cap"></div>
+    </div>
+    <pre class="code sm">a = [3, 2, 7]
+actual = []
+
+def generar(i):
+    if i == len(a):
+        print(actual)       # un subconjunto
+        return
+    generar(i + 1)          # sin a[i]
+    actual.append(a[i])
+    generar(i + 1)          # con a[i]
+    actual.pop()            # deshacer
+
+generar(0)</pre>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. En cada nivel i se decide si a[i] entra. El <code>pop</code> deja <code>actual</code> como estaba antes de la llamada: esa es la idea del backtracking de la parte 4. La profundidad es n, así que no hay problema con el límite de recursión.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1623</div>
+  <h2>Apple Division</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n manzanas con pesos p₁, …, pₙ. Hay que repartirlas en dos grupos de modo que la diferencia entre los pesos de los grupos sea mínima.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; los n pesos.</dd><dt>Salida</dt><dd>La diferencia mínima.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 20; 1 ≤ pᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+3 2 7 4 1</pre>
+      <div class="ex-lab">Salida</div><pre>1</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1623">https://cses.fi/problemset/task/1623</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: 2 + 3 + 4 = 9 y 1 + 7 = 8.</p><p>Error común: un greedy que pone cada manzana, de mayor a menor, en el grupo más liviano. Con 3 3 2 2 2 da 2 y la respuesta es 0 (3 + 3 y 2 + 2 + 2). Caso a probar: n = 1, cuya respuesta es el peso de esa manzana.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1623</div>
+  <h2>Apple Division</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>n ≤ 20. ¿Cuántas formas hay de escoger el grupo 1? ¿Cuánto cuesta revisarlas todas?</p></div>
+    <div class="idea-a frag">2²⁰ ≈ 10⁶ subconjuntos. Para cada uno se suma el grupo 1 en O(n): unos 2·10⁷ pasos.</div>
+    <div class="idea-a frag">Si el grupo 1 pesa g, el grupo 2 pesa total − g. La diferencia es |total − 2g| y se toma la menor.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Cada reparto aparece dos veces (grupo 1 y grupo 2 intercambiados); se podría recorrer solo la mitad, pero no hace falta.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1623 · Apple Division</div>
+  <h2>Probar los 2ⁿ repartos</h2>
+  <div class="cols c-60">
+    <pre class="code">def main():
+    n = int(input())
+    p = list(map(int, input().split()))
+    total = sum(p)
+    mejor = total
+    for mask in range(1 &lt;&lt; n):
+        g1 = 0
+        for i in range(n):
+            if mask &gt;&gt; i &amp; 1:
+                g1 += p[i]
+        mejor = min(mejor, abs(total - 2 * g1))
+    print(mejor)
+
+main()</pre>
+    <div class="stack small">
+      <p>O(2ⁿ · n). Con n = 20 son unos 2·10⁷ pasos.</p>
+      <p>Con n = 20 tardó 0.15 s (PyPy 3.11, Apple M4).</p>
+      <p>La versión recursiva de la diapositiva anterior también sirve: cada hoja recibe la suma del grupo 1 y es O(2ⁿ).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>itertools</h2>
+  <p>Permutaciones, combinaciones y productos ya generados.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">itertools</div>
+  <h2><code style="background:none;padding:0">permutations</code>, <code style="background:none;padding:0">combinations</code> y <code style="background:none;padding:0">product</code></h2>
+  <div class="cols">
+    <pre class="code sm">from itertools import permutations
+from itertools import combinations, product
+
+list(permutations([1, 2, 3]))
+# (1,2,3) (1,3,2) (2,1,3) (2,3,1) (3,1,2) (3,2,1)
+
+list(combinations("abcd", 2))
+# ab ac ad bc bd cd   (como tuplas)
+
+list(product("01", repeat=3))
+# 000 001 010 011 100 101 110 111</pre>
+    <div class="stack small">
+      <table class="t" style="font-size:19px">
+        <tr><th>Función</th><th>Cuántas</th></tr>
+        <tr><td><code>permutations(a)</code></td><td>n!</td></tr>
+        <tr><td><code>permutations(a, k)</code></td><td>n! / (n − k)!</td></tr>
+        <tr><td><code>combinations(a, k)</code></td><td>C(n, k)</td></tr>
+        <tr><td><code>product(a, repeat=k)</code></td><td>nᵏ</td></tr>
+      </table>
+      <p>Devuelven tuplas en orden lexicográfico si la entrada está ordenada. No quitan repetidos: <code>permutations("aab")</code> da 6 tuplas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Son generadores: producen una tupla a la vez y no guardan todas en memoria, salvo que se conviertan en lista. Generar las 10! = 3 628 800 permutaciones de 10 elementos tardó 0.06 s y las 11! tardaron 0.59 s (PyPy 3.11, Apple M4), sin hacer nada con ellas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1622</div>
+  <h2>Creating Strings</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Dado un string, hay que generar todos los strings distintos que se pueden formar reordenando sus letras.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>Un string de n letras minúsculas.</dd><dt>Salida</dt><dd>k, la cantidad, y luego los k strings en orden alfabético.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 8</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>aabac</pre>
+      <div class="ex-lab">Salida</div><pre>20
+aaabc
+aaacb
+aabac
+…
+cbaaa</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1622">https://cses.fi/problemset/task/1622</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo. La salida del ejemplo tiene 20 strings; en la diapositiva se muestran algunos.</p><p>Error común: imprimir las permutaciones sin quitar repetidos; con aabac salen 120 en lugar de 20. Caso a probar: un string de una letra repetida, como aaaa, con respuesta 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1622 · Creating Strings</div>
+  <h2>Permutaciones sin repetidos</h2>
+  <div class="cols c-60">
+    <pre class="code">from itertools import permutations
+
+def main():
+    s = input()
+    distintos = sorted(set(permutations(s)))
+    print(len(distintos))
+    print("\n".join("".join(t) for t in distintos))
+
+main()</pre>
+    <div class="stack small">
+      <p>n ≤ 8, así que hay a lo sumo 8! = 40 320 permutaciones.</p>
+      <p>El <code>set</code> quita las repetidas y <code>sorted</code> las deja en orden alfabético. Las tuplas de letras se comparan igual que los strings.</p>
+      <p>Con 8 letras distintas tardó 0.04 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>La cantidad también sale con una fórmula: n! dividido entre el factorial de las repeticiones de cada letra. Con aabac: 5! / 3! = 20.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 2205</div>
+  <h2>Gray Code</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Un código Gray de longitud n es una lista de los 2ⁿ strings de n bits en la que dos strings seguidos difieren en exactamente un bit.</p>
+      <p>Hay que construir uno.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n.</dd><dt>Salida</dt><dd>Los 2ⁿ strings, uno por línea. Se acepta cualquier código válido.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 16</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>2</pre>
+      <div class="ex-lab">Salida</div><pre>00
+01
+11
+10</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/2205">https://cses.fi/problemset/task/2205</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y construir a mano el código de n = 3.</p><p>Error común: imprimir los números de 0 a 2ⁿ − 1 en binario; 01 y 10 difieren en dos bits. Otro: olvidar los ceros a la izquierda. Caso a probar: n = 1, con salida 0 y 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 2205 · Gray Code</div>
+  <h2>El código de n − 1, y luego reflejado</h2>
+  <div class="cols">
+    <div class="stack">
+      <table class="gray" id="gc"></table>
+    </div>
+    <div class="stack">
+      <pre class="code sm">def main():
+    n = int(input())
+    codigos = [""]
+    for _ in range(n):
+        a = ["0" + c for c in codigos]
+        b = ["1" + c for c in reversed(codigos)]
+        codigos = a + b
+    print("\n".join(codigos))
+
+main()</pre>
+      <p class="small">Con un 0 delante, el código de n − 1 sigue cambiando un bit por paso. En la mitad, el último de la primera parte y el primero de la segunda solo difieren en el bit nuevo. La segunda parte es la primera al revés, así que también cambia un bit por paso.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>A la izquierda está el código de n = 3 construido desde el de n = 2. La idea es recursiva: gray(n) se arma con gray(n − 1). Aquí se escribe con un bucle. Con n = 16 tardó 0.03 s (PyPy 3.11, Apple M4). Otra forma: el i-ésimo código es <code>i ^ (i &gt;&gt; 1)</code> en binario con n dígitos.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Backtracking</h2>
+  <p>Construir la solución paso a paso y volver atrás cuando no sirve.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">N reinas</div>
+  <h2>Una reina por fila, y volver atrás si no cabe</h2>
+  <div class="cols c-40">
+    <div class="stack" id="nq">
+      <div class="board" id="nq-b" style="grid-template-columns: repeat(6, 44px)"></div>
+      <div class="caption" id="nq-cap"></div>
+    </div>
+    <pre class="code sm">def poner(fila):
+    global cuenta
+    if fila == n:
+        cuenta += 1
+        return
+    for c in range(n):
+        if col[c] or d1[fila + c] or d2[fila - c + n - 1]:
+            continue          # poda
+        col[c] = d1[fila + c] = d2[fila - c + n - 1] = True
+        poner(fila + 1)
+        col[c] = d1[fila + c] = d2[fila - c + n - 1] = False</pre>
+  </div>
+  <aside class="notes"><p>La animación busca la primera solución en un tablero de 6 × 6. En la diagonal que baja a la derecha, fila − columna es constante; en la que baja a la izquierda, fila + columna es constante. Por eso tres arreglos de booleanos dicen en O(1) si una casilla está atacada. Quitar la reina al volver (la última línea) es el "deshacer" del backtracking.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Poda</div>
+  <h2>Cuánto ahorra la poda</h2>
+  <div class="cols">
+    <table class="t" style="font-size:20px">
+      <tr><th>Forma de buscar en 8 × 8</th><th class="r">Casos</th></tr>
+      <tr><td>Una reina por fila, revisar al final</td><td class="r">8⁸ = 16 777 216</td></tr>
+      <tr><td>Una reina por fila y por columna (permutaciones)</td><td class="r">8! = 40 320</td></tr>
+      <tr><td>Backtracking con poda (llamadas a <code>poner</code>)</td><td class="r">2 057</td></tr>
+    </table>
+    <div class="stack small">
+      <p><strong>Podar</strong> es dejar de explorar una rama apenas se sabe que no lleva a una solución.</p>
+      <p>Sin poda se construyen colocaciones completas y se revisan al final. Con poda, una reina atacada corta todas las colocaciones que empiezan así.</p>
+      <p>Hay 92 formas de poner 8 reinas en un tablero vacío.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Las 2057 llamadas se contaron con el código de la diapositiva anterior. La poda no cambia la complejidad en el peor caso, pero en la práctica reduce mucho el trabajo.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1624 · Reto</div>
+  <h2>Chessboard and Queens</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay que poner 8 reinas en un tablero de 8 × 8 sin que se ataquen. Algunas casillas están reservadas (<code>*</code>) y no se pueden usar. Las casillas reservadas no bloquean los ataques.</p>
+      <p>Hay que contar de cuántas formas se puede.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>8 líneas de 8 caracteres: <code>.</code> libre, <code>*</code> reservada.</dd><dt>Salida</dt><dd>La cantidad de formas.</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>........
+........
+..*.....
+........
+........
+.....**.
+...*....
+........</pre>
+      <div class="ex-lab">Salida</div><pre>65</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1624">https://cses.fi/problemset/task/1624</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo.</p><p>Error común: tratar las casillas reservadas como bloqueos de los ataques. Otro: probar los C(64, 8) ≈ 4.4·10⁹ conjuntos de 8 casillas. Caso a probar: el tablero vacío, con 92 formas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1624 · Chessboard and Queens</div>
+  <h2>N reinas con casillas reservadas</h2>
+  <div class="cols c-60">
+    <pre class="code xs">def main():
+    tablero = [input() for _ in range(8)]
+    col = [False] * 8
+    d1 = [False] * 15
+    d2 = [False] * 15
+    cuenta = 0
+
+    def poner(f):
+        nonlocal cuenta
+        if f == 8:
+            cuenta += 1
+            return
+        for c in range(8):
+            if (tablero[f][c] == "*" or col[c]
+                    or d1[f + c] or d2[f - c + 7]):
+                continue
+            col[c] = d1[f + c] = d2[f - c + 7] = True
+            poner(f + 1)
+            col[c] = d1[f + c] = d2[f - c + 7] = False
+
+    poner(0)
+    print(cuenta)
+
+main()</pre>
+    <div class="stack small">
+      <p>Es el código de las N reinas con una condición más en la poda: la casilla no puede estar reservada.</p>
+      <p><code>poner</code> está dentro de <code>main</code>, así que usa <code>nonlocal</code> para cambiar <code>cuenta</code>.</p>
+      <p>La profundidad es 8. Tardó 0.03 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Estimar antes de programar</h2>
+  <p>Contar las opciones y compararlas con unas 10⁸ operaciones por segundo.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Estimación</div>
+  <h2>¿Cabe la búsqueda completa?</h2>
+  <div class="cols c-60">
+    <table class="t" style="font-size:19px">
+      <tr><th>Qué se recorre</th><th class="r">Cantidad</th><th class="r">PyPy</th></tr>
+      <tr><td>Subconjuntos de 20, con un bucle de n en cada uno</td><td class="r">2²⁰ · 20 ≈ 2·10⁷</td><td class="r">0.12 s</td></tr>
+      <tr><td>Permutaciones de 10, solo generarlas</td><td class="r">10! ≈ 3.6·10⁶</td><td class="r">0.06 s</td></tr>
+      <tr><td>Permutaciones de 11, solo generarlas</td><td class="r">11! ≈ 4·10⁷</td><td class="r">0.59 s</td></tr>
+      <tr><td>Subconjuntos de 30</td><td class="r">2³⁰ ≈ 10⁹</td><td class="r">no cabe</td></tr>
+    </table>
+    <div class="stack small">
+      <p>n ≤ 20 sugiere subconjuntos y n ≤ 10 sugiere permutaciones, como en la tabla de la semana 2.</p>
+      <p>A la cantidad de opciones hay que multiplicarle lo que cuesta revisar cada una.</p>
+      <p class="muted">Medido sin leer la entrada. PyPy 3.11, Apple M4.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Con 11! ya se gasta medio segundo solo en generar las permutaciones. Si además hay que revisar cada una en O(n), no cabe en 1 s.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Contest 3</h2>
+  <div class="cols">
+    <ul>
+      <li>Cubre las semanas 8 a 10 y puede usar temas de las semanas anteriores.</li>
+      <li>Dura 90 minutos y es presencial.</li>
+      <li>Tiene de 4 a 6 problemas, ordenados de menor a mayor dificultad.</li>
+      <li>Vale el 20 % de la nota y cierra el corte 2.</li>
+      <li>Se hace en el grupo del curso: <span class="mono">[enlace pendiente]</span>.</li>
+    </ul>
+    <div class="box soft stack small">
+      <h3>Qué repasar</h3>
+      <ul>
+        <li><code>gcd</code>, divisores, criba, módulo 10⁹ + 7 y <code>pow</code>.</li>
+        <li>Operaciones con bits.</li>
+        <li>Sumas prefijas en 1D y 2D, diferencias y prefijas con un dict.</li>
+        <li>Two pointers y ventana deslizante.</li>
+        <li>Greedy con ordenamiento, Kadane y <code>heapq</code>.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Definir antes los problemas del contest y el enlace. Conviene que ninguno sea de los resueltos en clase o en los talleres. Cada problema asignado debe tener una solución en Python que pase el límite de tiempo con PyPy. La búsqueda completa de hoy no entra en el Contest 3; entra en el contest final.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Taller</div>
+  <h2>Tarea de búsqueda completa</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1623">CSES 1623 · Apple Division</a></li>
+    <li><a href="https://cses.fi/problemset/task/1622">CSES 1622 · Creating Strings</a></li>
+    <li><a href="https://cses.fi/problemset/task/2165">CSES 2165 · Tower of Hanoi</a></li>
+    <li><a href="https://cses.fi/problemset/task/2205">CSES 2205 · Gray Code</a></li>
+    <li><a href="https://cses.fi/problemset/task/1624">CSES 1624 · Chessboard and Queens</a> (reto)</li>
+  </ul>
+  <p class="small muted">Esta semana la sesión 2 es el Contest 3, así que estos problemas forman el taller de la semana.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para búsqueda completa</h2>
+  <ol>
+    <li>Toda recursión necesita un caso base, y cada llamada debe acercarse a él.</li>
+    <li>En PyPy, recursión solo con profundidad pequeña; con 10⁴ llamadas anidadas ya puede fallar.</li>
+    <li>Subconjuntos: <code>for mask in range(1 &lt;&lt; n)</code> y el bit i con <code>mask &gt;&gt; i &amp; 1</code>.</li>
+    <li><code>permutations</code>, <code>combinations</code> y <code>product</code> generan las opciones; <code>set</code> quita repetidas.</li>
+    <li>Backtracking: poner, llamar, quitar. Podar apenas una opción no sirve.</li>
+    <li>Antes de programar, contar las opciones: n ≤ 20 para 2ⁿ y n ≤ 10 para n!.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+
+  // ---------- pila de llamadas ----------
+  (function () {
+    const N = 4, fr = [];
+    const st = [];
+    for (let k = N; k >= 0; k--) {
+      st.push({ t: "fact(" + k + ")", note: k ? "espera fact(" + (k - 1) + ")" : "caso base" });
+      fr.push({ st: st.map((x) => Object.assign({}, x)), top: st.length - 1, msg: k ? "fact(" + k + ") llama a fact(" + (k - 1) + ")." : "fact(0) es el caso base: devuelve 1." });
+    }
+    let val = 1;
+    for (let k = 0; k < N; k++) {
+      st.pop();
+      const m = k + 1; val *= m;
+      st[st.length - 1].note = "devuelve " + m + " · " + (val / m) + " = " + val;
+      fr.push({ st: st.map((x) => Object.assign({}, x)), top: st.length - 1, ret: true, msg: "fact(" + m + ") recibe " + (val / m) + " y devuelve " + val + "." });
+    }
+    stepper($("#cs"), fr, (f) => {
+      const el = $("#cs-s"); el.innerHTML = "";
+      f.st.forEach((x, i) => el.append(h("div", { class: "frame " + (i === f.top ? (f.ret ? "ret" : "top") : "") }, x.t + ": " + x.note)));
+      $("#cs-cap").innerHTML = f.msg + " La pila tiene " + f.st.length + " llamada" + (f.st.length === 1 ? "" : "s") + ".";
+    }, { delay: 1100 });
+  })();
+
+  // ---------- Hanoi ----------
+  (function () {
+    const N = 3, moves = [];
+    (function hn(n, a, b, c) { if (!n) return; hn(n - 1, a, c, b); moves.push([a, b]); hn(n - 1, c, b, a); })(N, 1, 3, 2);
+    const T = [null, [3, 2, 1], [], []];
+    const snap = () => [null, T[1].slice(), T[2].slice(), T[3].slice()];
+    const fr = [{ T: snap(), mv: null, msg: "Los 3 discos están en la torre 1." }];
+    moves.forEach(([a, b], k) => { const d = T[a].pop(); T[b].push(d); fr.push({ T: snap(), mv: d, msg: "Movimiento " + (k + 1) + ": " + a + " " + b + " (disco " + d + ")." }); });
+    fr[fr.length - 1].msg += " Total: 2³ − 1 = 7.";
+    stepper($("#hn"), fr, (f) => {
+      const el = $("#hn-p"); el.innerHTML = "";
+      for (let t = 1; t <= 3; t++) {
+        const peg = h("div", { class: "peg" });
+        f.T[t].forEach((d) => peg.append(h("div", { class: "disk" + (d === f.mv ? " mv" : ""), style: { width: (30 + d * 36) + "px" }, text: d })));
+        el.append(peg);
+      }
+      $("#hn-cap").innerHTML = f.msg;
+    }, { delay: 900 });
+  })();
+
+  // ---------- bitmask ----------
+  (function () {
+    const a = [3, 2, 7], t = $("#bm");
+    t.append(h("tr", null, ["mask", "binario", "subconjunto", "suma"].map((s) => h("th", { text: s }))));
+    for (let m = 0; m < 8; m++) {
+      const bits = m.toString(2).padStart(3, "0");
+      const sub = a.filter((v, i) => (m >> i) & 1);
+      const tr = h("tr", { onclick: () => { Array.from(t.querySelectorAll("tr")).forEach((r) => r.classList.remove("cur")); tr.classList.add("cur"); } },
+        h("td", { text: m }), h("td", { html: bits.split("").map((c) => c === "1" ? '<span class="b1">1</span>' : "0").join("") }),
+        h("td", { text: "[" + sub.join(", ") + "]" }), h("td", { text: sub.reduce((x, y) => x + y, 0) }));
+      t.append(tr);
+    }
+  })();
+
+  // ---------- subconjuntos recursivos ----------
+  (function () {
+    const a = [3, 2, 7], fr = [], out = [], act = [];
+    function gen(i) {
+      if (i === a.length) { out.push("[" + act.join(", ") + "]"); fr.push({ i, act: act.slice(), out: out.slice(), leaf: true, msg: "i = 3: se imprime [" + act.join(", ") + "]." }); return; }
+      fr.push({ i, act: act.slice(), out: out.slice(), msg: "generar(" + i + "): primero sin a[" + i + "] = " + a[i] + "." });
+      gen(i + 1);
+      act.push(a[i]);
+      fr.push({ i, act: act.slice(), out: out.slice(), msg: "generar(" + i + "): ahora con a[" + i + "] = " + a[i] + "." });
+      gen(i + 1);
+      act.pop();
+    }
+    gen(0);
+    fr.push({ i: 0, act: [], out: out.slice(), msg: "Fin: se imprimieron los 2³ = 8 subconjuntos." });
+    stepper($("#sr"), fr, (f) => {
+      $("#sr-s").innerHTML = "i = " + f.i + " · actual = [" + f.act.join(", ") + "]";
+      $("#sr-o").innerHTML = "impresos: " + (f.out.length ? f.out.join(" ") : "ninguno");
+      $("#sr-cap").innerHTML = f.msg;
+    }, { delay: 900 });
+  })();
+
+  // ---------- Gray Code ----------
+  (function () {
+    const g2 = ["00", "01", "11", "10"], t = $("#gc");
+    t.append(h("tr", null, h("td", { class: "muted", text: "n = 2" }), h("td"), h("td", { class: "muted", text: "n = 3" })));
+    g2.forEach((c, i) => t.append(h("tr", null, h("td", { text: c }), h("td", { class: "muted", text: "→" }), h("td", { html: '<span class="z" style="color:var(--accent);font-weight:700">0</span>' + c }))));
+    g2.slice().reverse().forEach((c, i) => t.append(h("tr", { class: i === 0 ? "sep" : "" }, h("td", { text: "" }), h("td", { class: "muted", text: i === 0 ? "al revés" : "" }), h("td", { html: '<span style="color:var(--re);font-weight:700">1</span>' + c }))));
+  })();
+
+  // ---------- N reinas ----------
+  (function () {
+    const n = 6, fr = [], pos = [];
+    const col = Array(n).fill(false), d1 = Array(2 * n).fill(false), d2 = Array(2 * n).fill(false);
+    let done = false;
+    function poner(f) {
+      if (f === n) { done = true; fr.push({ pos: pos.slice(), msg: "Fila " + n + ": hay una solución." , ok: true }); return; }
+      for (let c = 0; c < n && !done; c++) {
+        if (col[c] || d1[f + c] || d2[f - c + n - 1]) continue;
+        col[c] = d1[f + c] = d2[f - c + n - 1] = true; pos.push(c);
+        fr.push({ pos: pos.slice(), msg: "Fila " + (f + 1) + ": reina en la columna " + (c + 1) + "." });
+        poner(f + 1);
+        if (done) return;
+        col[c] = d1[f + c] = d2[f - c + n - 1] = false; pos.pop();
+        fr.push({ pos: pos.slice(), back: [f, c], msg: "Fila " + (f + 2) + " sin lugar: se quita la reina de la fila " + (f + 1) + " y se prueba la siguiente columna." });
+      }
+    }
+    fr.push({ pos: [], msg: "Tablero vacío." });
+    poner(0);
+    stepper($("#nq"), fr, (f) => {
+      const el = $("#nq-b"); el.innerHTML = "";
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        const q = f.pos[i] === j, bk = f.back && f.back[0] === i && f.back[1] === j;
+        el.append(cell(q ? "q" : bk ? "try" : (i + j) % 2 ? "dark" : "", q ? "♛" : ""));
+      }
+      $("#nq-cap").innerHTML = f.msg;
+    }, { delay: 500 });
+  })();
+})();
+</script>
+</body>
+</html>

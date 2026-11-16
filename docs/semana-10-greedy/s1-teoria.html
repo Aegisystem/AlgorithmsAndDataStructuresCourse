@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 10 · Greedy y colas de prioridad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .arr { margin-top: 24px; margin-bottom: 26px; }
+  .arr .cell { width: 50px; height: 50px; }
+  .ptr { position: absolute; bottom: -26px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .timebar { display: grid; grid-template-columns: 330px 1fr 90px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .coins { display: grid; grid-template-columns: 130px 1fr; gap: 10px 14px; align-items: center; font-size: 21px; }
+  .coins .lab { font-family: var(--font-mono); font-size: 16px; color: var(--muted); }
+  .coin { display: inline-grid; place-items: center; min-width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--tle); background: var(--tle-soft); font-family: var(--font-mono); font-size: 17px; margin-right: 4px; padding: 0 6px; }
+  .coin.opt { border-color: var(--ac); background: var(--ac-soft); }
+  .tl { position: relative; border-bottom: 2px solid var(--line); }
+  .tl .seg { position: absolute; height: 24px; border-radius: 4px; background: var(--soft); border: 1.5px solid var(--line); font-family: var(--font-mono); font-size: 13px; display: grid; place-items: center; }
+  .tl .seg.cur { background: var(--mark); border-color: var(--tle); }
+  .tl .seg.ok { background: var(--ac-soft); border-color: var(--ac); }
+  .tl .seg.bad { background: var(--wa-soft); border-color: var(--wa); opacity: .6; }
+  .tl .seg.r1 { background: var(--accent-soft); border-color: var(--accent); }
+  .tl .seg.r2 { background: var(--ac-soft); border-color: var(--ac); }
+  .tl .seg.r3 { background: var(--re-soft); border-color: var(--re); }
+  .tl .tick { position: absolute; bottom: -24px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); transform: translateX(-50%); }
+  .tl .line { position: absolute; top: 0; bottom: -6px; width: 2px; background: var(--wa); }
+  .nl { position: relative; height: 90px; border-bottom: 2px solid var(--line); margin: 10px 0 30px; }
+  .nl .dot { position: absolute; bottom: 8px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); transform: translateX(-50%); }
+  .nl .tgt { position: absolute; top: 0; bottom: -6px; width: 3px; background: var(--wa); transform: translateX(-50%); }
+  .nl .dist { position: absolute; bottom: 15px; height: 2px; background: var(--tle); }
+  .nl .tick { position: absolute; bottom: -24px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); transform: translateX(-50%); }
+  .stat { font-family: var(--font-mono); font-size: 20px; }
+  pre.code.xs { font-size: 14.5px; line-height: 1.42; padding: 12px 16px; }
+  .heap { display: grid; gap: 14px; }
+  .heap .lvl { display: flex; justify-content: space-around; }
+  .heap .cell { width: 52px; height: 46px; }
+  .mini { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; justify-self: start; }
+  .mini th, .mini td { border-bottom: 1px solid var(--line); padding: 4px 12px; text-align: right; }
+  .mini th { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .mini tr.cur td { background: var(--mark); color: var(--mark-ink); }
+  .mini td.dim { color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span class="on"></span><span class="on"></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span class="on"></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 10 · Sesión 1</div>
+  <h1>Greedy y colas de prioridad</h1>
+  <div class="meta"><span>Objetivo: reconocer cuándo una decisión local lleva al óptimo global</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 es una práctica con los cinco problemas de hoy. El Contest 3 es la próxima semana y cubre las semanas 8 a 10.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–10</td><td>Qué es un greedy y cómo buscar un contraejemplo</td></tr>
+    <tr><td>10–35</td><td>Ordenar y elegir: Movie Festival y Stick Lengths</td></tr>
+    <tr><td>35–45</td><td>Kadane: Maximum Subarray Sum</td></tr>
+    <tr><td>45–55</td><td>Tasks and Deadlines</td></tr>
+    <tr><td>55–85</td><td><code>heapq</code> y greedy con heap; Room Allocation</td></tr>
+    <tr><td>85–90</td><td>Resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Algoritmos greedy</h2>
+  <p>Escoger en cada paso lo que mejor se ve y no volver atrás.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Greedy</div>
+  <h2>Dar el cambio con la moneda más grande</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="row small"><label for="cn-s">Monedas</label><select id="cn-s"></select><label for="cn-x">monto</label><input type="number" id="cn-x" value="6" min="1" max="60" style="width:90px"></div>
+      <div class="coins">
+        <span class="lab">greedy</span><div id="cn-g"></div>
+        <span class="lab">mínimo</span><div id="cn-o"></div>
+      </div>
+      <div class="caption" id="cn-cap"></div>
+    </div>
+    <div class="stack small">
+      <p>Un algoritmo <strong>greedy</strong> (voraz) toma en cada paso la opción que mejor se ve en ese momento y no la cambia después.</p>
+      <p>Para dar cambio, el greedy usa la moneda más grande que quepa, una y otra vez.</p>
+      <p>Con monedas 1, 5, 10 y 25 siempre da el mínimo. Con monedas 1, 3 y 4 y monto 6 da 4 + 1 + 1, tres monedas, y el mínimo es 3 + 3.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar el monto 6 con las dos opciones de monedas. Un solo caso en el que el greedy falla, un <strong>contraejemplo</strong>, basta para descartarlo. El mínimo de monedas con cualquier sistema se calcula con programación dinámica en la semana 14 (Minimizing Coins).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Contraejemplos</div>
+  <h2>Antes de programar un greedy</h2>
+  <div class="cols">
+    <div class="stack small">
+      <ol>
+        <li>Escribir la regla en una frase: "tomar la película que termina primero".</li>
+        <li>Buscar un contraejemplo a mano, con 2 o 3 elementos.</li>
+        <li>Si no aparece, comparar el greedy con una búsqueda completa en muchos casos pequeños al azar.</li>
+        <li>Buscar el argumento: por qué la elección no puede empeorar la respuesta.</li>
+      </ol>
+      <p>Las soluciones del curso se revisaron así, contra una búsqueda completa en casos pequeños.</p>
+    </div>
+    <pre class="code sm">import random
+
+for _ in range(1000):
+    n = random.randint(1, 6)
+    a = [random.randint(1, 10) for _ in range(n)]
+    if greedy(a) != completa(a):
+        print("contraejemplo:", a)
+        break</pre>
+  </div>
+  <aside class="notes"><p><code>completa</code> prueba todas las opciones (semana 11). Con n ≤ 6 es rápida. Si el greedy falla, el programa imprime un caso pequeño que se puede revisar a mano.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Ordenar y elegir</h2>
+  <p>El orden decide qué se mira primero.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1629</div>
+  <h2>Movie Festival</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>En un festival hay n películas, cada una con hora de inicio a y de fin b. Hay que ver el máximo de películas completas, sin ver dos a la vez.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; n líneas con a y b.</dd><dt>Salida</dt><dd>El máximo de películas.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ a &lt; b ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+3 5
+4 9
+5 8</pre>
+      <div class="ex-lab">Salida</div><pre>2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1629">https://cses.fi/problemset/task/1629</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: 3 5 y 5 8. Una película puede empezar justo cuando termina otra.</p><p>Error común: escoger por hora de inicio o por duración (ver la idea). Otro: usar <code>a &gt; libre</code> en lugar de <code>a &gt;= libre</code>. Caso a probar: 1 2 y 2 3, cuya respuesta es 2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1629</div>
+  <h2>Movie Festival</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Qué película conviene ver primero: la que empieza antes, la más corta o la que termina antes?</p></div>
+    <div class="idea-a frag">La que empieza antes falla con 1–10, 2–3 y 4–5: escoge 1–10 y ve una sola.</div>
+    <div class="idea-a frag">La más corta falla con 1–5, 4–7 y 6–10: escoge 4–7 y ve una sola.</div>
+    <div class="idea-a frag">La que termina antes deja libre la mayor parte del tiempo. Se ordenan por fin y se toma cada película que empiece después de la última vista.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar los contraejemplos.</p><p>Por qué funciona: si una solución óptima empieza con otra película, se puede cambiar por la que termina antes. Esa termina igual o antes, así que el resto de la solución sigue siendo válido y la cantidad no cambia.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1629 · Movie Festival</div>
+  <h2>Ordenar por la hora de fin</h2>
+  <div class="cols">
+    <div class="stack" id="mf">
+      <div class="tl" id="mf-tl" style="height:230px"></div>
+      <div class="caption" id="mf-cap" style="margin-top:24px"></div>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    pelis = []
+    for _ in range(n):
+        a, b = map(int, input().split())
+        pelis.append((b, a))
+    pelis.sort()
+    libre = cuenta = 0
+    for b, a in pelis:
+        if a &gt;= libre:
+            cuenta += 1
+            libre = b
+    print(cuenta)
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Las tuplas van como (fin, inicio) para que <code>sort</code> ordene por el fin. <code>libre</code> es la hora desde la que se puede empezar otra película. O(n log n) por el ordenamiento. Con n = 2·10⁵ tardó 0.21 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1074</div>
+  <h2>Stick Lengths</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n palos de longitudes p₁, …, pₙ. Hay que dejarlos todos de la misma longitud. Alargar o acortar un palo en x cuesta x.</p>
+      <p>Hay que encontrar el costo total mínimo.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; las n longitudes.</dd><dt>Salida</dt><dd>El costo mínimo.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ pᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+2 3 1 5 2</pre>
+      <div class="ex-lab">Salida</div><pre>5</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1074">https://cses.fi/problemset/task/1074</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: con longitud 2 el costo es 0 + 1 + 1 + 3 + 0 = 5.</p><p>Error común: usar el promedio. Con 1 1 10 el promedio es 4 y cuesta 12; la mediana es 1 y cuesta 9. Otro: probar cada longitud posible, O(n²). Caso a probar: n = 1, con costo 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1074 · Stick Lengths</div>
+  <h2>La mediana minimiza la suma de distancias</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <div class="row small"><label for="sl-t">longitud final =</label><input type="range" id="sl-t" min="1" max="20" value="6" style="width:300px"><span class="stat" id="sl-v"></span></div>
+      <div class="nl" id="sl-nl"></div>
+      <div class="caption" id="sl-cap"></div>
+      <p class="small">Si la longitud final está a la izquierda de la mediana, hay más palos a la derecha que a la izquierda. Moverla una unidad a la derecha baja el costo.</p>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    p = sorted(map(int, input().split()))
+    m = p[n // 2]          # la mediana
+    print(sum(abs(x - m) for x in p))
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Mover el control y ver cómo cambia el costo: es mínimo en la mediana. Con n par, cualquier valor entre las dos medianas da el mismo costo; <code>p[n // 2]</code> sirve. O(n log n). Con n = 2·10⁵ tardó 0.06 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Kadane</h2>
+  <p>El subarreglo de suma máxima en una pasada.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1643</div>
+  <h2>Maximum Subarray Sum</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros, que pueden ser negativos. Hay que encontrar la mayor suma de un subarreglo no vacío.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; los n valores.</dd><dt>Salida</dt><dd>La mayor suma.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; −10⁹ ≤ xᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8
+-1 3 -2 5 3 -5 2 2</pre>
+      <div class="ex-lab">Salida</div><pre>9</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1643">https://cses.fi/problemset/task/1643</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: 3 −2 5 3.</p><p>Error común: empezar <code>mejor</code> en 0, que da 0 cuando todos los valores son negativos. Caso a probar: 3 con −5 −2 −7, cuya respuesta es −2.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1643</div>
+  <h2>Maximum Subarray Sum</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Se conoce la mejor suma de un subarreglo que termina en la posición i − 1. ¿Cuál es la mejor que termina en la posición i?</p></div>
+    <div class="idea-a frag">O se extiende el subarreglo anterior, o se empieza uno nuevo en i: <code>actual = max(a[i], actual + a[i])</code>.</div>
+    <div class="idea-a frag">Si la suma anterior es negativa, conviene empezar de nuevo. La respuesta es el mayor <code>actual</code> visto. Es O(n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Es una programación dinámica de un solo valor; en la semana 14 se ven más.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1643 · Maximum Subarray Sum</div>
+  <h2>Seguir o empezar de nuevo</h2>
+  <div class="cols">
+    <div class="stack" id="kd">
+      <div class="cells arr" id="kd-a"></div>
+      <div class="stat" id="kd-s"></div>
+      <div class="caption" id="kd-cap"></div>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    a = list(map(int, input().split()))
+    mejor = actual = a[0]
+    for i in range(1, n):
+        actual = max(a[i], actual + a[i])
+        mejor = max(mejor, actual)
+    print(mejor)
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Las casillas marcadas son el subarreglo que da <code>actual</code>. Con n = 2·10⁵ tardó 0.04 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Orden de las tareas</h2>
+  <p>Un argumento de intercambio.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1630</div>
+  <h2>Tasks and Deadlines</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n tareas, cada una con duración a y plazo d. Se hacen todas, una tras otra, desde el tiempo 0. Si una tarea termina en el tiempo f, da d − f puntos, que pueden ser negativos.</p>
+      <p>Hay que encontrar el máximo de puntos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; n líneas con a y d.</dd><dt>Salida</dt><dd>El máximo de puntos.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ a, d ≤ 10⁶</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+6 10
+8 15
+5 12</pre>
+      <div class="ex-lab">Salida</div><pre>2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1630">https://cses.fi/problemset/task/1630</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano. En el orden 5, 6, 8 las tareas terminan en 5, 11 y 19: (12 − 5) + (10 − 11) + (15 − 19) = 2.</p><p>Error común: ordenar por plazo. Con las tareas (a = 10, d = 10) y (a = 1, d = 11), ordenar por plazo da 0 puntos y ordenar por duración da 9. Caso a probar: n = 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1630</div>
+  <h2>Tasks and Deadlines</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Los puntos son la suma de los plazos menos la suma de los tiempos de fin. ¿Qué parte depende del orden?</p></div>
+    <div class="idea-a frag">Solo la suma de los tiempos de fin. Hay que hacerla lo más pequeña posible.</div>
+    <div class="idea-a frag">Si una tarea larga va justo antes de una corta, intercambiarlas baja esa suma. Por eso van de la más corta a la más larga, y los plazos no importan.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p><p>El intercambio: si la tarea x va antes que y y empiezan en t, los fines suman (t + aₓ) + (t + aₓ + a_y). En el otro orden suman (t + a_y) + (t + a_y + aₓ). La diferencia es aₓ − a_y, así que conviene la corta primero. Las demás tareas no cambian.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1630 · Tasks and Deadlines</div>
+  <h2>De la más corta a la más larga</h2>
+  <div class="cols c-60">
+    <pre class="code">def main():
+    n = int(input())
+    duraciones = []
+    total = 0
+    for _ in range(n):
+        a, d = map(int, input().split())
+        duraciones.append(a)
+        total += d
+    duraciones.sort()
+    t = 0
+    for a in duraciones:
+        t += a          # fin de esta tarea
+        total -= t
+    print(total)
+
+main()</pre>
+    <div class="stack small">
+      <p>O(n log n) por el ordenamiento.</p>
+      <p>Los plazos solo se suman, así que no hace falta guardarlos.</p>
+      <p>Con n = 2·10⁵ tardó 0.09 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>La respuesta puede llegar a unos −2·10¹⁶ (todas las tareas largas y con plazo 1). En Python no hay desbordamiento.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Colas de prioridad</h2>
+  <p>Sacar el menor una y otra vez, mientras llegan elementos nuevos.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">heapq</div>
+  <h2>Un heap es una lista con el menor en la posición 0</h2>
+  <div class="cols">
+    <div class="stack" id="hp">
+      <div class="heap" id="hp-t"></div>
+      <div class="cells arr" id="hp-l"></div>
+      <div class="row"><button id="hp-push" class="primary">heappush</button><input type="number" id="hp-v" value="4" style="width:90px"><button id="hp-pop">heappop</button><button id="hp-reset">reiniciar</button></div>
+      <div class="caption" id="hp-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">from heapq import heappush, heappop, heapify
+
+h = []
+heappush(h, 5)      # O(log n)
+heappush(h, 1)
+heappush(h, 8)
+h[0]                # 1, el menor: O(1)
+heappop(h)          # saca el 1: O(log n)
+
+a = [5, 1, 8, 3]
+heapify(a)          # O(n)</pre>
+      <p class="small">Cada nodo es menor o igual que sus hijos. Los hijos de la posición i están en 2i + 1 y 2i + 2.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Agregar algunos valores con heappush y sacar con heappop. Al agregar, el valor sube mientras sea menor que su padre. Al sacar, el último pasa a la raíz y baja. El árbol tiene log n niveles, por eso cada operación cuesta O(log n). La lista no queda ordenada: solo h[0] es seguro el menor.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">heapq</div>
+  <h2>Máximos, tuplas y los k mayores</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># max-heap: guardar los valores negados
+heappush(h, -x)
+mayor = -heappop(h)
+
+# tuplas: se compara el primer elemento,
+# y si empatan, el segundo
+heappush(h, (prioridad, dato))
+
+# los k mayores de una secuencia
+h = []
+for x in a:
+    heappush(h, x)
+    if len(h) &gt; k:
+        heappop(h)      # sale el menor
+# h[0] es el k-ésimo mayor</pre>
+    </div>
+    <div class="stack">
+      <h3 class="small muted">Guardar los 1000 mayores de 10⁶ números</h3>
+      <div class="timebar" style="grid-template-columns: 220px 1fr 80px"><span>heap</span><div class="tb" style="width:16%"></div><span class="tv">0.11 s</span></div>
+      <div class="timebar" style="grid-template-columns: 220px 1fr 80px"><span>lista, <code>remove(min(L))</code></span><div class="tb slow" style="width:100%"></div><span class="tv">0.68 s</span></div>
+      <div class="timebar" style="grid-template-columns: 220px 1fr 80px"><span><code>sorted(a)[-k:]</code></span><div class="tb" style="width:14%"></div><span class="tv">0.09 s</span></div>
+      <p class="small">Si todos los datos están desde el inicio, ordenar también sirve. El heap hace falta cuando se mezclan inserciones y extracciones.</p>
+      <p class="tiny muted">PyPy 3.11, Apple M4.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>En una tupla, si la prioridad empata se compara el dato. Si el dato no se puede comparar (por ejemplo, una lista con un dict), se agrega un contador como segundo elemento.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1164 · Reto</div>
+  <h2>Room Allocation</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Llegan n clientes a un hotel, cada uno con día de llegada a y de salida b. Dos clientes pueden usar el mismo cuarto si el primero sale antes del día en que llega el segundo.</p>
+      <p>Hay que encontrar el mínimo de cuartos y el cuarto de cada cliente.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; n líneas con a y b.</dd><dt>Salida</dt><dd>k y luego el cuarto de cada cliente, en el orden de la entrada. Se acepta cualquier asignación válida.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ a ≤ b ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3
+1 2
+2 4
+4 4</pre>
+      <div class="ex-lab">Salida</div><pre>2
+1 2 1</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1164">https://cses.fi/problemset/task/1164</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano. El cliente 2 sale el día 4 y el 3 llega el día 4: no pueden compartir cuarto.</p><p>Error común: usar <code>&lt;=</code> en lugar de <code>&lt;</code> al comparar la salida con la llegada. Otro: buscar un cuarto libre recorriendo todos los cuartos, O(n · k). Caso a probar: 1 1, 2 2, 3 3, que necesita un solo cuarto.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1164</div>
+  <h2>Room Allocation</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Se atiende a los clientes por orden de llegada. Cuando llega uno, ¿qué cuarto ocupado conviene revisar?</p></div>
+    <div class="idea-a frag">El que se libera primero. Si ese no está libre, ninguno lo está y hace falta un cuarto nuevo.</div>
+    <div class="idea-a frag">Un heap guarda (día de salida, cuarto) de los cuartos ocupados. <code>h[0]</code> es el que se libera primero.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. La cantidad de cuartos es el máximo de clientes en el hotel a la vez, como en Restaurant Customers (semana 6).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1164 · Room Allocation</div>
+  <h2>El cuarto que se libera primero</h2>
+  <div class="cols c-40">
+    <div class="stack" id="ra">
+      <table class="mini" id="ra-t"></table>
+      <div class="stat small" id="ra-h"></div>
+      <div class="caption" id="ra-cap"></div>
+    </div>
+    <pre class="code xs">from heapq import heappush, heappop
+
+def main():
+    n = int(input())
+    c = [tuple(map(int, input().split())) for _ in range(n)]
+    orden = sorted(range(n), key=lambda i: c[i][0])
+    ocupados = []           # (salida, cuarto)
+    cuarto = [0] * n
+    k = 0
+    for i in orden:
+        a, b = c[i]
+        if ocupados and ocupados[0][0] &lt; a:
+            _, r = heappop(ocupados)
+        else:
+            k += 1
+            r = k
+        cuarto[i] = r
+        heappush(ocupados, (b, r))
+    print(k)
+    print(" ".join(map(str, cuarto)))
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>El ejemplo cargado tiene seis clientes. O(n log n). Con n = 2·10⁵ tardó 0.23 s (PyPy 3.11, Apple M4).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1629">CSES 1629 · Movie Festival</a></li>
+    <li><a href="https://cses.fi/problemset/task/1074">CSES 1074 · Stick Lengths</a></li>
+    <li><a href="https://cses.fi/problemset/task/1643">CSES 1643 · Maximum Subarray Sum</a></li>
+    <li><a href="https://cses.fi/problemset/task/1630">CSES 1630 · Tasks and Deadlines</a></li>
+    <li><a href="https://cses.fi/problemset/task/1164">CSES 1164 · Room Allocation</a> (reto)</li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana. El Contest 3, en la sesión 2 de la semana 11, cubre las semanas 8 a 10.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para greedy y heaps</h2>
+  <ol>
+    <li>Un greedy se descarta con un solo contraejemplo. Buscarlo con casos pequeños antes de programar.</li>
+    <li>Intervalos: ordenar por el fin y tomar los que empiezan después del último tomado.</li>
+    <li>Suma de distancias mínima: la mediana.</li>
+    <li>Kadane: <code>actual = max(a[i], actual + a[i])</code>.</li>
+    <li><code>heappush</code> y <code>heappop</code> en O(log n); <code>h[0]</code> es el menor. Para el mayor, guardar −x.</li>
+    <li>Heap cuando se mezclan inserciones con "sacar el menor".</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+
+  // ---------- monedas ----------
+  (function () {
+    const SYS = { "1, 3, 4": [1, 3, 4], "1, 5, 10, 25": [1, 5, 10, 25], "1, 7, 10": [1, 7, 10] };
+    Object.keys(SYS).forEach((k) => $("#cn-s").append(h("option", { value: k, text: k })));
+    function draw() {
+      const c = SYS[$("#cn-s").value], x = Math.max(1, Math.min(60, parseInt($("#cn-x").value, 10) || 1));
+      const g = []; let r = x;
+      for (let i = c.length - 1; i >= 0; i--) while (r >= c[i]) { g.push(c[i]); r -= c[i]; }
+      const dp = [0], from = [0];
+      for (let s = 1; s <= x; s++) { dp[s] = Infinity; c.forEach((v) => { if (v <= s && dp[s - v] + 1 < dp[s]) { dp[s] = dp[s - v] + 1; from[s] = v; } }); }
+      const o = []; for (let s = x; s > 0; s -= from[s]) o.push(from[s]);
+      o.sort((a, b) => b - a);
+      $("#cn-g").innerHTML = ""; $("#cn-o").innerHTML = "";
+      g.forEach((v) => $("#cn-g").append(h("span", { class: "coin", text: v })));
+      o.forEach((v) => $("#cn-o").append(h("span", { class: "coin opt", text: v })));
+      $("#cn-cap").innerHTML = g.length === o.length ? "El greedy usa " + g.length + " monedas, que es el mínimo." : "El greedy usa <b>" + g.length + "</b> monedas y el mínimo es <b>" + o.length + "</b>: es un contraejemplo.";
+    }
+    $("#cn-s").onchange = draw; $("#cn-x").oninput = draw;
+    draw();
+  })();
+
+  // ---------- Movie Festival ----------
+  (function () {
+    const M = [[3, 5], [4, 9], [5, 8], [1, 4], [6, 7], [8, 11], [10, 12]];
+    const S = M.map((m, i) => ({ a: m[0], b: m[1], i })).sort((u, v) => u.b - v.b);
+    const T0 = 0, T1 = 13, X = (t) => ((t - T0) / (T1 - T0)) * 100 + "%";
+    const fr = [{ k: -1, st: {}, libre: 0, cnt: 0, msg: "Películas ordenadas por la hora de fin, de arriba abajo." }];
+    let libre = 0, cnt = 0; const st = {};
+    S.forEach((m, k) => {
+      if (m.a >= libre) { st[m.i] = "ok"; cnt++; fr.push({ k, st: Object.assign({}, st), libre: m.b, cnt, msg: m.a + "–" + m.b + " empieza en " + m.a + " ≥ " + libre + ": se ve. Queda libre desde " + m.b + "." }); libre = m.b; }
+      else { st[m.i] = "bad"; fr.push({ k, st: Object.assign({}, st), libre, cnt, msg: m.a + "–" + m.b + " empieza en " + m.a + " < " + libre + ": se cruza con la anterior." }); }
+    });
+    fr.push({ k: S.length, st, libre, cnt, msg: "Se ven <b>" + cnt + "</b> películas." });
+    stepper($("#mf"), fr, (f) => {
+      const tl = $("#mf-tl"); tl.innerHTML = "";
+      S.forEach((m, k) => {
+        const cls = k === f.k ? "cur" : f.st[m.i] || "";
+        tl.append(h("div", { class: "seg " + cls, style: { left: X(m.a), width: "calc(" + X(m.b) + " - " + X(m.a) + ")", top: (6 + k * 31) + "px" }, text: m.a + "–" + m.b }));
+      });
+      if (f.k >= 0 && f.k < S.length) tl.append(h("div", { class: "line", style: { left: X(f.libre) } }));
+      for (let t = 0; t <= 12; t += 2) tl.append(h("span", { class: "tick", style: { left: X(t) }, text: t }));
+      $("#mf-cap").innerHTML = f.msg + (f.k < S.length ? " Vistas: " + f.cnt + "." : "");
+    }, { delay: 1300 });
+  })();
+
+  // ---------- Stick Lengths ----------
+  (function () {
+    const P = [2, 3, 1, 5, 2, 9, 14], lo = 0, hi = 20;
+    const sorted = P.slice().sort((a, b) => a - b), med = sorted[Math.floor(P.length / 2)];
+    const X = (v) => ((v - lo) / (hi - lo)) * 100 + "%";
+    const cost = (t) => P.reduce((s, x) => s + Math.abs(x - t), 0);
+    function draw() {
+      const t = +$("#sl-t").value, nl = $("#sl-nl"); nl.innerHTML = "";
+      $("#sl-v").textContent = t;
+      const seen = {};
+      P.forEach((x) => {
+        const k = seen[x] = (seen[x] || 0) + 1;
+        nl.append(h("div", { class: "dist", style: { left: X(Math.min(x, t)), width: "calc(" + X(Math.max(x, t)) + " - " + X(Math.min(x, t)) + ")", bottom: (15 + (k - 1) * 20) + "px" } }));
+        nl.append(h("div", { class: "dot", style: { left: X(x), bottom: (8 + (k - 1) * 20) + "px" } }));
+      });
+      nl.append(h("div", { class: "tgt", style: { left: X(t) } }));
+      for (let v = 0; v <= 20; v += 2) nl.append(h("span", { class: "tick", style: { left: X(v) }, text: v }));
+      $("#sl-cap").innerHTML = "Longitudes 2 3 1 5 2 9 14. Costo con longitud " + t + ": <b>" + cost(t) + "</b>. Con la mediana (" + med + "): " + cost(med) + ".";
+    }
+    $("#sl-t").oninput = draw;
+    draw();
+  })();
+
+  // ---------- Kadane ----------
+  (function () {
+    const a = [-1, 3, -2, 5, 3, -5, 2, 2];
+    let act = a[0], best = a[0], st = 0, bs = 0, be = 0;
+    const fr = [{ i: 0, st, act, best, bs, be, msg: "Posición 1: actual = mejor = " + a[0] + "." }];
+    for (let i = 1; i < a.length; i++) {
+      const ext = act + a[i], nuevo = a[i] > ext;
+      if (nuevo) { act = a[i]; st = i; } else act = ext;
+      if (act > best) { best = act; bs = st; be = i; }
+      fr.push({ i, st, act, best, bs, be, msg: "max(" + a[i] + ", " + (ext - a[i]) + " + " + a[i] + ") = " + act + ": " + (nuevo ? "se empieza de nuevo en " + a[i] + "." : "se extiende el subarreglo.") });
+    }
+    fr.push({ i: -1, st: bs, act: best, best, bs, be, end: true, msg: "La mayor suma es <b>" + best + "</b>: [" + a.slice(bs, be + 1).join(", ") + "]." });
+    stepper($("#kd"), fr, (f) => {
+      const el = $("#kd-a"); el.innerHTML = "";
+      a.forEach((v, k) => {
+        const inAct = !f.end && k >= f.st && k <= f.i, inBest = f.end && k >= f.bs && k <= f.be;
+        const c = cell(inBest ? "ok" : k === f.i ? "cur" : inAct ? "sel" : "", v);
+        c.append(h("span", { class: "idx", text: k + 1 }));
+        el.append(c);
+      });
+      $("#kd-s").innerHTML = "actual = " + f.act + " · mejor = " + f.best;
+      $("#kd-cap").innerHTML = f.msg;
+    }, { delay: 1200 });
+  })();
+
+  // ---------- heap ----------
+  (function () {
+    let H = [];
+    const init = [5, 1, 8, 3, 9, 2];
+    const up = (i) => { while (i > 0) { const p = (i - 1) >> 1; if (H[p] <= H[i]) break; [H[p], H[i]] = [H[i], H[p]]; i = p; } return i; };
+    const down = (i) => { const n = H.length; for (;;) { let m = i; const l = 2 * i + 1, r = l + 1; if (l < n && H[l] < H[m]) m = l; if (r < n && H[r] < H[m]) m = r; if (m === i) return i; [H[m], H[i]] = [H[i], H[m]]; i = m; } };
+    function draw(hl, msg) {
+      const t = $("#hp-t"), l = $("#hp-l"); t.innerHTML = l.innerHTML = "";
+      for (let lv = 0, s = 0; s < H.length; lv++, s = 2 * s + 1) {
+        const row = h("div", { class: "lvl" });
+        for (let k = s; k < Math.min(H.length, 2 * s + 1); k++) row.append(cell(k === hl ? "cur" : k === 0 ? "ok" : "sel", H[k]));
+        t.append(row);
+      }
+      H.forEach((v, k) => { const c = cell(k === hl ? "cur" : k === 0 ? "ok" : "", v); c.append(h("span", { class: "idx", text: k })); l.append(c); });
+      $("#hp-cap").innerHTML = msg || "";
+      $("#hp-pop").disabled = !H.length;
+    }
+    function reset() { H = []; init.forEach((v) => { H.push(v); up(H.length - 1); }); draw(-1, "h = " + JSON.stringify(H) + ". h[0] = " + H[0] + " es el menor."); }
+    $("#hp-push").onclick = () => {
+      const v = parseInt($("#hp-v").value, 10); if (isNaN(v)) return;
+      if (H.length >= 15) { draw(-1, "El ejemplo admite hasta 15 valores."); return; }
+      H.push(v); const i = up(H.length - 1);
+      draw(i, "heappush(h, " + v + "): el " + v + " entra al final y sube hasta la posición " + i + ".");
+    };
+    $("#hp-pop").onclick = () => {
+      const m = H[0], last = H.pop();
+      if (H.length) { H[0] = last; const i = down(0); draw(i, "heappop(h) devuelve " + m + ". El último (" + last + ") pasa a la raíz y baja hasta la posición " + i + "."); }
+      else draw(-1, "heappop(h) devuelve " + m + ". El heap quedó vacío.");
+    };
+    $("#hp-reset").onclick = reset;
+    reset();
+  })();
+
+  // ---------- Room Allocation ----------
+  (function () {
+    const C = [[1, 2], [2, 4], [4, 4], [3, 6], [5, 7], [7, 8]];
+    const ord = C.map((c, i) => i).sort((u, v) => C[u][0] - C[v][0]);
+    const H = [], room = Array(C.length).fill(null);
+    const hpush = (x) => { H.push(x); let i = H.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (H[p][0] < H[i][0] || (H[p][0] === H[i][0] && H[p][1] <= H[i][1])) break; [H[p], H[i]] = [H[i], H[p]]; i = p; } };
+    const hpop = () => { const top = H[0], last = H.pop(); if (H.length) { H[0] = last; let i = 0; for (;;) { let m = i; const l = 2 * i + 1, r = l + 1; const lt = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]); if (l < H.length && lt(H[l], H[m])) m = l; if (r < H.length && lt(H[r], H[m])) m = r; if (m === i) break; [H[m], H[i]] = [H[i], H[m]]; i = m; } } return top; };
+    let k = 0;
+    const fr = [{ cur: -1, room: room.slice(), heap: [], k, msg: "Clientes por orden de llegada. No hay cuartos ocupados." }];
+    ord.forEach((i) => {
+      const [a, b] = C[i]; let msg;
+      if (H.length && H[0][0] < a) { const [s, r] = hpop(); room[i] = r; msg = "Llega el día " + a + ". El cuarto " + r + " se libera el día " + s + " < " + a + ": se reutiliza."; }
+      else { k++; room[i] = k; msg = "Llega el día " + a + ". " + (H.length ? "El primero que se libera sale el día " + H[0][0] + ", no antes de " + a + ": " : "") + "cuarto nuevo " + k + "."; }
+      hpush([b, room[i]]);
+      fr.push({ cur: i, room: room.slice(), heap: H.map((x) => x.slice()).sort((u, v) => u[0] - v[0] || u[1] - v[1]), k, msg });
+    });
+    fr.push({ cur: -1, room: room.slice(), heap: [], k, done: true, msg: "Se necesitan <b>" + k + "</b> cuartos." });
+    stepper($("#ra"), fr, (f) => {
+      const t = $("#ra-t"); t.innerHTML = "";
+      t.append(h("tr", null, ["cliente", "llega", "sale", "cuarto"].map((s) => h("th", { text: s }))));
+      ord.forEach((i) => t.append(h("tr", { class: i === f.cur ? "cur" : "" }, h("td", { text: i + 1 }), h("td", { text: C[i][0] }), h("td", { text: C[i][1] }), h("td", { class: f.room[i] ? "" : "dim", text: f.room[i] || "·" }))));
+      $("#ra-h").innerHTML = f.done ? "" : "ocupados: " + (f.heap.length ? f.heap.map((x) => "(" + x[0] + ", " + x[1] + ")").join(" ") : "[]");
+      $("#ra-cap").innerHTML = f.msg;
+    }, { delay: 1500 });
+  })();
+})();
+</script>
+</body>
+</html>

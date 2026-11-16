@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 13 · Grafos II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .stat { font-family: var(--font-mono); font-size: 19px; }
+  pre.code.xs { font-size: 14.5px; line-height: 1.42; padding: 12px 16px; }
+  .codelab { font-family: var(--font-mono); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .lrow { display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: center; }
+  .lrow .lab { font-family: var(--font-mono); font-size: 16px; color: var(--muted); }
+  .arr { margin-top: 22px; }
+  .arr .cell { width: 44px; height: 42px; font-size: 18px; }
+  .mini { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; justify-self: start; }
+  .mini th, .mini td { border-bottom: 1px solid var(--line); padding: 3px 12px; text-align: right; }
+  .mini th { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .mini tr.cur td { background: var(--mark); color: var(--mark-ink); }
+  .mini tr.ok td { color: var(--ac); font-weight: 700; }
+  .mini tr.bad td { color: var(--wa); text-decoration: line-through; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span></span><span class="on"></span><span></span><span></span>
+    <span></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span></span>
+    <span></span><span></span><span class="on"></span><span></span><span class="on"></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 13 · Sesión 1</div>
+  <h1>Grafos II</h1>
+  <div class="meta"><span>Objetivo: caminos con pesos, orden de dependencias y unión de componentes</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 es una práctica de grafos con los problemas de hoy. BFS y DFS (semana 12) también entran en la práctica.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–25</td><td>Dijkstra con <code>heapq</code>; Shortest Routes I</td></tr>
+    <tr><td>25–45</td><td>Orden topológico y ciclos en grafos dirigidos; Course Schedule</td></tr>
+    <tr><td>45–65</td><td>Union-Find; Road Construction</td></tr>
+    <tr><td>65–80</td><td>Árbol de expansión mínima con Kruskal; Road Reparation</td></tr>
+    <tr><td>80–90</td><td>Round Trip (reto) y resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Dijkstra</h2>
+  <p>Caminos más cortos cuando las aristas tienen pesos.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Dijkstra</div>
+  <h2>Sacar siempre el nodo más cercano</h2>
+  <div class="cols c-60">
+    <div class="stack" id="dj">
+      <svg class="graph" id="dj-g" viewBox="0 0 560 320" width="540" height="309"></svg>
+      <div class="stat" id="dj-s"></div>
+      <div class="caption" id="dj-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">from heapq import heappush, heappop
+
+INF = float("inf")
+dist = [INF] * (n + 1)
+dist[s] = 0
+h = [(0, s)]
+while h:
+    d, u = heappop(h)
+    if d &gt; dist[u]:
+        continue        # copia vieja
+    for v, c in adj[u]:
+        if d + c &lt; dist[v]:
+            dist[v] = d + c
+            heappush(h, (dist[v], v))</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso desde el nodo 1. Debajo de cada nodo está su distancia actual. El heap guarda (distancia, nodo). Cuando un nodo sale del heap por primera vez, su distancia ya es la definitiva. Los nodos 2, 5 y 6 mejoran su distancia, así que quedan copias viejas en el heap que se saltan al salir.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Dijkstra en Python</div>
+  <h2>Borrado perezoso y costo</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>BFS cuenta aristas. Con pesos, el camino 1 → 3 → 2 (2 + 3 = 5) es más corto que la arista 1 → 2 (7), aunque usa más aristas.</p>
+      <p><code>heapq</code> no permite cambiar la prioridad de un elemento. Cuando un nodo mejora, se mete otra copia con la distancia nueva. Al sacar una copia con <code>d &gt; dist[u]</code>, se descarta: es el <strong>borrado perezoso</strong>.</p>
+      <p>Cada arista mete a lo sumo una copia, así que el heap tiene O(m) elementos. El total es O((n + m) log m).</p>
+    </div>
+    <div class="box soft stack small">
+      <h3>Condiciones</h3>
+      <ul>
+        <li>Los pesos no pueden ser negativos. Con un peso negativo, un nodo que ya salió del heap podría mejorar después, y Dijkstra da una respuesta equivocada.</li>
+        <li>Sirve en grafos dirigidos y no dirigidos.</li>
+        <li>Con todos los pesos iguales, BFS da lo mismo y es más simple.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Los grafos con pesos negativos (Bellman-Ford) quedan fuera del programa. Sin el <code>if d &gt; dist[u]: continue</code> el resultado sigue siendo correcto, pero un nodo se puede procesar varias veces y el programa puede dar TLE.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1671</div>
+  <h2>Shortest Routes I</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n ciudades y m vuelos de un solo sentido, cada uno con su longitud. Hay que calcular la ruta más corta desde la ciudad 1 hasta cada ciudad. Todas se pueden alcanzar.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a, b y c (vuelo de a a b de longitud c).</dd><dt>Salida</dt><dd>Las n distancias desde la ciudad 1.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵; 1 ≤ c ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>3 4
+1 2 6
+1 3 2
+3 2 3
+1 3 4</pre>
+      <div class="ex-lab">Salida</div><pre>0 5 2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1671">https://cses.fi/problemset/task/1671</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano. Puede haber varios vuelos entre las mismas dos ciudades (1 3 aparece dos veces).</p><p>Error común: guardar el vuelo en los dos sentidos; aquí son de un solo sentido. Otro: usar BFS. Caso a probar: n = 1 y un vuelo de 1 a 1, con respuesta 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1671</div>
+  <h2>Shortest Routes I</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Las longitudes son positivas y distintas. ¿Qué algoritmo da la distancia desde la ciudad 1 a todas?</p></div>
+    <div class="idea-a frag">Dijkstra desde la ciudad 1, con la lista de adyacencia dirigida <code>adj[a].append((b, c))</code>.</div>
+    <div class="idea-a frag">Las distancias llegan a 10⁹ · 10⁵ = 10¹⁴; en Python no hay desbordamiento.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1671 · Shortest Routes I</div>
+  <h2>Dijkstra desde la ciudad 1</h2>
+  <div class="cols c-60">
+    <pre class="code xs">from heapq import heappush, heappop
+
+def main():
+    n, m = map(int, input().split())
+    adj = [[] for _ in range(n + 1)]
+    for _ in range(m):
+        a, b, c = map(int, input().split())
+        adj[a].append((b, c))
+    INF = float("inf")
+    dist = [INF] * (n + 1)
+    dist[1] = 0
+    h = [(0, 1)]
+    while h:
+        d, u = heappop(h)
+        if d &gt; dist[u]:
+            continue
+        for v, c in adj[u]:
+            if d + c &lt; dist[v]:
+                dist[v] = d + c
+                heappush(h, (dist[v], v))
+    print(" ".join(map(str, dist[1:])))
+
+main()</pre>
+    <div class="stack small">
+      <p>O((n + m) log m).</p>
+      <p>Con n = 10⁵ y m = 2·10⁵ tardó 0.17 s (PyPy 3.11, Apple M4).</p>
+      <p>Todas las ciudades se alcanzan, así que ningún valor queda en <code>inf</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Orden topológico</h2>
+  <p>Ordenar tareas que dependen unas de otras.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Algoritmo de Kahn</div>
+  <h2>Primero los nodos sin requisitos pendientes</h2>
+  <div class="cols c-60">
+    <div class="stack" id="kh">
+      <div class="row small"><label for="kh-v">Grafo</label><select id="kh-v"></select></div>
+      <svg class="graph" id="kh-g" viewBox="0 0 570 300" width="550" height="290"></svg>
+      <div class="stat" id="kh-s"></div>
+      <div class="caption" id="kh-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">entran = [0] * (n + 1)
+for a, b in aristas:      # a antes que b
+    entran[b] += 1
+cola = deque(u for u in range(1, n + 1)
+             if entran[u] == 0)
+orden = []
+while cola:
+    u = cola.popleft()
+    orden.append(u)
+    for v in adj[u]:
+        entran[v] -= 1
+        if entran[v] == 0:
+            cola.append(v)
+# len(orden) &lt; n: hay un ciclo</pre>
+    </div>
+  </div>
+  <aside class="notes"><p>Un <strong>orden topológico</strong> pone cada nodo antes de todos sus sucesores. Solo existe si el grafo dirigido no tiene ciclos. Debajo de cada nodo está cuántas aristas le faltan por quitar. Con el grafo "con ciclo", los nodos 3, 5 y 6 nunca llegan a 0 y quedan fuera del orden: así se detecta un ciclo dirigido. Es O(n + m).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1679</div>
+  <h2>Course Schedule</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay que tomar n cursos. Hay m requisitos de la forma "el curso a va antes que el curso b". Hay que dar un orden para tomar todos los cursos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a y b.</dd><dt>Salida</dt><dd>Un orden válido con los n cursos, o IMPOSSIBLE. Se acepta cualquier orden válido.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 3
+1 2
+3 1
+4 5</pre>
+      <div class="ex-lab">Salida</div><pre>3 4 1 5 2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1679">https://cses.fi/problemset/task/1679</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y buscar otro orden válido para el ejemplo (por ejemplo, 3 1 2 4 5).</p><p>Error común: ordenar los cursos por número. Otro: no detectar el ciclo e imprimir un orden incompleto. Caso a probar: 3 3 con 1 2, 2 3 y 3 1, cuya respuesta es IMPOSSIBLE.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1679</div>
+  <h2>Course Schedule</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Qué curso se puede tomar primero? ¿Qué cambia después de tomarlo?</p></div>
+    <div class="idea-a frag">Uno sin requisitos. Al tomarlo, sus sucesores tienen un requisito pendiente menos, y los que llegan a 0 ya se pueden tomar.</div>
+    <div class="idea-a frag">Es el algoritmo de Kahn. Si el orden queda con menos de n cursos, hay un ciclo de requisitos y la respuesta es IMPOSSIBLE.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1679 · Course Schedule</div>
+  <h2>Kahn con una cola</h2>
+  <div class="cols c-60">
+    <pre class="code xs">from collections import deque
+
+def main():
+    n, m = map(int, input().split())
+    adj = [[] for _ in range(n + 1)]
+    entran = [0] * (n + 1)
+    for _ in range(m):
+        a, b = map(int, input().split())
+        adj[a].append(b)
+        entran[b] += 1
+    cola = deque(u for u in range(1, n + 1) if entran[u] == 0)
+    orden = []
+    while cola:
+        u = cola.popleft()
+        orden.append(u)
+        for v in adj[u]:
+            entran[v] -= 1
+            if entran[v] == 0:
+                cola.append(v)
+    if len(orden) &lt; n:
+        print("IMPOSSIBLE")
+    else:
+        print(" ".join(map(str, orden)))
+
+main()</pre>
+    <div class="stack small">
+      <p>O(n + m).</p>
+      <p>Con n = 10⁵ y m = 2·10⁵ tardó 0.10 s (PyPy 3.11, Apple M4).</p>
+      <p>Con una pila en lugar de una cola también sale un orden válido.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Union-Find</h2>
+  <p>Unir conjuntos y preguntar si dos elementos están en el mismo.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Union-Find</div>
+  <h2>Cada conjunto es un árbol con una raíz</h2>
+  <div class="cols">
+    <div class="stack" id="uf">
+      <svg class="graph" id="uf-g" viewBox="0 0 560 270" width="540" height="260"></svg>
+      <div class="lrow"><span class="lab">padre</span><div class="cells arr" id="uf-p"></div></div>
+      <div class="lrow"><span class="lab">tam</span><div class="cells arr" id="uf-t"></div></div>
+      <div class="caption" id="uf-cap"></div>
+    </div>
+    <div class="stack small">
+      <p>Cada nodo apunta a su padre y la raíz se apunta a sí misma. Dos nodos están en el mismo conjunto si tienen la misma raíz.</p>
+      <p><strong>Unión por tamaño</strong>: la raíz del árbol pequeño cuelga de la del grande. Así ningún árbol pasa de log n niveles.</p>
+      <p><strong>Compresión de caminos</strong>: al buscar la raíz de x, todos los nodos del camino pasan a apuntar directo a la raíz.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. Las flechas van de cada nodo a su padre. En unir(4, 8) se busca la raíz de 4: el camino es 4 → 3 → 1, y la compresión deja 4 → 1. Con las dos mejoras, cada operación cuesta casi O(1) en promedio.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Union-Find en Python</div>
+  <h2>Raíz iterativa y unión por tamaño</h2>
+  <div class="cols">
+    <pre class="code sm">padre = list(range(n + 1))
+tam = [1] * (n + 1)
+
+def raiz(x):
+    r = x
+    while padre[r] != r:
+        r = padre[r]
+    while x != r:         # compresión
+        sig = padre[x]
+        padre[x] = r
+        x = sig
+    return r
+
+def unir(a, b):
+    a, b = raiz(a), raiz(b)
+    if a == b:
+        return False      # ya estaban juntos
+    if tam[a] &lt; tam[b]:
+        a, b = b, a
+    padre[b] = a
+    tam[a] += tam[b]
+    return True</pre>
+    <div class="stack small">
+      <p><code>raiz</code> hace dos pasadas: la primera encuentra la raíz y la segunda hace que cada nodo del camino apunte a ella.</p>
+      <p>Es iterativa. La versión recursiva de la compresión es más corta, pero antes de la primera compresión un camino puede ser largo.</p>
+      <p><code>unir</code> devuelve si unió dos conjuntos distintos. <code>tam</code> solo es correcto en las raíces.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Union-Find no permite separar conjuntos ni recorrer sus elementos: solo unir y preguntar. Para esas dos operaciones es mucho más rápido que volver a hacer un DFS cada vez.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1676</div>
+  <h2>Road Construction</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n ciudades sin carreteras. Cada día se construye una carretera nueva. Después de cada día hay que decir cuántas componentes hay y cuántas ciudades tiene la más grande.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a y b.</dd><dt>Salida</dt><dd>m líneas: componentes y tamaño de la mayor.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 3
+1 2
+1 3
+4 5</pre>
+      <div class="ex-lab">Salida</div><pre>4 2
+3 3
+2 3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1676">https://cses.fi/problemset/task/1676</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: hacer un DFS después de cada carretera, O(m · (n + m)). Otro: restar una componente aunque la carretera una dos ciudades que ya estaban conectadas. Caso a probar: la misma carretera dos veces.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1676</div>
+  <h2>Road Construction</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Cuando se construye la carretera a–b, ¿cuándo baja el número de componentes? ¿Puede bajar el tamaño de la mayor?</p></div>
+    <div class="idea-a frag">Baja en 1 solo si a y b estaban en componentes distintas: <code>unir(a, b)</code> devuelve True.</div>
+    <div class="idea-a frag">La mayor nunca se achica. Basta comparar la mayor con el tamaño de la componente que se acaba de formar.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1676 · Road Construction</div>
+  <h2>Contar uniones</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Union-Find</span>
+      <pre class="code xs">def main():
+    n, m = map(int, input().split())
+    padre = list(range(n + 1))
+    tam = [1] * (n + 1)
+
+    def raiz(x):
+        r = x
+        while padre[r] != r:
+            r = padre[r]
+        while x != r:
+            sig = padre[x]
+            padre[x] = r
+            x = sig
+        return r
+
+    def unir(a, b):
+        a, b = raiz(a), raiz(b)
+        if a == b:
+            return False
+        if tam[a] &lt; tam[b]:
+            a, b = b, a
+        padre[b] = a
+        tam[a] += tam[b]
+        return True</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Una línea por carretera</span>
+      <pre class="code xs">    componentes = n
+    mayor = 1
+    res = []
+    for _ in range(m):
+        a, b = map(int, input().split())
+        if unir(a, b):
+            componentes -= 1
+            mayor = max(mayor, tam[raiz(a)])
+        res.append(f"{componentes} {mayor}")
+    print("\n".join(res))
+
+main()</pre>
+      <p class="small">Casi O(1) por carretera. Con n = 10⁵ y m = 2·10⁵ tardó 0.12 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Kruskal</h2>
+  <p>Conectar todos los nodos con el menor costo total.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Árbol de expansión mínima</div>
+  <h2>Las aristas de la más barata a la más cara</h2>
+  <div class="cols c-60">
+    <div class="stack" id="kr">
+      <div class="row" style="gap:24px; align-items:flex-start">
+        <svg class="graph" id="kr-g" viewBox="0 0 470 300" width="420" height="268"></svg>
+        <table class="mini" id="kr-t"></table>
+      </div>
+      <div class="caption" id="kr-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">aristas.sort()          # (costo, a, b)
+costo = usadas = 0
+for c, a, b in aristas:
+    if unir(a, b):
+        costo += c
+        usadas += 1
+# usadas == n - 1: el grafo es conexo</pre>
+      <p class="small">Un <strong>árbol de expansión mínima</strong> conecta los n nodos con n − 1 aristas y la menor suma de costos.</p>
+      <p class="small">Kruskal toma cada arista en orden de costo y la acepta si une dos componentes distintas. Es un greedy (semana 10) que usa Union-Find.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso con el grafo del ejemplo de Road Reparation. En verde, aceptada; en rojo, rechazada porque formaría un ciclo. Ordenar cuesta O(m log m) y las uniones casi O(1), así que el total es O(m log m).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1675</div>
+  <h2>Road Reparation</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n ciudades y m carreteras dañadas, cada una con su costo de reparación. Hay que reparar carreteras para que haya ruta entre cualquier par de ciudades, con el menor costo total.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a, b y c.</dd><dt>Salida</dt><dd>El costo mínimo, o IMPOSSIBLE.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵; 1 ≤ c ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 6
+1 2 3
+2 3 5
+2 4 2
+3 4 8
+5 1 7
+5 4 4</pre>
+      <div class="ex-lab">Salida</div><pre>14</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1675">https://cses.fi/problemset/task/1675</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano con la animación de Kruskal.</p><p>Error común: no revisar si el grafo es conexo. Otro: usar Dijkstra, que minimiza la distancia desde un nodo y no el costo total. Caso a probar: 3 1 con 1 2 5, cuya respuesta es IMPOSSIBLE.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1675</div>
+  <h2>Road Reparation</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>La carretera más barata de todas, ¿conviene repararla siempre?</p></div>
+    <div class="idea-a frag">Sí. Si una solución no la usa, al agregarla se forma un ciclo; quitar otra carretera del ciclo, que cuesta lo mismo o más, no aumenta el costo.</div>
+    <div class="idea-a frag">El mismo argumento vale en cada paso para la carretera más barata que une dos componentes distintas. Eso es Kruskal. Si al final no hay n − 1 carreteras, es IMPOSSIBLE.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Es un argumento de intercambio, como en Tasks and Deadlines.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1675 · Road Reparation</div>
+  <h2>Kruskal con Union-Find</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Leer y ordenar</span>
+      <pre class="code sm">def main():
+    n, m = map(int, input().split())
+    aristas = []
+    for _ in range(m):
+        a, b, c = map(int, input().split())
+        aristas.append((c, a, b))
+    aristas.sort()
+    padre = list(range(n + 1))
+    tam = [1] * (n + 1)
+    # raiz y unir, como en
+    # Road Construction</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Tomar las que unen</span>
+      <pre class="code sm">    costo = usadas = 0
+    for c, a, b in aristas:
+        if unir(a, b):
+            costo += c
+            usadas += 1
+    if usadas == n - 1:
+        print(costo)
+    else:
+        print("IMPOSSIBLE")
+
+main()</pre>
+      <p class="small">O(m log m). Con n = 10⁵ y m = 2·10⁵ tardó 0.26 s (PyPy 3.11, Apple M4); la mayor parte es ordenar las tuplas.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Las funciones <code>raiz</code> y <code>unir</code> son las mismas de Road Construction y van dentro de <code>main</code>. Con n = 1 no hace falta ninguna carretera: usadas = 0 = n − 1 y la respuesta es 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1669 · Reto</div>
+  <h2>Round Trip</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n ciudades y m carreteras de doble sentido. Hay que encontrar un recorrido que empiece en una ciudad, pase por dos o más ciudades distintas y vuelva al inicio, sin repetir ciudades en el medio.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a y b.</dd><dt>Salida</dt><dd>k y las k ciudades del recorrido (la primera se repite al final), o IMPOSSIBLE.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 6
+1 3
+1 2
+5 3
+1 5
+2 4
+4 5</pre>
+      <div class="ex-lab">Salida</div><pre>4
+3 5 1 3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1669">https://cses.fi/problemset/task/1669</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo. Es un ciclo en un grafo no dirigido.</p><p>Error común: contar como ciclo la arista que vuelve al padre (a → b → a). Otro: un DFS recursivo con 10⁵ ciudades en fila. Caso a probar: un árbol, con respuesta IMPOSSIBLE.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1669</div>
+  <h2>Round Trip</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>En un DFS, ¿qué arista indica que hay un ciclo?</p></div>
+    <div class="idea-a frag">Una arista desde u hacia un nodo v que sigue en la pila del DFS (un ancestro de u) y que no es el padre de u.</div>
+    <div class="idea-a frag">El ciclo es v, u, padre[u], …, hasta volver a v. Hace falta un DFS de verdad, que baje por un vecino antes de mirar el siguiente: cada nodo guarda cuál es el próximo vecino por revisar.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. El DFS de la semana 12, que marca al meter en la pila, no sirve aquí: un nodo marcado no siempre es un ancestro. Union-Find también detecta que hay un ciclo, pero no da el recorrido.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1669 · Round Trip</div>
+  <h2>DFS iterativo con estados</h2>
+  <div class="cols">
+    <pre class="code xs">def main():
+    n, m = map(int, input().split())
+    adj = [[] for _ in range(n + 1)]
+    for _ in range(m):
+        a, b = map(int, input().split())
+        adj[a].append(b)
+        adj[b].append(a)
+    padre = [0] * (n + 1)
+    estado = [0] * (n + 1)  # 0, 1 en pila, 2 listo
+    sig = [0] * (n + 1)     # próximo vecino
+    for s in range(1, n + 1):
+        if estado[s]:
+            continue
+        estado[s] = 1
+        pila = [s]
+        while pila:
+            u = pila[-1]
+            if sig[u] == len(adj[u]):
+                estado[u] = 2
+                pila.pop()
+                continue
+            v = adj[u][sig[u]]
+            sig[u] += 1</pre>
+    <pre class="code xs">            if v == padre[u]:
+                continue
+            if estado[v] == 1:
+                ciclo = [v]
+                x = u
+                while x != v:
+                    ciclo.append(x)
+                    x = padre[x]
+                ciclo.append(v)
+                print(len(ciclo))
+                print(" ".join(map(str, ciclo)))
+                return
+            if estado[v] == 0:
+                estado[v] = 1
+                padre[v] = u
+                pila.append(v)
+    print("IMPOSSIBLE")
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>O(n + m). Con 10⁵ ciudades en un solo ciclo (la pila llega a 10⁵ nodos) tardó 0.06 s (PyPy 3.11, Apple M4). Como no hay carreteras repetidas, saltar al padre basta para no contar a → b → a.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1671">CSES 1671 · Shortest Routes I</a></li>
+    <li><a href="https://cses.fi/problemset/task/1679">CSES 1679 · Course Schedule</a></li>
+    <li><a href="https://cses.fi/problemset/task/1676">CSES 1676 · Road Construction</a></li>
+    <li><a href="https://cses.fi/problemset/task/1675">CSES 1675 · Road Reparation</a></li>
+    <li><a href="https://cses.fi/problemset/task/1669">CSES 1669 · Round Trip</a> (reto)</li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana, junto con Building Teams si quedó pendiente.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para grafos con pesos y dependencias</h2>
+  <ol>
+    <li>Dijkstra: heap de (distancia, nodo) y saltar las copias con <code>d &gt; dist[u]</code>. Pesos no negativos.</li>
+    <li>Orden topológico: Kahn con los nodos sin aristas de entrada pendientes.</li>
+    <li>Si Kahn deja nodos fuera, el grafo dirigido tiene un ciclo.</li>
+    <li>Union-Find: raíz iterativa con compresión y unión por tamaño.</li>
+    <li>Kruskal: aristas por costo; aceptar las que unen componentes distintas.</li>
+    <li>Ciclo en un grafo no dirigido: DFS con estados y una arista a un ancestro que no es el padre.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper, grafo } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+
+  // ---------- Dijkstra ----------
+  (function () {
+    const G = { dir: true, pos: { 1: [50, 160], 2: [200, 50], 3: [200, 270], 4: [360, 50], 5: [360, 270], 6: [510, 160] },
+      edges: [[1, 2, 7], [1, 3, 2], [3, 2, 3], [2, 4, 4], [3, 5, 9], [4, 5, 1], [4, 6, 6], [5, 6, 2]] };
+    const adj = {}; G.edges.forEach(([a, b, c]) => (adj[a] = adj[a] || []).push([b, c]));
+    const INF = Infinity, dist = Array(7).fill(INF), fin = Array(7).fill(false), fr = [];
+    let H = [];
+    const snap = (u, edge, msg) => {
+      const node = {}, sub = {};
+      for (let x = 1; x <= 6; x++) { sub[x] = dist[x] === INF ? "∞" : dist[x]; if (fin[x]) node[x] = "ok"; else if (dist[x] < INF) node[x] = "sel"; }
+      if (u) node[u] = "cur";
+      const hs = H.slice().sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+      return { st: { node, sub, edge: edge || {} }, heap: hs, msg };
+    };
+    dist[1] = 0; H.push([0, 1]);
+    fr.push(snap(0, null, "dist[1] = 0 y (0, 1) entra al heap."));
+    while (H.length) {
+      H.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+      const [d, u] = H.shift();
+      if (d > dist[u]) { fr.push(snap(u, null, "Sale (" + d + ", " + u + "), pero dist[" + u + "] = " + dist[u] + " < " + d + ": copia vieja, se salta.")); continue; }
+      fin[u] = true;
+      const edge = {}, cambios = [];
+      (adj[u] || []).forEach(([v, c]) => {
+        if (d + c < dist[v]) { dist[v] = d + c; H.push([dist[v], v]); edge[u + "-" + v] = "on"; cambios.push("dist[" + v + "] = " + d + " + " + c + " = " + dist[v]); }
+        else edge[u + "-" + v] = "dim";
+      });
+      fr.push(snap(u, edge, "Sale (" + d + ", " + u + "): la distancia de " + u + " es definitiva. " + (cambios.length ? cambios.join("; ") + "." : "No mejora a ningún vecino.")));
+    }
+    fr.push(snap(0, null, "Heap vacío. Distancias desde 1: " + dist.slice(1).join(", ") + "."));
+    stepper($("#dj"), fr, (f) => { grafo($("#dj-g"), G, f.st); $("#dj-s").innerHTML = "heap = [" + f.heap.map((p) => "(" + p[0] + ", " + p[1] + ")").join(" ") + "]"; $("#dj-cap").innerHTML = f.msg; }, { delay: 1500 });
+  })();
+
+  // ---------- Kahn ----------
+  (function () {
+    const pos = { 1: [50, 60], 2: [50, 230], 3: [200, 60], 4: [200, 230], 5: [350, 145], 6: [510, 60], 7: [510, 230] };
+    const base = [[1, 3], [2, 3], [2, 4], [3, 5], [4, 5], [5, 6], [4, 7]];
+    const V = { "sin ciclo": [], "con ciclo (6 → 3)": [[6, 3]] };
+    Object.keys(V).forEach((k) => $("#kh-v").append(h("option", { value: k, text: k })));
+    let st = null;
+    function frames(k) {
+      const G = { dir: true, pos, edges: base.concat(V[k]) }, n = 7;
+      const adj = Array.from({ length: n + 1 }, () => []), ent = Array(n + 1).fill(0);
+      G.edges.forEach(([a, b]) => { adj[a].push(b); ent[b]++; });
+      const orden = [], cola = [], fr = [];
+      for (let u = 1; u <= n; u++) if (!ent[u]) cola.push(u);
+      const snap = (u, msg) => {
+        const node = {}, sub = {};
+        for (let x = 1; x <= n; x++) { sub[x] = orden.includes(x) ? "" : ent[x]; if (orden.includes(x)) node[x] = "ok"; else if (cola.includes(x)) node[x] = "sel"; }
+        if (u) node[u] = "cur";
+        const edge = {}; G.edges.forEach(([a, b]) => { if (orden.includes(a)) edge[a + "-" + b] = "dim"; });
+        return { G, st: { node, sub, edge }, cola: cola.slice(), orden: orden.slice(), msg };
+      };
+      fr.push(snap(0, "Debajo de cada nodo: aristas de entrada pendientes. Entran a la cola " + cola.join(", ") + "."));
+      while (cola.length) {
+        const u = cola.shift(); orden.push(u); const nuevos = [];
+        adj[u].forEach((v) => { ent[v]--; if (!ent[v]) { cola.push(v); nuevos.push(v); } });
+        fr.push(snap(u, "Sale " + u + " y se agrega al orden. " + (nuevos.length ? nuevos.join(", ") + " llega" + (nuevos.length > 1 ? "n" : "") + " a 0 y entra" + (nuevos.length > 1 ? "n" : "") + " a la cola." : "")));
+      }
+      fr.push(snap(0, orden.length === n ? "Orden topológico: <b>" + orden.join(" ") + "</b>." : "La cola se vació con " + orden.length + " de " + n + " nodos: hay un ciclo, <b>IMPOSSIBLE</b>."));
+      return fr;
+    }
+    function load() { const fr = frames($("#kh-v").value); const render = (f) => { grafo($("#kh-g"), f.G, f.st); $("#kh-s").innerHTML = "cola = [" + f.cola.join(", ") + "] · orden = [" + f.orden.join(", ") + "]"; $("#kh-cap").innerHTML = f.msg; }; if (st) st.setFrames(fr); else st = stepper($("#kh"), fr, render, { delay: 1300 }); }
+    $("#kh-v").onchange = load;
+    load();
+  })();
+
+  // ---------- Union-Find ----------
+  (function () {
+    const n = 8, padre = [0], tam = [0];
+    for (let x = 1; x <= n; x++) { padre.push(x); tam.push(1); }
+    function layout() {
+      const hijos = Array.from({ length: n + 1 }, () => []), raices = [];
+      for (let x = 1; x <= n; x++) if (padre[x] === x) raices.push(x); else hijos[padre[x]].push(x);
+      const pos = {}; let slot = 0;
+      const place = (u, d) => {
+        if (!hijos[u].length) { pos[u] = [30 + slot * 62, 32 + d * 82]; slot++; return; }
+        hijos[u].forEach((c) => place(c, d + 1));
+        const xs = hijos[u].map((c) => pos[c][0]);
+        pos[u] = [(Math.min(...xs) + Math.max(...xs)) / 2, 32 + d * 82];
+      };
+      raices.forEach((r) => { place(r, 0); slot += 0.3; });
+      const edges = []; for (let x = 1; x <= n; x++) if (padre[x] !== x) edges.push([x, padre[x]]);
+      return { dir: true, pos, edges };
+    }
+    const raiz = (x, camino) => { let r = x; while (padre[r] !== r) { camino.push(r); r = padre[r]; } camino.push(r); while (x !== r) { const s = padre[x]; padre[x] = r; x = s; } return r; };
+    const fr = [];
+    const snap = (hl, msg) => ({ G: layout(), padre: padre.slice(), tam: tam.slice(), hl, msg });
+    fr.push(snap([], "Cada nodo es su propio conjunto: padre[x] = x."));
+    [[1, 2], [3, 4], [1, 3], [5, 6], [7, 5], [4, 8], [6, 2]].forEach(([a, b]) => {
+      const ca = [], cb = [];
+      const before = padre.slice();
+      let ra = raiz(a, ca), rb = raiz(b, cb);
+      let msg = "unir(" + a + ", " + b + "): raíz de " + a + " = " + ra + (ca.length > 2 ? " (camino " + ca.join(" → ") + "; se comprime)" : "") + ", raíz de " + b + " = " + rb + ". ";
+      if (ra === rb) { msg += "Ya estaban juntos."; fr.push(snap([a, b], msg)); return; }
+      if (tam[ra] < tam[rb]) { const t = ra; ra = rb; rb = t; }
+      padre[rb] = ra; tam[ra] += tam[rb];
+      msg += rb + " cuelga de " + ra + " (tam[" + ra + "] = " + tam[ra] + ").";
+      const changed = []; for (let x = 1; x <= n; x++) if (padre[x] !== before[x]) changed.push(x);
+      fr.push(snap(changed, msg));
+    });
+    stepper($("#uf"), fr, (f) => {
+      const node = {}; f.hl.forEach((x) => (node[x] = "cur"));
+      for (let x = 1; x <= n; x++) if (f.padre[x] === x && !node[x]) node[x] = "sel";
+      grafo($("#uf-g"), f.G, { node });
+      const ep = $("#uf-p"), et = $("#uf-t"); ep.innerHTML = et.innerHTML = "";
+      for (let x = 1; x <= n; x++) {
+        const c = cell(f.hl.includes(x) ? "cur" : f.padre[x] === x ? "sel" : "", f.padre[x]); c.append(h("span", { class: "idx", text: x })); ep.append(c);
+        et.append(cell(f.padre[x] === x ? "" : "dim", f.tam[x]));
+      }
+      $("#uf-cap").innerHTML = f.msg;
+    }, { delay: 1600 });
+  })();
+
+  // ---------- Kruskal ----------
+  (function () {
+    const G = { pos: { 1: [70, 70], 2: [240, 50], 3: [410, 90], 4: [320, 240], 5: [110, 240] },
+      edges: [[1, 2, 3], [2, 3, 5], [2, 4, 2], [3, 4, 8], [5, 1, 7], [5, 4, 4]] };
+    const E = G.edges.map(([a, b, c]) => ({ a, b, c })).sort((p, q) => p.c - q.c);
+    const padre = [0, 1, 2, 3, 4, 5];
+    const r = (x) => { while (padre[x] !== x) x = padre[x]; return x; };
+    const est = Array(E.length).fill(""), fr = [{ k: -1, est: est.slice(), total: 0, msg: "Aristas ordenadas por costo. Cada nodo es su propia componente." }];
+    let total = 0;
+    E.forEach((e, k) => {
+      const ra = r(e.a), rb = r(e.b);
+      if (ra !== rb) { padre[ra] = rb; est[k] = "ok"; total += e.c; fr.push({ k, est: est.slice(), total, msg: e.a + "–" + e.b + " (" + e.c + ") une dos componentes: se acepta. Total = " + total + "." }); }
+      else { est[k] = "bad"; fr.push({ k, est: est.slice(), total, msg: e.a + "–" + e.b + " (" + e.c + ") une nodos que ya están conectados: formaría un ciclo." }); }
+    });
+    fr.push({ k: -1, est: est.slice(), total, msg: "Se usaron 4 = n − 1 aristas. Costo mínimo: <b>" + total + "</b>." });
+    stepper($("#kr"), fr, (f) => {
+      const edge = {};
+      E.forEach((e, k) => { if (k === f.k) edge[e.a + "-" + e.b] = f.est[k] === "ok" ? "on" : "bad"; else if (f.est[k] === "ok") edge[e.a + "-" + e.b] = "ok"; else if (f.est[k] === "bad") edge[e.a + "-" + e.b] = "dim"; });
+      grafo($("#kr-g"), G, { edge });
+      const t = $("#kr-t"); t.innerHTML = "";
+      t.append(h("tr", null, h("th", { text: "costo" }), h("th", { text: "arista" })));
+      E.forEach((e, k) => t.append(h("tr", { class: k === f.k ? "cur" : f.est[k] }, h("td", { text: e.c }), h("td", { text: e.a + "–" + e.b }))));
+      $("#kr-cap").innerHTML = f.msg;
+    }, { delay: 1500 });
+  })();
+})();
+</script>
+</body>
+</html>

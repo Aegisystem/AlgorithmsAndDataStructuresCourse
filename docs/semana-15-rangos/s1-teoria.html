@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 15 · Consultas de rango</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .stat { font-family: var(--font-mono); font-size: 19px; }
+  pre.code.xs { font-size: 14.5px; line-height: 1.42; padding: 12px 16px; }
+  .codelab { font-family: var(--font-mono); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .timebar { display: grid; grid-template-columns: 300px 1fr 90px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .fw { position: relative; height: 210px; border-bottom: 2px solid var(--line); margin-bottom: 30px; }
+  .fw .bar { position: absolute; height: 30px; border-radius: 4px; background: var(--soft); border: 1.5px solid var(--line); font-family: var(--font-mono); font-size: 13px; display: grid; place-items: center; cursor: pointer; }
+  .fw .bar.on { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
+  .fw .bar.cur { background: var(--mark); border-color: var(--tle); font-weight: 700; }
+  .fw .tick { position: absolute; bottom: -24px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); transform: translateX(-50%); }
+  .binrow { font-family: var(--font-mono); font-size: 20px; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .arr { margin-top: 24px; }
+  .arr .cell { width: 44px; height: 42px; font-size: 17px; }
+  .blk { position: relative; height: 60px; }
+  #st-x { flex-wrap: nowrap; }
+  #st-x .cell { width: 36px; }
+  .blk .b { position: absolute; height: 22px; border-radius: 4px; font-family: var(--font-mono); font-size: 13px; display: grid; place-items: center; }
+  .blk .b1 { top: 4px; background: var(--accent-soft); border: 1.5px solid var(--accent); }
+  .blk .b2 { top: 32px; background: var(--ac-soft); border: 1.5px solid var(--ac); }
+  .vt { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; }
+  .vt th, .vt td { border-bottom: 1px solid var(--line); padding: 4px 10px; text-align: right; min-width: 40px; }
+  .vt th { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; text-align: left; }
+  .vt td.hl { background: var(--mark); color: var(--mark-ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span>
+    <span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 15 · Sesión 1</div>
+  <h1>Consultas de rango</h1>
+  <div class="meta"><span>Objetivo: responder consultas sobre rangos cuando el arreglo cambia o cuando la operación no admite restas</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. Es la última clase de teoría. La sesión 2 es una práctica con los cinco problemas de hoy. La semana 16 tiene el parcial teórico 2 (semanas 8 a 15) y el contest final.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–10</td><td>Por qué las sumas prefijas no sirven si el arreglo cambia</td></tr>
+    <tr><td>10–40</td><td>Árbol de Fenwick; Dynamic Range Sum Queries y Fenwick Tree (ACL)</td></tr>
+    <tr><td>40–55</td><td>Actualización de rango con diferencias; Range Update Queries</td></tr>
+    <tr><td>55–75</td><td>Sparse table; Static Range Minimum Queries</td></tr>
+    <tr><td>75–90</td><td>Cuál usar; List Removals (reto) y resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Cuando el arreglo cambia</h2>
+  <p>Las sumas prefijas de la semana 9 se calculan una vez.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Repaso</div>
+  <h2>Cambiar un valor obliga a rehacer las prefijas</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>Con p[i] = x₁ + … + xᵢ, una suma de rango cuesta O(1). Si x_k cambia, cambian p[k], p[k + 1], …, p[n]: O(n) por cambio.</p>
+      <p>Sin las prefijas, cada consulta suma el rango en O(n). Con q consultas mezcladas con cambios, las dos formas cuestan O(n · q).</p>
+      <p>El árbol de Fenwick hace las dos operaciones en O(log n).</p>
+    </div>
+    <div class="stack">
+      <h3 class="small muted">n = 2·10⁵, mitad cambios y mitad sumas</h3>
+      <div class="timebar" style="grid-template-columns: 230px 1fr 80px"><span><code>sum</code> del rango, q = 2·10³</span><div class="tb slow" style="width:11%"></div><span class="tv">0.05 s</span></div>
+      <div class="timebar" style="grid-template-columns: 230px 1fr 80px"><span><code>sum</code> del rango, q = 2·10⁴</span><div class="tb slow" style="width:100%"></div><span class="tv">0.45 s</span></div>
+      <div class="timebar" style="grid-template-columns: 230px 1fr 80px"><span>Fenwick, q = 2·10⁵</span><div class="tb" style="width:3%"></div><span class="tv">0.013 s</span></div>
+      <p class="tiny muted">Solo el cálculo. PyPy 3.11, Apple M4.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Con las 2·10⁵ consultas del problema, sumar cada rango tardaría unos 4.5 s.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Árbol de Fenwick</h2>
+  <p>Un arreglo donde cada posición guarda la suma de un bloque.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">i &amp; -i</div>
+  <h2>bit[i] guarda la suma de un bloque que termina en i</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <div class="fw" id="fw1"></div>
+      <div class="binrow" id="fw1-b"></div>
+      <div class="caption" id="fw1-cap"></div>
+    </div>
+    <div class="stack small">
+      <p><code>i &amp; -i</code> es el bit 1 más bajo de i: 12 = 1100 da 4 = 100.</p>
+      <p>bit[i] guarda x de la posición i − (i &amp; −i) + 1 hasta la i. Por ejemplo, bit[12] = x₉ + x₁₀ + x₁₁ + x₁₂.</p>
+      <p>Los índices van de 1 a n. Con el 0 el truco no funciona, porque 0 &amp; −0 = 0.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Hacer clic en un bloque para ver su rango y el binario de i. Los impares guardan un solo valor; los múltiplos de 4 que no son de 8 guardan 4 valores; y así. <code>-i</code> en binario es el complemento a dos de i, por eso <code>i &amp; -i</code> deja solo el bit más bajo.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Operaciones</div>
+  <h2>Prefijo hacia abajo, actualización hacia arriba</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <div class="opts small"><label for="fw2-i">i =</label><select id="fw2-i"></select><button id="fw2-p" class="on">prefijo(i)</button><button id="fw2-s">sumar(i, v)</button></div>
+      <div class="fw" id="fw2"></div>
+      <div class="caption" id="fw2-cap"></div>
+    </div>
+    <pre class="code sm">def sumar(i, v):      # x_i += v
+    while i &lt;= n:
+        bit[i] += v
+        i += i &amp; -i
+
+def prefijo(i):       # x_1 + ... + x_i
+    s = 0
+    while i &gt; 0:
+        s += bit[i]
+        i -= i &amp; -i
+    return s
+
+# suma de a a b
+prefijo(b) - prefijo(a - 1)</pre>
+  </div>
+  <aside class="notes"><p>prefijo(13) suma bit[13] + bit[12] + bit[8]: los bloques 13, 9–12 y 1–8, que cubren 1..13 sin repetir. Cada paso quita el bit más bajo de i, así que hay a lo sumo log₂ n pasos. sumar(5, v) actualiza bit[5], bit[6], bit[8] y bit[16]: todos los bloques que contienen la posición 5. Con n = 2·10⁵, unos 18 pasos.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Construcción</div>
+  <h2>Construir el Fenwick en O(n)</h2>
+  <div class="cols">
+    <pre class="code sm">bit = [0] * (n + 1)
+for i in range(1, n + 1):
+    bit[i] += x[i - 1]
+    j = i + (i &amp; -i)       # el bloque padre
+    if j &lt;= n:
+        bit[j] += bit[i]</pre>
+    <div class="stack small">
+      <p>Cuando se llega a i, bit[i] ya tiene la suma de su bloque: los bloques menores que lo forman ya le pasaron sus sumas. Entonces se pasa bit[i] al siguiente bloque que lo contiene, i + (i &amp; −i).</p>
+      <p>También se puede llamar <code>sumar(i, x[i - 1])</code> para cada i, que cuesta O(n log n). Con n = 2·10⁵ los dos son rápidos; la versión en O(n) hace un paso por posición en lugar de hasta log₂ n.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Ejemplo: bit[1] = x₁ pasa a bit[2]; bit[2] = x₁ + x₂ pasa a bit[4]; bit[3] = x₃ pasa a bit[4]; cuando se llega a 4, bit[4] ya tiene x₁ + … + x₄.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1648</div>
+  <h2>Dynamic Range Sum Queries</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros y q consultas de dos tipos: "1 k u" cambia x_k por u; "2 a b" pide la suma de las posiciones a a b.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y q; los n valores; q consultas.</dd><dt>Salida</dt><dd>La respuesta de cada consulta de tipo 2.</dd><dt>Restricciones</dt><dd>1 ≤ n, q ≤ 2·10⁵; 1 ≤ xᵢ, u ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8 4
+3 2 4 5 1 1 5 3
+2 1 4
+2 5 6
+1 3 1
+2 1 4</pre>
+      <div class="ex-lab">Salida</div><pre>14
+2
+11</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1648">https://cses.fi/problemset/task/1648</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: llamar <code>sumar(k, u)</code>, que le suma u al valor en lugar de cambiarlo. Otro: no actualizar x después del cambio, y la segunda vez que cambia la misma posición la diferencia sale mal. Caso a probar: cambiar dos veces la misma posición.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1648</div>
+  <h2>Dynamic Range Sum Queries</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>El Fenwick sabe sumarle v a una posición. ¿Cómo se cambia x_k por u?</p></div>
+    <div class="idea-a frag">Sumándole la diferencia: <code>sumar(k, u - x[k])</code>, y guardando el nuevo valor en x.</div>
+    <div class="idea-a frag">La consulta es <code>prefijo(b) - prefijo(a - 1)</code>. Todo es O((n + q) log n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1648 · Dynamic Range Sum Queries</div>
+  <h2>Cambiar es sumar la diferencia</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Fenwick</span>
+      <pre class="code xs">def main():
+    n, q = map(int, input().split())
+    x = list(map(int, input().split()))
+    bit = [0] * (n + 1)
+    for i in range(1, n + 1):
+        bit[i] += x[i - 1]
+        j = i + (i &amp; -i)
+        if j &lt;= n:
+            bit[j] += bit[i]
+
+    def sumar(i, v):
+        while i &lt;= n:
+            bit[i] += v
+            i += i &amp; -i
+
+    def prefijo(i):
+        s = 0
+        while i &gt; 0:
+            s += bit[i]
+            i -= i &amp; -i
+        return s</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Consultas</span>
+      <pre class="code xs">    res = []
+    for _ in range(q):
+        t, a, b = map(int, input().split())
+        if t == 1:
+            sumar(a, b - x[a - 1])
+            x[a - 1] = b
+        else:
+            res.append(prefijo(b) - prefijo(a - 1))
+    print("\n".join(map(str, res)))
+
+main()</pre>
+      <p class="small">O((n + q) log n). Con n = q = 2·10⁵ tardó 0.11 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · AtCoder Library Practice B</div>
+  <h2>Fenwick Tree</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo a₀, …, a_{N−1} y Q consultas: "0 p x" suma x a a_p; "1 l r" pide a_l + … + a_{r−1}.</p>
+      <p>Las posiciones empiezan en 0 y el rango [l, r) no incluye r.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>N y Q; los N valores; Q consultas.</dd><dt>Salida</dt><dd>La respuesta de cada consulta de tipo 1.</dd><dt>Restricciones</dt><dd>1 ≤ N, Q ≤ 5·10⁵; 0 ≤ aᵢ, x ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 5
+1 2 3 4 5
+1 0 5
+1 2 4
+0 3 10
+1 0 5
+1 0 3</pre>
+      <div class="ex-lab">Salida</div><pre>15
+7
+25
+6</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://atcoder.jp/contests/practice2/tasks/practice2_b">https://atcoder.jp/contests/practice2/tasks/practice2_b</a></p>
+  <aside class="notes"><p>Es el mismo Fenwick con otra forma de numerar. La posición p del enunciado es la p + 1 del Fenwick, y a_l + … + a_{r−1} es prefijo(r) − prefijo(l). Aquí la consulta 0 suma x (no cambia el valor), así que se llama <code>sumar(p + 1, x)</code> directamente. El límite es 5 s. Con N = Q = 5·10⁵ tardó 0.21 s (PyPy 3.11, Apple M4).</p><p>Error común: usar las posiciones sin sumar 1, y el Fenwick se queda en un ciclo con i = 0. Caso a probar: l = 0 y r = N.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Actualizar un rango</h2>
+  <p>El arreglo de diferencias de la semana 9, guardado en un Fenwick.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Fenwick sobre diferencias</div>
+  <h2>Sumar a un rango y consultar un valor</h2>
+  <div class="cols">
+    <div class="stack">
+      <table class="vt" id="rd"></table>
+      <p class="small">Ejemplo de Range Update Queries después de "1 2 5 1": d[2] += 1 y d[6] −= 1. El valor de la posición 4 es x₄ + d₁ + … + d₄ = 5 + 1 = 6.</p>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># sumar u de a a b
+sumar(a, u)
+sumar(b + 1, -u)
+
+# valor actual de la posición k
+x[k - 1] + prefijo(k)</pre>
+      <p class="small">El Fenwick guarda el arreglo de diferencias d. El cambio de un rango toca dos posiciones de d, y el valor de k es x_k más la suma de d hasta k. Las dos operaciones cuestan O(log n).</p>
+      <p class="small">En la semana 9 todos los cambios llegaban antes de las consultas. Con el Fenwick se pueden mezclar.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Si b = n, <code>sumar(n + 1, -u)</code> no hace nada porque el bucle empieza con i &gt; n: está bien, no hay posición después de n.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1651</div>
+  <h2>Range Update Queries</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros y q consultas: "1 a b u" suma u a cada valor de las posiciones a a b; "2 k" pide el valor de la posición k.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y q; los n valores; q consultas.</dd><dt>Salida</dt><dd>La respuesta de cada consulta de tipo 2.</dd><dt>Restricciones</dt><dd>1 ≤ n, q ≤ 2·10⁵; 1 ≤ xᵢ, u ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8 3
+3 2 4 5 1 1 5 3
+2 4
+1 2 5 1
+2 4</pre>
+      <div class="ex-lab">Salida</div><pre>5
+6</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1651">https://cses.fi/problemset/task/1651</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo. Las consultas tienen distinta cantidad de números: hay que leer la línea completa y mirar el primero.</p><p>Error común: sumar u a cada posición del rango, O(n) por consulta. Caso a probar: un cambio con b = n.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1651 · Range Update Queries</div>
+  <h2>Dos cambios puntuales por rango</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Fenwick vacío</span>
+      <pre class="code xs">def main():
+    n, q = map(int, input().split())
+    x = list(map(int, input().split()))
+    bit = [0] * (n + 1)
+
+    def sumar(i, v):
+        while i &lt;= n:
+            bit[i] += v
+            i += i &amp; -i
+
+    def prefijo(i):
+        s = 0
+        while i &gt; 0:
+            s += bit[i]
+            i -= i &amp; -i
+        return s</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Consultas</span>
+      <pre class="code xs">    res = []
+    for _ in range(q):
+        c = list(map(int, input().split()))
+        if c[0] == 1:
+            a, b, u = c[1], c[2], c[3]
+            sumar(a, u)
+            sumar(b + 1, -u)
+        else:
+            k = c[1]
+            res.append(x[k - 1] + prefijo(k))
+    print("\n".join(map(str, res)))
+
+main()</pre>
+      <p class="small">El Fenwick empieza en cero: al inicio no hay cambios. O(q log n). Con n = q = 2·10⁵ tardó 0.11 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Sparse table</h2>
+  <p>Mínimo de un rango en O(1) cuando el arreglo no cambia.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sparse table</div>
+  <h2>Dos bloques de 2ᵏ que cubren el rango</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <div class="opts small"><label for="st-a">a =</label><select id="st-a"></select><label for="st-b">b =</label><select id="st-b"></select></div>
+      <div class="cells arr" id="st-x"></div>
+      <div class="blk" id="st-blk"></div>
+      <div class="caption" id="st-cap"></div>
+    </div>
+    <div class="stack small">
+      <p>La fila k guarda el mínimo de cada bloque de 2ᵏ posiciones seguidas. Hay log₂ n filas.</p>
+      <p>Un rango de largo L se cubre con dos bloques de 2ᵏ, con 2ᵏ ≤ L: uno que empieza en a y otro que termina en b. Se pueden pisar: para el mínimo, repetir un valor no cambia el resultado.</p>
+      <p>Para la suma no sirve: los valores del medio se sumarían dos veces.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Cambiar a y b para ver los dos bloques. k es el mayor entero con 2ᵏ ≤ L, que en Python es <code>L.bit_length() - 1</code>. Funciona igual con máximo y con gcd, que tampoco cambian si un valor se repite.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sparse table en Python</div>
+  <h2>Cada fila sale de la anterior</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># tabla[k][i] = mínimo de x[i .. i + 2^k - 1]
+tabla = [x]
+k = 1
+while (1 &lt;&lt; k) &lt;= n:
+    prev = tabla[-1]
+    mitad = 1 &lt;&lt; (k - 1)
+    tabla.append(list(map(min, prev, prev[mitad:])))
+    k += 1
+
+# mínimo de x[a .. b], desde 0
+k = (b - a + 1).bit_length() - 1
+min(tabla[k][a], tabla[k][b - (1 &lt;&lt; k) + 1])</pre>
+    </div>
+    <div class="stack small">
+      <p>Un bloque de 2ᵏ es la unión de dos bloques de 2ᵏ⁻¹: el que empieza en i y el que empieza en i + 2ᵏ⁻¹. <code>map(min, prev, prev[mitad:])</code> los compara de a pares y se detiene en la lista más corta.</p>
+      <p>Construir cuesta O(n log n) en tiempo y en memoria. Cada consulta cuesta O(1).</p>
+      <p>Con n = 10⁶, construir con <code>map(min, ...)</code> tardó 0.13 s y con <code>[min(prev[i], prev[i + mitad]) for i in range(L)]</code> 0.06 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Las dos formas de construir alcanzan para n = 2·10⁵ (0.02 s y 0.01 s). En PyPy la comprensión de listas fue más rápida que <code>map(min, ...)</code>. Con n = 2·10⁵ hay 18 filas.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1647</div>
+  <h2>Static Range Minimum Queries</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros que no cambia y q consultas. Cada consulta pide el mínimo entre las posiciones a y b.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y q; los n valores; q líneas con a y b.</dd><dt>Salida</dt><dd>El mínimo de cada consulta.</dd><dt>Restricciones</dt><dd>1 ≤ n, q ≤ 2·10⁵; 1 ≤ xᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8 4
+3 2 4 5 1 1 5 3
+2 4
+5 6
+1 8
+3 3</pre>
+      <div class="ex-lab">Salida</div><pre>2
+1
+1
+4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1647">https://cses.fi/problemset/task/1647</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo.</p><p>Error común: intentar "prefijas de mínimos" y restar; el mínimo no se puede restar. Otro: <code>min(x[a-1:b])</code> en cada consulta, O(n · q). Caso a probar: a = b.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1647 · Static Range Minimum Queries</div>
+  <h2>Sparse table y dos bloques por consulta</h2>
+  <div class="cols c-60">
+    <pre class="code xs">def main():
+    n, q = map(int, input().split())
+    x = list(map(int, input().split()))
+    tabla = [x]
+    k = 1
+    while (1 &lt;&lt; k) &lt;= n:
+        prev = tabla[-1]
+        mitad = 1 &lt;&lt; (k - 1)
+        tabla.append(list(map(min, prev, prev[mitad:])))
+        k += 1
+    res = []
+    for _ in range(q):
+        a, b = map(int, input().split())
+        a -= 1                  # desde 0: el rango es a..b-1
+        k = (b - a).bit_length() - 1
+        fila = tabla[k]
+        res.append(min(fila[a], fila[b - (1 &lt;&lt; k)]))
+    print("\n".join(map(str, res)))
+
+main()</pre>
+    <div class="stack small">
+      <p>Después de <code>a -= 1</code>, el rango es a..b − 1 desde 0 y su largo es b − a.</p>
+      <p>O(n log n + q). Con n = q = 2·10⁵ tardó 0.12 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Si el arreglo cambiara, haría falta un segment tree (Dynamic Range Minimum Queries), que está fuera del programa.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Comparación</div>
+  <h2>Qué estructura usar</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Estructura</th><th>Sirve para</th><th>Construir</th><th>Cambio</th><th>Consulta</th></tr>
+    <tr><td>Sumas prefijas</td><td>Sumas, arreglo fijo</td><td>O(n)</td><td>O(n)</td><td>O(1)</td></tr>
+    <tr><td>Diferencias (semana 9)</td><td>Sumar a rangos y consultar al final</td><td>O(n)</td><td>O(1)</td><td>O(n) al final</td></tr>
+    <tr><td>Fenwick</td><td>Cambiar un valor y sumar rangos</td><td>O(n)</td><td>O(log n)</td><td>O(log n)</td></tr>
+    <tr><td>Fenwick sobre diferencias</td><td>Sumar a un rango y consultar un valor</td><td>O(n)</td><td>O(log n)</td><td>O(log n)</td></tr>
+    <tr><td>Sparse table</td><td>Mínimo, máximo o gcd, arreglo fijo</td><td>O(n log n)</td><td>no se puede</td><td>O(1)</td></tr>
+  </table>
+  <p class="small">La pregunta que decide: ¿el arreglo cambia entre consultas? ¿La operación se puede deshacer con una resta?</p>
+  <aside class="notes"><p>El Fenwick también sirve para contar: con un 1 en cada posición ocupada, prefijo(i) dice cuántas hay hasta i. Es la idea de List Removals.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1749 · Reto</div>
+  <h2>List Removals</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay una lista de n enteros. Se hacen n borrados: en cada uno se dice la posición p (en la lista actual) del elemento que se borra. Hay que imprimir los elementos en el orden en que se borran.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; los n elementos; las n posiciones.</dd><dt>Salida</dt><dd>Los elementos borrados, en orden.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5
+2 6 1 4 2
+3 1 3 1 1</pre>
+      <div class="ex-lab">Salida</div><pre>1 2 2 6 4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1749">https://cses.fi/problemset/task/1749</a></p>
+  <aside class="notes"><p>La lista pasa por [2, 6, 1, 4, 2], [2, 6, 4, 2], [6, 4, 2], [6, 4], [4] y [].</p><p>Error común: <code>lista.pop(p - 1)</code>, que es O(n) por borrado y O(n²) en total. Caso a probar: borrar siempre la posición 1 con n = 2·10⁵.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1749</div>
+  <h2>List Removals</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si se marca con 1 cada posición original que sigue en la lista, ¿qué posición original tiene el elemento que hoy está en el lugar p?</p></div>
+    <div class="idea-a frag">La primera posición i con prefijo(i) = p: la p-ésima marca. Al borrarla, <code>sumar(i, -1)</code>.</div>
+    <div class="idea-a frag">Esa i se busca bajando por el Fenwick con potencias de 2, como en una búsqueda binaria: O(log n) por borrado.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Una búsqueda binaria sobre prefijo(i) también funciona, pero cuesta O(log² n) por borrado.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1749 · List Removals</div>
+  <h2>Buscar la p-ésima marca en el Fenwick</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code xs">def main():
+    n = int(input())
+    x = list(map(int, input().split()))
+    p = list(map(int, input().split()))
+    bit = [0] * (n + 1)
+    for i in range(1, n + 1):
+        bit[i] += 1
+        j = i + (i &amp; -i)
+        if j &lt;= n:
+            bit[j] += bit[i]
+    LOG = n.bit_length()</pre>
+      <p class="small">pos avanza en bloques de 2ᵏ, de mayor a menor, mientras el bloque tenga menos de k marcas. Cada salto descuenta las marcas del bloque. Al final, pos + 1 es la k-ésima marca.</p>
+    </div>
+    <div class="stack">
+      <pre class="code xs">    res = []
+    for k in p:
+        pos = 0
+        paso = 1 &lt;&lt; LOG
+        while paso:
+            if pos + paso &lt;= n and bit[pos + paso] &lt; k:
+                pos += paso
+                k -= bit[pos]
+            paso &gt;&gt;= 1
+        pos += 1
+        res.append(x[pos - 1])
+        i = pos
+        while i &lt;= n:
+            bit[i] -= 1
+            i += i &amp; -i
+    print(" ".join(map(str, res)))
+
+main()</pre>
+      <p class="small">O(n log n). Tardó 0.09 s con n = 2·10⁵ (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>bit[pos + paso] es la suma del bloque (pos, pos + paso] porque pos siempre es múltiplo de 2·paso. Por eso se puede leer directo, sin llamar a prefijo.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1648">CSES 1648 · Dynamic Range Sum Queries</a></li>
+    <li><a href="https://cses.fi/problemset/task/1647">CSES 1647 · Static Range Minimum Queries</a></li>
+    <li><a href="https://cses.fi/problemset/task/1651">CSES 1651 · Range Update Queries</a></li>
+    <li><a href="https://atcoder.jp/contests/practice2/tasks/practice2_b">ACL Practice B · Fenwick Tree</a></li>
+    <li><a href="https://cses.fi/problemset/task/1749">CSES 1749 · List Removals</a> (reto)</li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana. La semana 16 tiene el parcial teórico 2 y el contest final.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para consultas de rango</h2>
+  <ol>
+    <li>Arreglo fijo y sumas: sumas prefijas.</li>
+    <li>Cambios y sumas mezclados: Fenwick, con posiciones de 1 a n.</li>
+    <li>Cambiar x_k por u es <code>sumar(k, u - x[k])</code>.</li>
+    <li>Sumar a un rango: Fenwick sobre diferencias, dos <code>sumar</code> por cambio.</li>
+    <li>Mínimo de un rango en un arreglo fijo: sparse table con k = <code>L.bit_length() - 1</code>.</li>
+    <li>Mínimo con cambios necesita segment tree, que queda fuera del curso.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $ } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const low = (i) => i & -i;
+  const N = 16;
+
+  function drawBars(el, hl, cur, onclick) {
+    el.innerHTML = "";
+    const X = (v) => (v / N) * 100 + "%";
+    for (let i = 1; i <= N; i++) {
+      const lv = Math.log2(low(i)), a = i - low(i);
+      const bar = h("div", { class: "bar " + (cur === i ? "cur" : hl.includes(i) ? "on" : ""), style: { left: "calc(" + X(a) + " + 2px)", width: "calc(" + X(low(i)) + " - 4px)", bottom: (6 + lv * 38) + "px" }, text: i, onclick: onclick ? () => onclick(i) : null });
+      el.append(bar);
+    }
+    for (let i = 1; i <= N; i++) el.append(h("span", { class: "tick", style: { left: "calc(" + X(i) + " - " + (50 / N) + "%)" }, text: i }));
+  }
+
+  // ---------- i & -i ----------
+  (function () {
+    function show(i) {
+      drawBars($("#fw1"), [], i, show);
+      const b = i.toString(2).padStart(5, "0"), lb = low(i).toString(2).padStart(5, "0");
+      $("#fw1-b").innerHTML = "i = " + i + " = " + b + " · i &amp; −i = " + lb + " = " + low(i);
+      $("#fw1-cap").innerHTML = "bit[" + i + "] = x<sub>" + (i - low(i) + 1) + "</sub> + … + x<sub>" + i + "</sub> (" + low(i) + " valor" + (low(i) > 1 ? "es" : "") + ").";
+    }
+    show(12);
+  })();
+
+  // ---------- prefijo y sumar ----------
+  (function () {
+    for (let i = 1; i <= N; i++) $("#fw2-i").append(h("option", { value: i, text: i, selected: i === 13 }));
+    let modo = "p";
+    function draw() {
+      const i0 = +$("#fw2-i").value, vis = [];
+      if (modo === "p") { for (let i = i0; i > 0; i -= low(i)) vis.push(i); }
+      else { for (let i = i0; i <= N; i += low(i)) vis.push(i); }
+      drawBars($("#fw2"), vis, null, null);
+      $("#fw2-cap").innerHTML = modo === "p"
+        ? "prefijo(" + i0 + ") suma bit[" + vis.join("] + bit[") + "]: " + vis.length + " paso" + (vis.length > 1 ? "s" : "") + ", y los bloques cubren 1.." + i0 + "."
+        : "sumar(" + i0 + ", v) cambia bit[" + vis.join("], bit[") + "]: los bloques que contienen la posición " + i0 + ".";
+      $("#fw2-p").classList.toggle("on", modo === "p"); $("#fw2-s").classList.toggle("on", modo === "s");
+    }
+    $("#fw2-i").onchange = draw;
+    $("#fw2-p").onclick = () => { modo = "p"; draw(); };
+    $("#fw2-s").onclick = () => { modo = "s"; draw(); };
+    draw();
+  })();
+
+  // ---------- diferencias ----------
+  (function () {
+    const x = [3, 2, 4, 5, 1, 1, 5, 3], n = 8, d = Array(n + 2).fill(0);
+    d[2] += 1; d[6] -= 1;
+    const pref = []; let s = 0; for (let i = 1; i <= n; i++) { s += d[i]; pref.push(s); }
+    const t = $("#rd");
+    const row = (lab, vals, hlIdx) => t.append(h("tr", null, h("th", { text: lab }), vals.map((v, i) => h("td", { class: i === hlIdx ? "hl" : "", text: v }))));
+    row("k", [1, 2, 3, 4, 5, 6, 7, 8]);
+    row("x", x, 3);
+    row("d", d.slice(1, n + 1));
+    row("prefijo(k)", pref, 3);
+    row("valor", x.map((v, i) => v + pref[i]), 3);
+  })();
+
+  // ---------- sparse table ----------
+  (function () {
+    const x = [3, 2, 4, 5, 1, 1, 5, 3, 7, 6, 2, 8, 9, 4, 6, 5], n = x.length;
+    for (let i = 1; i <= n; i++) { $("#st-a").append(h("option", { value: i, text: i, selected: i === 3 })); $("#st-b").append(h("option", { value: i, text: i, selected: i === 13 })); }
+    function draw() {
+      let a = +$("#st-a").value, b = +$("#st-b").value; if (a > b) { const t = a; a = b; b = t; }
+      const L = b - a + 1, k = Math.floor(Math.log2(L)), w = 1 << k;
+      const m1 = Math.min(...x.slice(a - 1, a - 1 + w)), m2 = Math.min(...x.slice(b - w, b)), m = Math.min(m1, m2);
+      const el = $("#st-x"); el.innerHTML = "";
+      x.forEach((v, i) => { const c = cell(i + 1 >= a && i + 1 <= b ? (v === m ? "ok" : "sel") : "dim", v); c.append(h("span", { class: "idx", text: i + 1 })); el.append(c); });
+      const blk = $("#st-blk"); blk.innerHTML = "";
+      const cw = 40, X = (p) => (p - 1) * cw;
+      blk.append(h("div", { class: "b b1", style: { left: X(a) + "px", width: (w * cw - 4) + "px" }, text: "min = " + m1 }));
+      blk.append(h("div", { class: "b b2", style: { left: X(b - w + 1) + "px", width: (w * cw - 4) + "px" }, text: "min = " + m2 }));
+      $("#st-cap").innerHTML = "L = " + L + ", k = " + k + " (2<sup>" + k + "</sup> = " + w + "). Bloques " + a + ".." + (a + w - 1) + " y " + (b - w + 1) + ".." + b + ". Mínimo: <b>" + m + "</b>.";
+    }
+    $("#st-a").onchange = $("#st-b").onchange = draw;
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

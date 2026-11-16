@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 16 · Parcial teórico 2 y contest final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .quiz { display: grid; grid-template-columns: 1fr 300px; gap: 10px 28px; align-items: baseline; font-size: 21px; }
+  .quiz .frag { font-family: var(--font-mono); font-size: 19px; color: var(--accent); }
+  .ans { color: var(--accent); }
+  .trace { border-collapse: collapse; font-family: var(--font-mono); font-size: 19px; }
+  .trace th, .trace td { border: 1px solid var(--line); padding: 5px 12px; text-align: center; min-width: 46px; }
+  .trace th { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .trace td.frag { color: var(--accent); }
+  .q { font-size: 22px; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 16</div>
+  <h1>Parcial teórico 2 y contest final</h1>
+  <div class="meta"><span>Guía de estudio: formato, temas y ejemplos de preguntas de las semanas 8 a 15</span></div>
+  <aside class="notes"><p>Esta guía es material de repaso. En la semana 16, la sesión 1 es el parcial y la sesión 2 es el contest final. Conviene habilitarla en <code>config.js</code> al terminar la semana 15.</p><p>Las preguntas de esta guía son ejemplos públicos. Las del parcial deben ser otras.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Evaluaciones</div>
+  <h2>Las dos evaluaciones de la semana 16</h2>
+  <table class="t" style="font-size:21px">
+    <tr><th></th><th>Parcial teórico 2</th><th>Contest final</th></tr>
+    <tr><td>Sesión</td><td>Sesión 1</td><td>Sesión 2</td></tr>
+    <tr><td>Formato</td><td>Escrito, sin computador</td><td>4 a 6 problemas en un juez en línea, 90 minutos</td></tr>
+    <tr><td>Temas</td><td>Semanas 8 a 15</td><td>Todo el curso, con énfasis en las semanas 11 a 15</td></tr>
+    <tr><td>Peso</td><td>15 %</td><td>20 %</td></tr>
+    <tr><td>Fecha</td><td>[fecha pendiente]</td><td>[fecha pendiente]</td></tr>
+    <tr><td>Lugar</td><td>[salón pendiente]</td><td>Grupo del curso: [enlace pendiente]</td></tr>
+  </table>
+  <p class="small">Las dos forman el corte 3, que vale el 35 % de la nota. Las dos son presenciales.</p>
+  <aside class="notes"><p>Completar fecha, salón y enlace antes de habilitar la guía. Si la institución tiene una franja de examen más larga, conviene usarla para el contest final.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Temas</div>
+  <h2>Qué entra en el parcial</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Sem</th><th>Tema</th><th>Qué hay que saber hacer</th></tr>
+    <tr><td>8</td><td>Matemáticas y bits</td><td>Divisores hasta √n, criba, módulo 10⁹ + 7, <code>pow</code>, operaciones con bits</td></tr>
+    <tr><td>9</td><td>Prefijas y two pointers</td><td>Prefijas en 1D y 2D, diferencias, prefijas con dict, ventana deslizante</td></tr>
+    <tr><td>10</td><td>Greedy y heaps</td><td>Contraejemplos, intervalos, Kadane, <code>heapq</code></td></tr>
+    <tr><td>11</td><td>Búsqueda completa</td><td>Bitmask, <code>itertools</code>, backtracking, estimar 2ⁿ y n!</td></tr>
+    <tr><td>12</td><td>Grafos I</td><td>Representaciones, DFS iterativo, componentes, BFS, padres, bipartición</td></tr>
+    <tr><td>13</td><td>Grafos II</td><td>Dijkstra, Kahn, Union-Find, Kruskal</td></tr>
+    <tr><td>14</td><td>Programación dinámica</td><td>Las cinco piezas, tablas en 1D y 2D, mochila 0/1</td></tr>
+    <tr><td>15</td><td>Consultas de rango</td><td>Fenwick, Fenwick sobre diferencias, sparse table</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Formato del parcial</div>
+  <h2>Tipos de pregunta</h2>
+  <ol>
+    <li>Calcular la complejidad de fragmentos de código.</li>
+    <li>Hacer a mano la traza de un algoritmo: BFS, una tabla de DP, un Fenwick.</li>
+    <li>Leer un enunciado, decir qué técnica usar y justificar la elección.</li>
+    <li>Encontrar el error en un código o dar un contraejemplo para un greedy.</li>
+    <li>Escribir a mano una solución corta en Python o en pseudocódigo.</li>
+  </ol>
+  <p class="small muted">Las diapositivas siguientes tienen un ejemplo de cada tipo. Avance con → para ver las respuestas.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 1 · Complejidad</div>
+  <h2>¿Cuál es la complejidad de cada fragmento?</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># a)
+for mask in range(1 &lt;&lt; n):
+    for i in range(n):
+        if mask &gt;&gt; i &amp; 1:
+            s += a[i]</pre>
+      <span class="ans frag">O(2ⁿ · n): 2ⁿ subconjuntos y n bits en cada uno.</span>
+      <pre class="code sm"># b)
+i = n
+while i &gt; 0:
+    s += bit[i]
+    i -= i &amp; -i</pre>
+      <span class="ans frag">O(log n): cada vuelta apaga un bit de i.</span>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># c) N objetos, capacidad W
+for w, v in objetos:
+    for c in range(W, w - 1, -1):
+        dp[c] = max(dp[c], dp[c - w] + v)</pre>
+      <span class="ans frag">O(N · W): estados por transición de costo 1.</span>
+      <pre class="code sm"># d) n nodos y m aristas
+while h:
+    d, u = heappop(h)
+    if d &gt; dist[u]:
+        continue
+    for v, c in adj[u]:
+        ...   # heappush si mejora</pre>
+      <span class="ans frag">O((n + m) log m): Dijkstra, con a lo sumo una copia en el heap por arista.</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 2 · Traza</div>
+  <h2>BFS a mano</h2>
+  <div class="cols">
+    <div class="stack small">
+      <svg class="graph" id="g-bfs" viewBox="0 0 580 330" width="520" height="296"></svg>
+      <p>BFS desde el nodo 1. Los vecinos se recorren de menor a mayor. Escriba el orden en que salen los nodos de la cola y la distancia de cada uno.</p>
+    </div>
+    <div class="stack">
+      <table class="trace">
+        <tr><th>orden</th><td class="frag">1</td><td class="frag">2</td><td class="frag">3</td><td class="frag">4</td><td class="frag">5</td><td class="frag">8</td><td class="frag">6</td><td class="frag">7</td></tr>
+      </table>
+      <table class="trace">
+        <tr><th>nodo</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
+        <tr><th>dist</th><td class="frag">0</td><td class="frag">1</td><td class="frag">1</td><td class="frag">2</td><td class="frag">3</td><td class="frag">4</td><td class="frag">4</td><td class="frag">3</td></tr>
+      </table>
+      <p class="ans frag small">El 4 se descubre desde el 2, que sale primero. El camino más corto a 7 es 1, 2, 4, 5, 7.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 2 · Traza</div>
+  <h2>Una tabla de DP y un Fenwick</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>Monedas 1, 3 y 4. Llene dp[s] = mínimo de monedas para sumar s.</p>
+      <table class="trace">
+        <tr><th>s</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr>
+        <tr><th>dp</th><td>0</td><td class="frag">1</td><td class="frag">2</td><td class="frag">1</td><td class="frag">1</td><td class="frag">2</td><td class="frag">2</td></tr>
+      </table>
+      <p class="ans frag">dp[6] = 2 (3 + 3). El greedy de la moneda más grande usa 3 (4 + 1 + 1).</p>
+    </div>
+    <div class="stack small">
+      <p>En un Fenwick con n = 16, ¿qué posiciones de bit lee <code>prefijo(13)</code>? ¿Qué posiciones cambia <code>sumar(5, v)</code>?</p>
+      <p class="ans frag">prefijo(13): 13, 12 y 8. En binario: 1101, 1100, 1000.</p>
+      <p class="ans frag">sumar(5, v): 5, 6, 8 y 16. En binario: 101, 110, 1000, 10000.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 3 · Técnica</div>
+  <h2>¿Qué técnica usaría?</h2>
+  <div class="quiz">
+    <span>Menor cantidad de conexiones para ir del computador 1 al n.</span><span class="frag">BFS</span>
+    <span>Ruta más corta entre ciudades con carreteras de longitudes distintas.</span><span class="frag">Dijkstra</span>
+    <span>Ordenar cursos que tienen requisitos, o decir que es imposible.</span><span class="frag">orden topológico (Kahn)</span>
+    <span>Reparar carreteras para conectar todo con el menor costo.</span><span class="frag">Kruskal con Union-Find</span>
+    <span>2·10⁵ consultas que cambian un valor o piden la suma de un rango.</span><span class="frag">Fenwick</span>
+    <span>Mínimo de 2·10⁵ rangos de un arreglo que no cambia.</span><span class="frag">sparse table</span>
+    <span>Contar subarreglos con suma k, con valores negativos.</span><span class="frag">prefijas + dict</span>
+    <span>n ≤ 20: repartir en dos grupos con la menor diferencia.</span><span class="frag">bitmask (2ⁿ)</span>
+  </div>
+  <aside class="notes"><p>En el parcial se pide además justificar: qué propiedad del enunciado lleva a la técnica (pesos, cambios, n pequeño) y cuál es la complejidad.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 4 · Error</div>
+  <h2>¿Qué está mal?</h2>
+  <div class="cols c3">
+    <div class="stack">
+      <pre class="code sm"># mochila 0/1
+for w, v in objetos:
+    for c in range(w, W + 1):
+        dp[c] = max(dp[c],
+                    dp[c - w] + v)</pre>
+      <span class="ans frag small">Al recorrer c de menor a mayor, dp[c − w] ya puede incluir el mismo objeto, y se usa varias veces. Para la 0/1, c va de W a w.</span>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># suma de x_a .. x_b
+p = list(accumulate(x, initial=0))
+print(p[b] - p[a])</pre>
+      <span class="ans frag small">Deja fuera x_a. Es <code>p[b] - p[a - 1]</code>.</span>
+    </div>
+    <div class="stack">
+      <p class="small">Greedy para Movie Festival: ver primero la película más corta. Dé un contraejemplo.</p>
+      <span class="ans frag small">1–5, 4–7 y 6–10: escoge 4–7 y ve una. Se pueden ver dos: 1–5 y 6–10.</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tipo 5 · Escribir</div>
+  <h2>Escribir una solución a mano</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p class="q">Escriba una función que reciba una lista no vacía y devuelva la mayor suma de un subarreglo.</p>
+      <pre class="code sm frag">def mayor_suma(a):
+    mejor = actual = a[0]
+    for v in a[1:]:
+        actual = max(v, actual + v)
+        mejor = max(mejor, actual)
+    return mejor</pre>
+      <p class="frag">Kadane, O(n). Empezar en a[0] y no en 0 cubre el caso con todos negativos.</p>
+    </div>
+    <div class="stack small">
+      <p class="q">Sin recursión, cuente las componentes conexas de un grafo con nodos 1..n y lista de adyacencia adj.</p>
+      <pre class="code sm frag">def componentes(n, adj):
+    visto = [False] * (n + 1)
+    c = 0
+    for s in range(1, n + 1):
+        if not visto[s]:
+            c += 1
+            visto[s] = True
+            pila = [s]
+            while pila:
+                u = pila.pop()
+                for v in adj[u]:
+                    if not visto[v]:
+                        visto[v] = True
+                        pila.append(v)
+    return c</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Repaso</div>
+  <h2>Técnicas de las semanas 12 a 15</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Técnica</th><th>Cuándo</th><th>Costo</th></tr>
+    <tr><td>DFS iterativo</td><td>Recorrer, componentes, flood fill</td><td>O(n + m)</td></tr>
+    <tr><td>BFS</td><td>Menor cantidad de aristas; multifuente; bipartición</td><td>O(n + m)</td></tr>
+    <tr><td>Dijkstra</td><td>Caminos con pesos no negativos</td><td>O((n + m) log m)</td></tr>
+    <tr><td>Kahn</td><td>Orden con requisitos; ciclos en grafos dirigidos</td><td>O(n + m)</td></tr>
+    <tr><td>Union-Find y Kruskal</td><td>Componentes que se unen; conectar con costo mínimo</td><td>O(m log m)</td></tr>
+    <tr><td>Programación dinámica</td><td>Mínimo, máximo o formas, con subproblemas repetidos</td><td>estados × transición</td></tr>
+    <tr><td>Fenwick</td><td>Sumas de rango con cambios</td><td>O(log n) por operación</td></tr>
+    <tr><td>Sparse table</td><td>Mínimo de rangos en un arreglo fijo</td><td>O(n log n) y O(1)</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Contest final</h2>
+  <div class="cols">
+    <ul>
+      <li>Cubre todo el curso, con énfasis en las semanas 11 a 15.</li>
+      <li>Dura 90 minutos y es presencial.</li>
+      <li>Tiene de 4 a 6 problemas, ordenados de menor a mayor dificultad.</li>
+      <li>Vale el 20 % de la nota.</li>
+      <li>Se hace en el grupo del curso: <span class="mono">[enlace pendiente]</span>.</li>
+    </ul>
+    <div class="box soft stack small">
+      <h3>Qué repasar</h3>
+      <ul>
+        <li>Leer un grafo con lista de adyacencia; BFS y DFS sin recursión.</li>
+        <li>Dijkstra con <code>heapq</code> y borrado perezoso.</li>
+        <li>Union-Find con <code>raiz</code> iterativa.</li>
+        <li>DP en tabla: escribir las cinco piezas antes de programar.</li>
+        <li>El Fenwick completo, con posiciones de 1 a n.</li>
+        <li>Medir con un caso grande antes de enviar.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Definir antes los problemas del contest y el enlace. Conviene que ninguno sea de los resueltos en clase o en los talleres. Cada problema asignado debe tener una solución en Python que pase el límite de tiempo con PyPy.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Preparación</div>
+  <h2>Cómo prepararse</h2>
+  <ol>
+    <li>Volver a resolver, sin mirar la solución, los problemas de las prácticas de las semanas 12 a 15.</li>
+    <li>Escribir de memoria BFS, Dijkstra, Union-Find y el Fenwick, y probarlos con el ejemplo de un problema.</li>
+    <li>Hacer en papel la traza de un BFS, de una tabla de DP y de <code>prefijo</code> en un Fenwick.</li>
+    <li>Para cada problema de los talleres, escribir en una línea la técnica y la complejidad.</li>
+    <li>Repasar los resúmenes de las clases de las semanas 8 a 15.</li>
+  </ol>
+  <aside class="notes"><p>Si la carga de la semana es excesiva, el parcial puede ir en la S1 de la semana 15, siempre que quede dentro del corte 3 (ver PROGRAMA.md, sección 5).</p></aside>
+</section>
+
+</main>
+<script>
+(function () {
+  const { $, grafo } = Curso;
+  grafo($("#g-bfs"), {
+    pos: { 1: [60, 70], 2: [200, 40], 3: [110, 230], 4: [270, 160], 5: [400, 70], 6: [460, 270], 7: [530, 140], 8: [260, 295] },
+    edges: [[1, 2], [1, 3], [2, 4], [3, 4], [4, 5], [4, 8], [5, 6], [5, 7], [6, 7]]
+  });
+})();
+</script>
+</body>
+</html>

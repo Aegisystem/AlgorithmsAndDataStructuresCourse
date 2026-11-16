@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 12 · BFS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .stat { font-family: var(--font-mono); font-size: 20px; }
+  pre.code.xs { font-size: 14.5px; line-height: 1.42; padding: 12px 16px; }
+  .gg .cell { width: 44px; height: 44px; font-size: 17px; }
+  .gg .cell.wall { background: var(--ink); }
+  .gg .cell.src { background: var(--wa-soft); border-color: var(--wa); font-weight: 700; }
+  .gg .cell.d { background: var(--accent-soft); border-color: var(--accent); }
+  .gg .cell.path { background: var(--ac-soft); border-color: var(--ac); font-weight: 700; }
+  .codelab { font-family: var(--font-mono); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="hl"></span><span class="on"></span><span></span><span></span><span></span><span></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 12 · Sesión 2</div>
+  <h1>Grafos I: BFS</h1>
+  <div class="meta"><span>BFS, camino con padres, multifuente y bipartición; cuatro problemas resueltos en vivo</span></div>
+  <aside class="notes"><p>Sesión de 90 minutos en la que el docente resuelve en vivo. Conviene escribir el código de cada problema delante del grupo, con la diapositiva de la solución como referencia, y enviarlo al juez. La tarea de la semana es Building Teams.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–20</td><td>BFS con <code>deque</code>, distancias y camino con padres</td></tr>
+    <tr><td>20–30</td><td>BFS multifuente y bipartición</td></tr>
+    <tr><td>30–45</td><td>En vivo: Counting Rooms</td></tr>
+    <tr><td>45–55</td><td>En vivo: Building Roads</td></tr>
+    <tr><td>55–70</td><td>En vivo: Message Route</td></tr>
+    <tr><td>70–85</td><td>En vivo: Labyrinth</td></tr>
+    <tr><td>85–90</td><td>Tarea: Building Teams</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>BFS</h2>
+  <p>Recorrer por capas: primero los nodos a distancia 1, luego los de distancia 2, y así.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">BFS</div>
+  <h2>Recorrido en anchura con una cola</h2>
+  <div class="cols c-60">
+    <div class="stack" id="bf">
+      <svg class="graph" id="bf-g" viewBox="0 0 580 340" width="560" height="328"></svg>
+      <div class="stat" id="bf-s"></div>
+      <div class="caption" id="bf-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">from collections import deque
+
+dist = [-1] * (n + 1)    # -1: no visitado
+dist[s] = 0
+cola = deque([s])
+while cola:
+    u = cola.popleft()
+    for v in adj[u]:
+        if dist[v] == -1:
+            dist[v] = dist[u] + 1
+            cola.append(v)</pre>
+      <p class="small">Es el DFS de la sesión 1 con una cola en lugar de una pila. También es O(n + m).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso desde el nodo 1. El número debajo de cada nodo es su distancia. La cola siempre tiene nodos de una distancia d seguidos de nodos de distancia d + 1, nunca más. Por eso los nodos salen en orden de distancia.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Distancias mínimas</div>
+  <h2>Por qué BFS da el camino con menos aristas</h2>
+  <div class="cols">
+    <div class="stack small">
+      <p>Un nodo a distancia d + 1 tiene un vecino a distancia d. BFS saca todos los nodos de distancia d antes que los de d + 1, así que el primero que descubre a un nodo es un vecino a la menor distancia posible.</p>
+      <p>DFS no sirve para esto. En el ciclo 1 – 2 – 3 – 4 – 5 – 1, un DFS recursivo que empieza por el 2 recorre 1, 2, 3, 4, 5 y llega al 5 con 4 aristas, aunque el 5 es vecino del 1.</p>
+      <p>BFS cuenta aristas. Si las aristas tienen pesos distintos, hace falta Dijkstra (semana 13).</p>
+    </div>
+    <div class="box soft stack small">
+      <h3>Cuándo usar cada uno</h3>
+      <ul>
+        <li>Visitar todo lo alcanzable, contar componentes o regiones: DFS o BFS.</li>
+        <li>Menor cantidad de pasos o de movimientos: BFS.</li>
+        <li>Menor suma de pesos: Dijkstra.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Reconstruir el camino</div>
+  <h2>Un arreglo de padres</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <svg class="graph" id="pa-g" viewBox="0 0 580 340" width="560" height="328"></svg>
+      <div class="row small"><label for="pa-t">Camino de 1 a</label><select id="pa-t"></select></div>
+      <div class="caption" id="pa-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># en el BFS, al descubrir v desde u:
+padre[v] = u
+
+# de t hacia atrás hasta s
+camino = [t]
+while camino[-1] != s:
+    camino.append(padre[camino[-1]])
+camino.reverse()</pre>
+      <p class="small">padre[v] es el nodo desde el que se descubrió v. Las aristas (padre[v], v) forman un árbol: el árbol de BFS.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>En verde está el árbol de BFS desde el nodo 1; en azul, el camino al nodo elegido. El camino sale al revés (de t a s), por eso se invierte al final. El número debajo de cada nodo es su padre.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">BFS multifuente</div>
+  <h2>Distancia a la fuente más cercana</h2>
+  <div class="cols">
+    <div class="stack" id="mf">
+      <div class="grid gg" id="mf-g" style="grid-template-columns: repeat(8, 44px)"></div>
+      <div class="caption" id="mf-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">cola = deque()
+for x, y in fuentes:
+    dist[x][y] = 0
+    cola.append((x, y))
+# ... el mismo BFS de siempre</pre>
+      <p class="small">Todas las fuentes entran a la cola con distancia 0. El BFS avanza desde todas a la vez, y cada celda recibe la distancia a la fuente más cercana.</p>
+      <p class="small">Cuesta lo mismo que un solo BFS: O(n · m) en una grilla. Hacer un BFS por cada fuente costaría O(k · n · m).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso: cada paso es una capa. Las dos celdas S son las fuentes. Ejemplo de uso: la distancia de cada celda a la salida más cercana, o el momento en que un incendio que empieza en varios puntos llega a cada celda.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Bipartición</div>
+  <h2>Pintar con dos colores</h2>
+  <div class="cols c-60">
+    <div class="stack" id="bp">
+      <div class="row small"><label for="bp-v">Grafo</label><select id="bp-v"></select></div>
+      <svg class="graph" id="bp-g" viewBox="0 0 520 270" width="520" height="270"></svg>
+      <div class="caption" id="bp-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">color = [0] * (n + 1)   # 0: sin color
+color[s] = 1
+cola = deque([s])
+while cola:
+    u = cola.popleft()
+    for v in adj[u]:
+        if color[v] == 0:
+            color[v] = 3 - color[u]
+            cola.append(v)
+        elif color[v] == color[u]:
+            ...   # no es bipartito</pre>
+      <p class="small">Un grafo es <strong>bipartito</strong> si sus nodos se pueden pintar con dos colores sin que una arista una dos del mismo color. <code>3 - color[u]</code> cambia 1 por 2 y 2 por 1.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso con cada grafo. Un grafo es bipartito si y solo si no tiene ciclos de longitud impar. Con la arista 1–3 aparece el triángulo 1, 2, 3 y dos vecinos quedan del mismo color (arista roja). Si el grafo no es conexo, se repite desde cada nodo sin color, como con las componentes.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Problemas en vivo</h2>
+  <p>Counting Rooms, Building Roads, Message Route y Labyrinth.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1192</div>
+  <h2>Counting Rooms</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>El mapa de un edificio es una grilla de n × m: cada casilla es piso (<code>.</code>) o pared (<code>#</code>). Se camina entre casillas de piso hacia arriba, abajo, izquierda y derecha.</p>
+      <p>Hay que contar los cuartos.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; n líneas de m caracteres.</dd><dt>Salida</dt><dd>La cantidad de cuartos.</dd><dt>Restricciones</dt><dd>1 ≤ n, m ≤ 1000</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 8
+########
+#..#...#
+####.#.#
+#..#...#
+########</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1192">https://cses.fi/problemset/task/1192</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y contar los cuartos del ejemplo.</p><p>Error común: un DFS recursivo, que con un cuarto de 10⁶ casillas pasa del límite de recursión. Otro: marcar la casilla al sacarla de la pila y no al meterla, que mete la misma casilla muchas veces. Caso a probar: una grilla de 1000 × 1000 toda de piso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1192</div>
+  <h2>Counting Rooms</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si la grilla es un grafo, ¿qué es un cuarto?</p></div>
+    <div class="idea-a frag">Una componente conexa de casillas de piso. La respuesta es la cantidad de componentes.</div>
+    <div class="idea-a frag">Se recorre la grilla; en cada casilla de piso sin visitar empieza un cuarto nuevo y un flood fill lo marca entero. Es O(n · m).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Es el flood fill de la sesión 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1192 · Counting Rooms</div>
+  <h2>Un flood fill por cuarto</h2>
+  <div class="cols c-60">
+    <pre class="code xs">def main():
+    n, m = map(int, input().split())
+    g = [input() for _ in range(n)]
+    visto = [[False] * m for _ in range(n)]
+    cuartos = 0
+    for i in range(n):
+        for j in range(m):
+            if g[i][j] == "#" or visto[i][j]:
+                continue
+            cuartos += 1
+            visto[i][j] = True
+            pila = [(i, j)]
+            while pila:
+                x, y = pila.pop()
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + dx, y + dy
+                    if (0 &lt;= nx &lt; n and 0 &lt;= ny &lt; m
+                            and g[nx][ny] == "." and not visto[nx][ny]):
+                        visto[nx][ny] = True
+                        pila.append((nx, ny))
+    print(cuartos)
+
+main()</pre>
+    <div class="stack small">
+      <p>Cada casilla entra una vez a la pila: O(n · m) = 10⁶ en el peor caso.</p>
+      <p>Con una grilla de 1000 × 1000 toda de piso (un solo cuarto) tardó 0.09 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>La pila guarda tuplas (x, y). Otra opción es guardar un solo entero x · m + y, como en la semana 4; en PyPy la diferencia con 10⁶ casillas es pequeña.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1666</div>
+  <h2>Building Roads</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n ciudades y m carreteras. Hay que construir el mínimo de carreteras nuevas para que se pueda ir de cualquier ciudad a cualquier otra, y decir cuáles.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a y b.</dd><dt>Salida</dt><dd>k y luego k carreteras nuevas. Se acepta cualquier solución.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4 2
+1 2
+3 4</pre>
+      <div class="ex-lab">Salida</div><pre>1
+2 3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1666">https://cses.fi/problemset/task/1666</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: olvidar las ciudades sin carreteras, que también son componentes. Caso a probar: 3 1 con la carretera 1 2, que necesita una carretera nueva hasta la ciudad 3.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1666</div>
+  <h2>Building Roads</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si hay c componentes, ¿cuántas carreteras nuevas hacen falta como mínimo?</p></div>
+    <div class="idea-a frag">c − 1: cada carretera nueva une a lo sumo dos componentes en una.</div>
+    <div class="idea-a frag">Se toma una ciudad de cada componente (el s con el que empieza su DFS) y se unen en fila: la primera con la segunda, la segunda con la tercera, …</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Es el código de componentes de la sesión 1, guardando el s de cada componente.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1666 · Building Roads</div>
+  <h2>Unir las componentes en fila</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Leer el grafo</span>
+      <pre class="code sm">def main():
+    n, m = map(int, input().split())
+    adj = [[] for _ in range(n + 1)]
+    for _ in range(m):
+        a, b = map(int, input().split())
+        adj[a].append(b)
+        adj[b].append(a)</pre>
+      <p class="small">O(n + m). Con n = 10⁵ y m = 2·10⁵ tardó 0.10 s (PyPy 3.11, Apple M4).</p>
+    </div>
+    <div class="stack">
+      <span class="codelab">Componentes y salida</span>
+      <pre class="code sm">    visto = [False] * (n + 1)
+    lideres = []
+    for s in range(1, n + 1):
+        if visto[s]:
+            continue
+        lideres.append(s)
+        visto[s] = True
+        pila = [s]
+        while pila:
+            u = pila.pop()
+            for v in adj[u]:
+                if not visto[v]:
+                    visto[v] = True
+                    pila.append(v)
+    print(len(lideres) - 1)
+    for i in range(len(lideres) - 1):
+        print(lideres[i], lideres[i + 1])
+
+main()</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1667</div>
+  <h2>Message Route</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una red tiene n computadores y m conexiones. Hay que enviar un mensaje del computador 1 al n pasando por el mínimo de computadores, y mostrar la ruta.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a y b.</dd><dt>Salida</dt><dd>k, la cantidad de computadores de la ruta, y la ruta; o IMPOSSIBLE.</dd><dt>Restricciones</dt><dd>2 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 5
+1 2
+1 3
+1 4
+2 3
+5 4</pre>
+      <div class="ex-lab">Salida</div><pre>3
+1 4 5</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1667">https://cses.fi/problemset/task/1667</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: imprimir la cantidad de aristas (2) en lugar de la de computadores (3). Otro: usar DFS, que encuentra una ruta pero no la más corta. Caso a probar: 3 1 con la conexión 1 2, cuya respuesta es IMPOSSIBLE.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1667</div>
+  <h2>Message Route</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Todas las conexiones cuestan lo mismo. ¿Qué recorrido da la ruta con menos computadores? ¿Cómo se recupera la ruta?</p></div>
+    <div class="idea-a frag">BFS desde el 1, guardando el padre de cada computador. Si n no se visitó, IMPOSSIBLE.</div>
+    <div class="idea-a frag">La ruta sale siguiendo los padres desde n hasta 1, y se invierte. k es la longitud de la ruta.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. El arreglo de padres sirve también para saber si un nodo se visitó: se empieza en −1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1667 · Message Route</div>
+  <h2>BFS con padres</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Leer y recorrer</span>
+      <pre class="code sm">from collections import deque
+
+def main():
+    n, m = map(int, input().split())
+    adj = [[] for _ in range(n + 1)]
+    for _ in range(m):
+        a, b = map(int, input().split())
+        adj[a].append(b)
+        adj[b].append(a)
+    padre = [-1] * (n + 1)
+    padre[1] = 0
+    cola = deque([1])
+    while cola:
+        u = cola.popleft()
+        for v in adj[u]:
+            if padre[v] == -1:
+                padre[v] = u
+                cola.append(v)</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Reconstruir la ruta</span>
+      <pre class="code sm">    if padre[n] == -1:
+        print("IMPOSSIBLE")
+        return
+    camino = [n]
+    while camino[-1] != 1:
+        camino.append(padre[camino[-1]])
+    camino.reverse()
+    print(len(camino))
+    print(" ".join(map(str, camino)))
+
+main()</pre>
+      <p class="small">O(n + m). Con un camino de 10⁵ computadores tardó 0.07 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>padre[1] = 0 marca el 1 como visitado y detiene la reconstrucción, porque ningún computador se llama 0.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1193</div>
+  <h2>Labyrinth</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Un laberinto es una grilla de n × m con piso (<code>.</code>), paredes (<code>#</code>), un inicio A y un final B. Se mueve hacia arriba (U), abajo (D), izquierda (L) y derecha (R).</p>
+      <p>Hay que decir si se puede llegar de A a B y dar un camino de largo mínimo.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; n líneas de m caracteres.</dd><dt>Salida</dt><dd>YES, el largo y el camino como string; o NO. Se acepta cualquier camino mínimo.</dd><dt>Restricciones</dt><dd>1 ≤ n, m ≤ 1000</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 8
+########
+#.A#...#
+#.##.#B#
+#......#
+########</pre>
+      <div class="ex-lab">Salida</div><pre>YES
+9
+LDDRRRRRU</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1193">https://cses.fi/problemset/task/1193</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y seguir el camino del ejemplo con el dedo.</p><p>Error común: armar el camino con <code>s += letra</code> en cada paso de la reconstrucción; en PyPy eso es O(k²) con caminos de hasta 10⁶ pasos. Se usa una lista y <code>join</code>. Caso a probar: A y B separados por una pared, con respuesta NO.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1193</div>
+  <h2>Labyrinth</h2>
+  <div class="cols">
+    <div class="stack" id="lb">
+      <div class="grid gg" id="lb-g" style="grid-template-columns: repeat(8, 44px)"></div>
+      <div class="caption" id="lb-cap"></div>
+    </div>
+    <div class="idea">
+      <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>¿Qué guardar en cada casilla para poder escribir el camino al final?</p></div>
+      <div class="idea-a frag">La letra del movimiento con el que se llegó a ella. Es el padre, escrito como dirección.</div>
+      <div class="idea-a frag">Desde B se deshace cada letra hasta llegar a A, y la lista se invierte.</div>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar la animación: cada paso es una capa del BFS desde A, con la distancia en cada casilla. El último paso marca el camino. Después preguntar al grupo y mostrar la idea con →.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1193 · Labyrinth</div>
+  <h2>BFS en la grilla y letras como padres</h2>
+  <div class="cols">
+    <div class="stack">
+      <span class="codelab">Leer y recorrer</span>
+      <pre class="code xs">from collections import deque
+
+def main():
+    n, m = map(int, input().split())
+    g = [input() for _ in range(n)]
+    for i in range(n):
+        if "A" in g[i]:
+            ax, ay = i, g[i].index("A")
+        if "B" in g[i]:
+            bx, by = i, g[i].index("B")
+    paso = [[""] * m for _ in range(n)]
+    paso[ax][ay] = "*"
+    movs = ((1, 0, "D"), (-1, 0, "U"),
+            (0, 1, "R"), (0, -1, "L"))
+    cola = deque([(ax, ay)])
+    while cola:
+        x, y = cola.popleft()
+        for dx, dy, c in movs:
+            nx, ny = x + dx, y + dy
+            if not (0 &lt;= nx &lt; n and 0 &lt;= ny &lt; m):
+                continue
+            if g[nx][ny] != "#" and paso[nx][ny] == "":
+                paso[nx][ny] = c
+                cola.append((nx, ny))</pre>
+    </div>
+    <div class="stack">
+      <span class="codelab">Reconstruir el camino</span>
+      <pre class="code xs">    if paso[bx][by] == "":
+        print("NO")
+        return
+    atras = {"D": (-1, 0), "U": (1, 0),
+             "R": (0, -1), "L": (0, 1)}
+    camino = []
+    x, y = bx, by
+    while paso[x][y] != "*":
+        c = paso[x][y]
+        camino.append(c)
+        x += atras[c][0]
+        y += atras[c][1]
+    camino.reverse()
+    print("YES")
+    print(len(camino))
+    print("".join(camino))
+
+main()</pre>
+      <p class="small">O(n · m). Con 1000 × 1000 tardó 0.11 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>paso guarda "" para las casillas sin visitar y "*" para A. Esas dos marcas reemplazan al arreglo de visitados.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Tarea · CSES 1668</div>
+  <h2>Building Teams</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay n alumnos y m amistades. Hay que repartir los alumnos en dos equipos de modo que dos amigos nunca queden en el mismo equipo.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y m; m líneas con a y b.</dd><dt>Salida</dt><dd>El equipo (1 o 2) de cada alumno, o IMPOSSIBLE. Se acepta cualquier reparto válido.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 10⁵; 1 ≤ m ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 3
+1 2
+1 3
+4 5</pre>
+      <div class="ex-lab">Salida</div><pre>1 2 2 1 2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1668">https://cses.fi/problemset/task/1668</a></p>
+  <aside class="notes"><p>Es la tarea de la semana. Pista para el grupo: es la bipartición de la parte 1, repetida desde cada alumno que todavía no tiene equipo. Error común: hacer la bipartición solo desde el alumno 1, que deja sin equipo a los de otras componentes.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para BFS</h2>
+  <ol>
+    <li>BFS usa <code>deque</code>: <code>append</code> al final y <code>popleft</code> al inicio.</li>
+    <li>Marcar la distancia (o el padre) al meter el nodo en la cola.</li>
+    <li>Sin pesos, BFS da la menor cantidad de aristas desde el inicio.</li>
+    <li>El camino sale siguiendo los padres desde el final, y se invierte.</li>
+    <li>Varias fuentes: todas entran a la cola con distancia 0.</li>
+    <li>Bipartito: pintar con <code>3 - color[u]</code>; dos vecinos del mismo color lo impiden.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper, grafo } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const A = {
+    pos: { 1: [60, 70], 2: [200, 40], 3: [110, 230], 4: [270, 160], 5: [400, 70], 6: [460, 270], 7: [530, 140], 8: [260, 295] },
+    edges: [[1, 2], [1, 3], [2, 4], [3, 4], [4, 5], [4, 8], [5, 6], [5, 7], [6, 7]]
+  };
+  const adjOf = (G, n) => { const adj = Array.from({ length: n + 1 }, () => []); G.edges.forEach(([a, b]) => { adj[a].push(b); adj[b].push(a); }); return adj; };
+  const adjA = adjOf(A, 8);
+  const bfsA = (() => { const d = Array(9).fill(-1), p = Array(9).fill(0); d[1] = 0; const q = [1]; for (let k = 0; k < q.length; k++) { const u = q[k]; adjA[u].forEach((v) => { if (d[v] < 0) { d[v] = d[u] + 1; p[v] = u; q.push(v); } }); } return { d, p }; })();
+
+  // ---------- BFS ----------
+  (function () {
+    const dist = Array(9).fill(-1), fr = [];
+    const snap = (u, cola, msg) => {
+      const node = {}, sub = {};
+      for (let x = 1; x <= 8; x++) if (dist[x] >= 0) { node[x] = cola.includes(x) ? "sel" : "ok"; sub[x] = dist[x]; }
+      if (u) node[u] = "cur";
+      return { st: { node, sub }, cola: cola.slice(), msg };
+    };
+    dist[1] = 0; const cola = [1];
+    fr.push(snap(0, cola, "dist[1] = 0 y el 1 entra a la cola."));
+    while (cola.length) {
+      const u = cola.shift(), nuevos = [];
+      adjA[u].forEach((v) => { if (dist[v] < 0) { dist[v] = dist[u] + 1; cola.push(v); nuevos.push(v); } });
+      fr.push(snap(u, cola, "Sale " + u + " (distancia " + dist[u] + "). " + (nuevos.length ? "Entran " + nuevos.join(", ") + " con distancia " + (dist[u] + 1) + "." : "No tiene vecinos nuevos.")));
+    }
+    fr.push(snap(0, cola, "Cola vacía. Las distancias desde el 1 están debajo de cada nodo."));
+    stepper($("#bf"), fr, (f) => { grafo($("#bf-g"), A, f.st); $("#bf-s").innerHTML = "cola = [" + f.cola.join(", ") + "]"; $("#bf-cap").innerHTML = f.msg; }, { delay: 1200 });
+  })();
+
+  // ---------- padres ----------
+  (function () {
+    for (let t = 2; t <= 8; t++) $("#pa-t").append(h("option", { value: t, text: t, selected: t === 7 }));
+    function draw() {
+      const t = +$("#pa-t").value, edge = {}, node = {}, sub = {};
+      for (let v = 2; v <= 8; v++) { edge[bfsA.p[v] + "-" + v] = "ok"; sub[v] = "p=" + bfsA.p[v]; }
+      const cam = [t]; while (cam[cam.length - 1] !== 1) cam.push(bfsA.p[cam[cam.length - 1]]);
+      for (let i = 0; i + 1 < cam.length; i++) edge[cam[i + 1] + "-" + cam[i]] = "on";
+      cam.forEach((x) => (node[x] = "sel")); node[1] = node[t] = "cur";
+      grafo($("#pa-g"), A, { edge, node, sub });
+      $("#pa-cap").innerHTML = "Desde " + t + " por los padres: " + cam.join(" → ") + ". Invertido: <b>" + cam.slice().reverse().join(" ") + "</b>, " + (cam.length - 1) + " aristas.";
+    }
+    $("#pa-t").onchange = draw;
+    draw();
+  })();
+
+  // ---------- multifuente ----------
+  (function () {
+    const G = ["S......#", ".##.#...", "...#..#.", ".#....#S", "...##..."], n = 5, m = 8;
+    const d = Array.from({ length: n }, () => Array(m).fill(-1)); let q = [];
+    for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) if (G[i][j] === "S") { d[i][j] = 0; q.push([i, j]); }
+    const fr = [{ d: d.map((r) => r.slice()), lvl: 0, msg: "Las dos fuentes entran a la cola con distancia 0." }];
+    let lvl = 0;
+    while (q.length) {
+      const nq = [];
+      q.forEach(([x, y]) => [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const a = x + dx, b = y + dy; if (a >= 0 && a < n && b >= 0 && b < m && G[a][b] !== "#" && d[a][b] < 0) { d[a][b] = lvl + 1; nq.push([a, b]); } }));
+      if (!nq.length) break;
+      lvl++; q = nq;
+      fr.push({ d: d.map((r) => r.slice()), lvl, msg: "Capa " + lvl + ": " + nq.length + " celda" + (nq.length === 1 ? "" : "s") + " a distancia " + lvl + " de la fuente más cercana." });
+    }
+    fr[fr.length - 1].msg += " Todas las celdas libres tienen distancia.";
+    stepper($("#mf"), fr, (f) => {
+      const el = $("#mf-g"); el.innerHTML = "";
+      for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
+        if (G[i][j] === "#") el.append(cell("wall"));
+        else if (G[i][j] === "S") el.append(cell("src", "S"));
+        else el.append(cell(f.d[i][j] < 0 ? "" : f.d[i][j] === f.lvl ? "cur" : "d", f.d[i][j] < 0 ? "" : f.d[i][j]));
+      }
+      $("#mf-cap").innerHTML = f.msg;
+    }, { delay: 1000 });
+  })();
+
+  // ---------- bipartición ----------
+  (function () {
+    const base = { pos: { 1: [90, 60], 2: [260, 30], 3: [430, 60], 4: [430, 210], 5: [260, 240], 6: [90, 210] }, edges: [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 1]] };
+    const V = { "ciclo de 6": [], "ciclo de 6 y arista 1–4": [[1, 4]], "ciclo de 6 y arista 1–3": [[1, 3]] };
+    Object.keys(V).forEach((k) => $("#bp-v").append(h("option", { value: k, text: k })));
+    let st = null;
+    function frames(k) {
+      const G = { pos: base.pos, edges: base.edges.concat(V[k]) }, adj = adjOf(G, 6), col = Array(7).fill(0), fr = [];
+      const snap = (u, msg, bad) => { const node = {}; for (let x = 1; x <= 6; x++) if (col[x]) node[x] = "c" + (col[x] === 1 ? 1 : 3); if (u) node[u] = "cur"; const edge = {}; if (bad) edge[bad] = "bad"; return { G, st: { node, edge, sub: Object.fromEntries(Object.entries(col).filter(([x, c]) => +x && c).map(([x, c]) => [x, "color " + c])) }, msg }; };
+      col[1] = 1; const q = [1];
+      fr.push(snap(0, "El 1 recibe el color 1."));
+      for (let i = 0; i < q.length; i++) {
+        const u = q[i], nuevos = [];
+        for (const v of adj[u]) {
+          if (!col[v]) { col[v] = 3 - col[u]; q.push(v); nuevos.push(v); }
+          else if (col[v] === col[u]) { fr.push(snap(u, u + " y " + v + " son vecinos y tienen el color " + col[u] + ": <b>no es bipartito</b>.", u + "-" + v)); return fr; }
+        }
+        fr.push(snap(u, "Sale " + u + ". " + (nuevos.length ? nuevos.join(", ") + " recibe" + (nuevos.length > 1 ? "n" : "") + " el color " + (3 - col[u]) + "." : "Sus vecinos ya tienen el otro color.")));
+      }
+      fr.push(snap(0, "Ninguna arista une dos nodos del mismo color: <b>es bipartito</b>."));
+      return fr;
+    }
+    function load() { const fr = frames($("#bp-v").value); const render = (f) => { grafo($("#bp-g"), f.G, f.st); $("#bp-cap").innerHTML = f.msg; }; if (st) st.setFrames(fr); else st = stepper($("#bp"), fr, render, { delay: 1200 }); }
+    $("#bp-v").onchange = load;
+    load();
+  })();
+
+  // ---------- Labyrinth ----------
+  (function () {
+    const G = ["########", "#.A#...#", "#.##.#B#", "#......#", "########"], n = 5, m = 8;
+    let ax, ay, bx, by;
+    G.forEach((r, i) => { if (r.includes("A")) { ax = i; ay = r.indexOf("A"); } if (r.includes("B")) { bx = i; by = r.indexOf("B"); } });
+    const d = Array.from({ length: n }, () => Array(m).fill(-1)), paso = Array.from({ length: n }, () => Array(m).fill(""));
+    d[ax][ay] = 0; let q = [[ax, ay]], lvl = 0;
+    const MV = [[1, 0, "D"], [-1, 0, "U"], [0, 1, "R"], [0, -1, "L"]];
+    const fr = [{ d: d.map((r) => r.slice()), lvl: 0, path: null, msg: "BFS desde A, por capas." }];
+    while (q.length) {
+      const nq = [];
+      q.forEach(([x, y]) => MV.forEach(([dx, dy, c]) => { const a = x + dx, b = y + dy; if (a >= 0 && a < n && b >= 0 && b < m && G[a][b] !== "#" && d[a][b] < 0) { d[a][b] = lvl + 1; paso[a][b] = c; nq.push([a, b]); } }));
+      if (!nq.length) break;
+      lvl++; q = nq;
+      fr.push({ d: d.map((r) => r.slice()), lvl, path: null, msg: "Capa " + lvl + "." + (d[bx][by] === lvl ? " B está a distancia " + lvl + "." : "") });
+    }
+    const path = {}, letras = []; let x = bx, y = by;
+    while (!(x === ax && y === ay)) { const c = paso[x][y]; path[x + "," + y] = c; letras.push(c); const mv = MV.find((t) => t[2] === c); x -= mv[0]; y -= mv[1]; }
+    fr.push({ d: d.map((r) => r.slice()), lvl: -1, path, msg: "Desde B por las letras hasta A, e invertido: <b>" + letras.reverse().join("") + "</b>, " + letras.length + " pasos." });
+    stepper($("#lb"), fr, (f) => {
+      const el = $("#lb-g"); el.innerHTML = "";
+      for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
+        const ch = G[i][j];
+        if (ch === "#") { el.append(cell("wall")); continue; }
+        if (ch === "A" || ch === "B") { el.append(cell("src", ch)); continue; }
+        if (f.path && f.path[i + "," + j]) { el.append(cell("path", f.path[i + "," + j])); continue; }
+        el.append(cell(f.d[i][j] < 0 ? "" : f.d[i][j] === f.lvl ? "cur" : "d", f.d[i][j] < 0 ? "" : f.d[i][j]));
+      }
+      $("#lb-cap").innerHTML = f.msg;
+    }, { delay: 1000 });
+  })();
+})();
+</script>
+</body>
+</html>

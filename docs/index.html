@@ -77,7 +77,8 @@
       (algunaAbierta ? "disponible" : "en preparación") + '</span></summary><div class="weeks">';
     m.clases.forEach((c) => {
       const num = String(c.semana).padStart(2, "0");
-      const inner = '<span class="n">' + num + '</span><div><h3>' + esc(c.titulo) + '</h3><p>' + esc(c.resumen) + '</p></div><span class="s2">S2: ' + esc(c.s2) + '</span>';
+      const s2 = c.sesion === 2 ? "sesión 2" : "S2: " + esc(c.s2);
+      const inner = '<span class="n">' + num + '</span><div><h3>' + esc(c.titulo) + '</h3><p>' + esc(c.resumen) + '</p></div><span class="s2">' + s2 + '</span>';
       if (abierta(c)) html += '<a class="week" href="' + esc(c.url) + (docente ? "?docente" : "") + '">' + inner + '</a>';
       else html += '<div class="week off" aria-disabled="true">' + inner + '</div>';
     });

@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semana 9 · Sumas prefijas, diferencias y two pointers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/curso.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../config.js"></script>
+<script src="../assets/curso.js"></script>
+<style>
+  .lrow { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; }
+  .lrow .lab { font-family: var(--font-mono); font-size: 18px; color: var(--muted); }
+  .arr { margin-top: 24px; margin-bottom: 26px; }
+  .arr .cell { width: 50px; height: 50px; }
+  .ptr { position: absolute; bottom: -26px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .timebar { display: grid; grid-template-columns: 330px 1fr 90px; gap: 12px; align-items: center; font-size: 21px; }
+  .timebar .tb { height: 28px; background: var(--ac); border-radius: 4px; min-width: 4px; }
+  .timebar .tb.slow { background: var(--tle); }
+  .timebar .tv { font-family: var(--font-mono); font-size: 19px; text-align: right; }
+  .g2 .cell { width: 46px; height: 46px; }
+  .g2 .cell.tree { font-size: 24px; }
+  .g2 .cell.q { box-shadow: inset 0 0 0 3px var(--ink); }
+  .g2 .cell.head { border-color: transparent; background: transparent; color: var(--muted); font-size: 14px; }
+  .mini { border-collapse: collapse; font-family: var(--font-mono); font-size: 18px; justify-self: start; }
+  .mini th, .mini td { border-bottom: 1px solid var(--line); padding: 4px 12px; text-align: right; }
+  .mini th { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .mini tr.cur td { background: var(--mark); color: var(--mark-ink); }
+  .mini tr.hit td { background: var(--ac-soft); }
+  .stat { font-family: var(--font-mono); font-size: 20px; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide cover">
+  <div class="grid-deco" style="grid-template-columns: repeat(6, 26px)" aria-hidden="true">
+    <span class="on"></span><span></span><span></span><span></span><span></span><span></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span>
+    <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="hl"></span>
+  </div>
+  <div class="course">Algoritmia y Estructuras de Datos Avanzadas · Semana 9 · Sesión 1</div>
+  <h1>Sumas prefijas, diferencias y two pointers</h1>
+  <div class="meta"><span>Objetivo: responder consultas sobre rangos sin recorrer el arreglo cada vez</span></div>
+  <aside class="notes"><p>Clase de 90 minutos. La sesión 2 es una práctica con los seis problemas de hoy. El Contest 3 (semana 11) cubre las semanas 8 a 10.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Plan de la sesión</div>
+  <h2>Qué vamos a ver hoy</h2>
+  <table class="t" style="font-size:22px">
+    <tr><th>Min</th><th>Tema</th></tr>
+    <tr><td>0–20</td><td>Sumas prefijas en 1D; Static Range Sum Queries</td></tr>
+    <tr><td>20–35</td><td>Sumas prefijas en 2D; Forest Queries</td></tr>
+    <tr><td>35–45</td><td>Arreglo de diferencias</td></tr>
+    <tr><td>45–60</td><td>Sumas prefijas con un dict; Subarray Sums II</td></tr>
+    <tr><td>60–85</td><td>Two pointers y ventana deslizante; Sum of Two Values, Subarray Sums I y Playlist</td></tr>
+    <tr><td>85–90</td><td>Resumen</td></tr>
+  </table>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 1</div>
+  <h2>Sumas prefijas</h2>
+  <p>Se calculan una vez y cada consulta de suma sobre un rango cuesta O(1).</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Medición</div>
+  <h2>Sumar el rango en cada consulta</h2>
+  <div class="stack" style="max-width:1080px; gap:14px">
+    <div class="timebar"><span><code>sum(x[a-1:b])</code>, q = 2·10³</span><div class="tb slow" style="width:11%"></div><span class="tv">0.10 s</span></div>
+    <div class="timebar"><span><code>sum(x[a-1:b])</code>, q = 2·10⁴</span><div class="tb slow" style="width:100%"></div><span class="tv">0.90 s</span></div>
+    <div class="timebar"><span>sumas prefijas, q = 2·10⁵</span><div class="tb" style="width:0.5%"></div><span class="tv">0.004 s</span></div>
+  </div>
+  <p class="small">Cada consulta con <code>sum</code> recorre el rango: O(n) por consulta y O(n · q) en total. Con n = q = 2·10⁵ son del orden de 10¹⁰ operaciones.</p>
+  <p class="small muted">n = 2·10⁵ y rangos aleatorios. Solo el cálculo, sin leer la entrada. PyPy 3.11, Apple M4.</p>
+  <aside class="notes"><p>Con q = 2·10⁴ ya se gasta casi el segundo entero; con las 2·10⁵ consultas del problema serían unos 9 s. Las sumas prefijas hacen O(n) trabajo una sola vez y después O(1) por consulta.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sumas prefijas</div>
+  <h2>p[i] es la suma de los primeros i valores</h2>
+  <div class="cols c-60">
+    <div class="stack" id="pf">
+      <div class="row small"><label for="pf-a">a =</label><select id="pf-a"></select><label for="pf-b">b =</label><select id="pf-b"></select></div>
+      <div class="lrow"><span class="lab">x</span><div class="cells arr" id="pf-x"></div></div>
+      <div class="lrow"><span class="lab">p</span><div class="cells arr" id="pf-p"></div></div>
+      <div class="caption" id="pf-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">p = [0] * (n + 1)
+for i in range(n):
+    p[i + 1] = p[i] + x[i]
+
+# lo mismo, con itertools
+from itertools import accumulate
+p = list(accumulate(x, initial=0))
+
+# suma de x_a + ... + x_b (desde 1)
+p[b] - p[a - 1]</pre>
+      <p class="small">p tiene n + 1 posiciones y p[0] = 0. La suma de a a b es lo que se acumula hasta b menos lo que se acumula hasta a − 1.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Cambiar a y b para ver qué dos casillas de p se restan. El p[0] = 0 evita un caso especial cuando a = 1. El arreglo es el del ejemplo de Static Range Sum Queries.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1646</div>
+  <h2>Static Range Sum Queries</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros y q consultas. Cada consulta pide la suma de los valores entre las posiciones a y b.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y q; los n valores; q líneas con a y b.</dd><dt>Salida</dt><dd>La suma de cada consulta.</dd><dt>Restricciones</dt><dd>1 ≤ n, q ≤ 2·10⁵; 1 ≤ xᵢ ≤ 10⁹; 1 ≤ a ≤ b ≤ n</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8 4
+3 2 4 5 1 1 5 3
+2 4
+5 6
+1 8
+3 3</pre>
+      <div class="ex-lab">Salida</div><pre>11
+2
+24
+4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1646">https://cses.fi/problemset/task/1646</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: sumar el rango con <code>sum(x[a-1:b])</code> en cada consulta, que da TLE (ver la medición). Otro: restar <code>p[a]</code> en lugar de <code>p[a - 1]</code>, que deja fuera a x_a. Caso a probar: la consulta 3 3, cuya respuesta es 4.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1646</div>
+  <h2>Static Range Sum Queries</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si ya se sabe la suma de los primeros 4 valores y la de los primeros 1, ¿cuánto suman los valores 2, 3 y 4?</p></div>
+    <div class="idea-a frag">La diferencia: 14 − 3 = 11. En general, x_a + … + x_b = p[b] − p[a − 1].</div>
+    <div class="idea-a frag">Se calcula p una vez en O(n) y cada consulta cuesta O(1). El total es O(n + q).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Las sumas llegan a 2·10¹⁴; en Python no hay desbordamiento.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1646 · Static Range Sum Queries</div>
+  <h2>Una resta por consulta</h2>
+  <div class="cols c-60">
+    <pre class="code">from itertools import accumulate
+
+def main():
+    n, q = map(int, input().split())
+    x = list(map(int, input().split()))
+    p = list(accumulate(x, initial=0))
+    res = []
+    for _ in range(q):
+        a, b = map(int, input().split())
+        res.append(p[b] - p[a - 1])
+    print("\n".join(map(str, res)))
+
+main()</pre>
+    <div class="stack small">
+      <p>O(n) para construir p y O(1) por consulta.</p>
+      <p>Las respuestas se guardan en una lista y se imprimen al final con un solo <code>print</code>.</p>
+      <p>Con la entrada máxima tardó 0.13 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 2</div>
+  <h2>Sumas prefijas en 2D</h2>
+  <p>La misma idea sobre una matriz, con inclusión y exclusión.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Prefijas 2D</div>
+  <h2>P[i][j] cuenta el rectángulo de (1, 1) a (i, j)</h2>
+  <div class="cols c-60">
+    <div class="stack" id="p2">
+      <div class="row small"><span class="muted">Consulta (y1, x1, y2, x2):</span><select id="p2-q"></select></div>
+      <div class="row" style="gap:28px; align-items:flex-start">
+        <div class="grid g2" id="p2-g"></div>
+        <div class="grid g2" id="p2-t"></div>
+      </div>
+      <div class="caption" id="p2-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm"># construir: fila por fila
+P[i][j] = (P[i-1][j] + P[i][j-1]
+           - P[i-1][j-1] + celda[i][j])
+
+# consultar el rectángulo
+(P[y2][x2] - P[y1-1][x2]
+ - P[y2][x1-1] + P[y1-1][x1-1])</pre>
+      <p class="small">Al restar las filas de arriba y las columnas de la izquierda, la esquina se resta dos veces. Por eso se suma una vez al final.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>A la izquierda está el bosque del ejemplo de Forest Queries (♣ es un árbol) y a la derecha la tabla P, con la fila 0 y la columna 0 en cero. Avanzar paso a paso: cada término de la fórmula se marca en el bosque y en la tabla. La construcción usa la misma idea: P[i][j] es lo de arriba más lo de la izquierda, menos la esquina que quedó dos veces, más la celda.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1652</div>
+  <h2>Forest Queries</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Un bosque es una grilla de n × n. Cada casilla está vacía (<code>.</code>) o tiene un árbol (<code>*</code>).</p>
+      <p>Cada consulta da dos esquinas de un rectángulo y pide cuántos árboles hay dentro.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y q; n líneas de la grilla; q líneas con y1, x1, y2, x2.</dd><dt>Salida</dt><dd>Los árboles de cada rectángulo.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 1000; 1 ≤ q ≤ 2·10⁵</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4 3
+.*..
+*.**
+**..
+****
+2 2 3 4
+3 1 3 1
+1 1 2 2</pre>
+      <div class="ex-lab">Salida</div><pre>3
+1
+2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1652">https://cses.fi/problemset/task/1652</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano. y es la fila y x es la columna.</p><p>Error común: olvidar sumar la esquina <code>P[y1-1][x1-1]</code>. Otro: contar en cada consulta recorriendo el rectángulo, que puede ser de 10⁶ casillas. Caso a probar: la consulta de una sola casilla, 3 1 3 1.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1652</div>
+  <h2>Forest Queries</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Con P[i][j] = árboles de (1, 1) a (i, j), ¿qué rectángulos hay que quitarle a P[y2][x2] para que quede solo el de la consulta?</p></div>
+    <div class="idea-a frag">Las filas de arriba, P[y1 − 1][x2], y las columnas de la izquierda, P[y2][x1 − 1].</div>
+    <div class="idea-a frag">La esquina P[y1 − 1][x1 − 1] quedó restada dos veces, así que se suma una vez.</div>
+    <div class="idea-a frag">Construir P cuesta O(n²) = 10⁶ y cada consulta O(1).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1652 · Forest Queries</div>
+  <h2>Inclusión y exclusión</h2>
+  <div class="cols c-60">
+    <pre class="code sm">def main():
+    n, q = map(int, input().split())
+    P = [[0] * (n + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        fila = input()
+        for j in range(1, n + 1):
+            arbol = 1 if fila[j - 1] == "*" else 0
+            P[i][j] = (P[i - 1][j] + P[i][j - 1]
+                       - P[i - 1][j - 1] + arbol)
+    res = []
+    for _ in range(q):
+        y1, x1, y2, x2 = map(int, input().split())
+        res.append(P[y2][x2] - P[y1 - 1][x2]
+                   - P[y2][x1 - 1] + P[y1 - 1][x1 - 1])
+    print("\n".join(map(str, res)))
+
+main()</pre>
+    <div class="stack small">
+      <p>La fila 0 y la columna 0 de P quedan en cero, igual que p[0] en 1D.</p>
+      <p>La grilla usa índices desde 0 (<code>fila[j - 1]</code>) y P desde 1.</p>
+      <p>Con n = 1000 y 2·10⁵ consultas tardó 0.11 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 3</div>
+  <h2>Arreglo de diferencias</h2>
+  <p>Sumar un valor a un rango completo en O(1).</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Diferencias</div>
+  <h2>Marcar dónde empieza y dónde termina el cambio</h2>
+  <div class="cols c-60">
+    <div class="stack" id="df">
+      <table class="mini" id="df-u"></table>
+      <div class="lrow"><span class="lab">d</span><div class="cells arr" id="df-d"></div></div>
+      <div class="lrow"><span class="lab">a</span><div class="cells arr" id="df-a"></div></div>
+      <div class="caption" id="df-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">d = [0] * (n + 2)
+for a, b, u in cambios:  # u de a a b
+    d[a] += u
+    d[b + 1] -= u
+
+valor = [0] * (n + 1)
+for i in range(1, n + 1):
+    valor[i] = valor[i - 1] + d[i]</pre>
+      <p class="small">Cada cambio cuesta O(1). Al final, las sumas prefijas de d dan cuánto se le sumó a cada posición, en O(n).</p>
+      <p class="small">Sirve cuando primero llegan todos los cambios y después se consultan los valores.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. Primero se aplican los tres cambios sobre d: +u en a y −u en b + 1. Después se recorre d sumando. El +u de d[a] llega a todas las posiciones desde a, y el −u de d[b + 1] lo cancela desde b + 1. Si los cambios y las consultas se mezclan, hace falta el árbol de Fenwick de la semana 15.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 4</div>
+  <h2>Prefijas y un dict</h2>
+  <p>Contar subarreglos que suman k.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Prefijas con un dict</div>
+  <h2>Subarreglos con suma x</h2>
+  <div class="cols c-60">
+    <div class="stack" id="pd">
+      <p class="small">a = [2, −1, 3, 5, −2] y x = 7.</p>
+      <div class="lrow"><span class="lab">a</span><div class="cells arr" id="pd-a"></div></div>
+      <div class="row" style="gap:28px; align-items:flex-start">
+        <table class="mini" id="pd-d"></table>
+        <div class="stat" id="pd-s"></div>
+      </div>
+      <div class="caption" id="pd-cap"></div>
+    </div>
+    <div class="stack small">
+      <p>La suma de a[i + 1..j] es p[j] − p[i]. Esa suma vale x cuando p[i] = p[j] − x.</p>
+      <p>Al llegar a la posición j se cuenta cuántas sumas prefijas anteriores valen p[j] − x. Un dict guarda cuántas veces apareció cada suma prefija.</p>
+      <p>El dict empieza con <code>{0: 1}</code>, que es p[0]. Así se cuentan los subarreglos que empiezan en la primera posición.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Avanzar paso a paso. En cada posición se busca p − x en el dict y luego se agrega p. Si se agrega antes de buscar, con x = 0 se contaría un subarreglo vacío. Funciona con valores negativos, porque no depende de que la suma crezca.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1661</div>
+  <h2>Subarray Sums II</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros, que pueden ser negativos. Hay que contar cuántos subarreglos (partes contiguas) suman x.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y x; los n valores.</dd><dt>Salida</dt><dd>La cantidad de subarreglos con suma x.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; −10⁹ ≤ x, aᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 7
+2 -1 3 5 -2</pre>
+      <div class="ex-lab">Salida</div><pre>2</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1661">https://cses.fi/problemset/task/1661</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: los subarreglos son −1 3 5 y el arreglo completo.</p><p>Error común: usar la ventana deslizante de la parte 5, que falla con negativos. Otro: no poner <code>vistas[0] = 1</code>, que pierde los subarreglos que empiezan en la posición 1. Caso a probar: 3 0 con 0 0 0, cuya respuesta es 6.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1661 · Subarray Sums II</div>
+  <h2>Contar sumas prefijas anteriores</h2>
+  <div class="cols c-60">
+    <pre class="code">from collections import defaultdict
+
+def main():
+    n, x = map(int, input().split())
+    a = list(map(int, input().split()))
+    vistas = defaultdict(int)
+    vistas[0] = 1
+    p = cuenta = 0
+    for v in a:
+        p += v
+        cuenta += vistas[p - x]
+        vistas[p] += 1
+    print(cuenta)
+
+main()</pre>
+    <div class="stack small">
+      <p>Una pasada con operaciones de dict en O(1) en promedio: O(n).</p>
+      <p>No hace falta guardar el arreglo p: basta la suma actual.</p>
+      <p>Con n = 2·10⁵ tardó 0.05 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>La respuesta puede llegar a n(n + 1)/2 ≈ 2·10¹⁰, por ejemplo con todos los valores en 0 y x = 0.</p></aside>
+</section>
+
+<section class="slide section">
+  <div class="eyebrow">Parte 5</div>
+  <h2>Two pointers</h2>
+  <p>Dos índices que solo avanzan, y por eso recorren el arreglo en O(n).</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Two pointers</div>
+  <h2>Dos valores que suman x en un arreglo ordenado</h2>
+  <div class="cols c-60">
+    <div class="stack" id="tp">
+      <div class="row small"><span class="muted">Valores ordenados.</span><label for="tp-x">x =</label><select id="tp-x"></select></div>
+      <div class="cells arr" id="tp-a"></div>
+      <div class="caption" id="tp-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">i, j = 0, n - 1
+while i &lt; j:
+    s = a[i] + a[j]
+    if s == x:
+        break           # encontrados
+    if s &lt; x:
+        i += 1
+    else:
+        j -= 1</pre>
+      <p class="small">Si a[i] + a[j] &lt; x, a[i] no suma x con ningún valor que quede, porque a[j] es el mayor. Se descarta a[i]. Si la suma es mayor, se descarta a[j].</p>
+      <p class="small">Cada vuelta descarta un valor: O(n) después de ordenar.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Probar x = 13 (los dos índices se mueven), x = 17 y x = 21 (no hay solución). Es la misma técnica de Ferris Wheel en la semana 6.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1640</div>
+  <h2>Sum of Two Values</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros. Hay que encontrar dos posiciones distintas cuyos valores sumen x.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y x; los n valores.</dd><dt>Salida</dt><dd>Las dos posiciones, o IMPOSSIBLE. Se acepta cualquier solución.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ x, aᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>4 8
+2 7 5 1</pre>
+      <div class="ex-lab">Salida</div><pre>2 4</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1640">https://cses.fi/problemset/task/1640</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano.</p><p>Error común: ordenar los valores y perder las posiciones originales. Otro: usar dos veces la misma posición cuando x = 2 · aᵢ. Casos a probar: 2 4 con 2 2 (respuesta 1 2) y 1 2 con 1 (IMPOSSIBLE).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1640</div>
+  <h2>Sum of Two Values</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>La técnica de dos índices necesita los valores ordenados, pero la respuesta pide las posiciones originales. ¿Qué se ordena?</p></div>
+    <div class="idea-a frag">Los índices, por su valor: <code>orden = sorted(range(n), key=lambda k: a[k])</code>, como en la semana 6.</div>
+    <div class="idea-a frag">i y j recorren <code>orden</code>. Se compara <code>a[orden[i]] + a[orden[j]]</code> con x y se imprimen <code>orden[i] + 1</code> y <code>orden[j] + 1</code>.</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso. Otra solución recorre el arreglo con un dict de valor a posición y busca x − aᵢ; también es O(n).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1640 · Sum of Two Values</div>
+  <h2>Dos índices sobre los índices ordenados</h2>
+  <div class="cols c-60">
+    <pre class="code sm">def main():
+    n, x = map(int, input().split())
+    a = list(map(int, input().split()))
+    orden = sorted(range(n), key=lambda k: a[k])
+    i, j = 0, n - 1
+    while i &lt; j:
+        s = a[orden[i]] + a[orden[j]]
+        if s == x:
+            print(orden[i] + 1, orden[j] + 1)
+            return
+        if s &lt; x:
+            i += 1
+        else:
+            j -= 1
+    print("IMPOSSIBLE")
+
+main()</pre>
+    <div class="stack small">
+      <p>O(n log n) por el ordenamiento y O(n) por los dos índices.</p>
+      <p>Como <code>i &lt; j</code>, las dos posiciones siempre son distintas.</p>
+      <p>Con n = 2·10⁵ y sin solución (todos los índices se recorren) tardó 0.12 s (PyPy 3.11, Apple M4).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>El <code>return</code> dentro de <code>main()</code> termina el programa apenas se imprime la respuesta.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Ventana deslizante</div>
+  <h2>Ventana de tamaño fijo</h2>
+  <div class="cols">
+    <div class="stack">
+      <pre class="code sm"># mayor suma de k valores seguidos
+s = sum(a[:k])
+mejor = s
+for der in range(k, n):
+    s += a[der] - a[der - k]   # entra uno, sale otro
+    mejor = max(mejor, s)</pre>
+    </div>
+    <div class="stack small">
+      <p>Una ventana es un subarreglo a[izq..der]. Al moverla una posición, entra a[der] por la derecha y sale a[der − k] por la izquierda.</p>
+      <p>Con la suma de la ventana anterior, la nueva cuesta O(1). Recalcular cada ventana con <code>sum</code> cuesta O(k).</p>
+      <p>Lo mismo sirve para contar letras en una ventana: se suma 1 a la letra que entra y se resta 1 a la que sale.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Ejemplo: a = [4, 2, 7, 1, 3] y k = 2. Las sumas son 6, 9, 8 y 4; la mayor es 9. Recalcular todas con <code>sum</code> cuesta O(n · k).</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Ventana deslizante</div>
+  <h2>Ventana de tamaño variable</h2>
+  <div class="cols c-60">
+    <div class="stack" id="vw">
+      <p class="small">a = [2, 4, 1, 2, 7] y x = 7. Todos los valores son positivos.</p>
+      <div class="cells arr" id="vw-a"></div>
+      <div class="stat" id="vw-s"></div>
+      <div class="caption" id="vw-cap"></div>
+    </div>
+    <div class="stack">
+      <pre class="code sm">izq = suma = cuenta = 0
+for der in range(n):
+    suma += a[der]
+    while suma &gt; x:
+        suma -= a[izq]
+        izq += 1
+    if suma == x:
+        cuenta += 1</pre>
+      <p class="small">der avanza en cada vuelta del <code>for</code> e izq solo avanza dentro del <code>while</code>. Cada uno se mueve a lo sumo n veces, así que el total es O(n).</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Por qué se puede achicar sin perder respuestas: con valores positivos, si a[izq..der] ya suma más que x, cualquier ventana que empiece en izq y termine más a la derecha suma todavía más. Con valores negativos esto no se cumple y hace falta la técnica de la parte 4.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1660</div>
+  <h2>Subarray Sums I</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Hay un arreglo de n enteros positivos. Hay que contar cuántos subarreglos suman x.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n y x; los n valores.</dd><dt>Salida</dt><dd>La cantidad de subarreglos con suma x.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ x, aᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>5 7
+2 4 1 2 7</pre>
+      <div class="ex-lab">Salida</div><pre>3</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1660">https://cses.fi/problemset/task/1660</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: 2 4 1, 4 1 2 y 7.</p><p>Error común: probar todos los subarreglos, que son unos 2·10¹⁰. Caso a probar: x mayor que la suma de todo el arreglo, cuya respuesta es 0. La solución es el código de la diapositiva anterior con la lectura de la entrada; también sale con la técnica de la parte 4.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Problema · CSES 1141 · Reto</div>
+  <h2>Playlist</h2>
+  <div class="prob">
+    <div class="prob-text">
+      <p>Una emisora tiene la lista de las n canciones que ha puesto, en orden. Cada canción tiene un número.</p>
+      <p>Hay que encontrar la secuencia más larga de canciones seguidas sin ninguna repetida.</p>
+      <dl class="prob-io"><dt>Entrada</dt><dd>n; los n números de canción.</dd><dt>Salida</dt><dd>La longitud de la secuencia más larga.</dd><dt>Restricciones</dt><dd>1 ≤ n ≤ 2·10⁵; 1 ≤ kᵢ ≤ 10⁹</dd></dl>
+    </div>
+    <div class="prob-ex">
+      <div class="ex-lab">Entrada</div><pre>8
+1 2 1 3 2 7 4 2</pre>
+      <div class="ex-lab">Salida</div><pre>5</pre>
+    </div>
+  </div>
+  <p class="prob-link">Enunciado original: <a href="https://cses.fi/problemset/task/1141">https://cses.fi/problemset/task/1141</a></p>
+  <aside class="notes"><p>Leer el enunciado con el grupo y resolver el ejemplo a mano: la secuencia es 1 3 2 7 4.</p><p>Error común: cuando una canción se repite, empezar la ventana de nuevo desde esa canción. Con 1 2 3 1 4 5 eso da 3 (1 4 5) y la respuesta es 5 (2 3 1 4 5). Caso a probar: todas distintas, con respuesta n.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Idea · CSES 1141</div>
+  <h2>Playlist</h2>
+  <div class="idea">
+    <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>La ventana a[izq..der] no tiene repetidos y entra a[der + 1], que ya está en la ventana. ¿Hasta dónde hay que mover izq?</p></div>
+    <div class="idea-a frag">Hasta pasar la copia anterior de esa canción. Se sacan canciones por la izquierda mientras a[der + 1] siga en la ventana.</div>
+    <div class="idea-a frag">Un set guarda las canciones de la ventana: preguntar si está, agregar y quitar cuestan O(1). Cada canción entra y sale una vez, así que es O(n).</div>
+  </div>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Solución · CSES 1141 · Playlist</div>
+  <h2>Una ventana sin repetidos</h2>
+  <div class="cols">
+    <div class="stack" id="pl">
+      <div class="cells arr" id="pl-a"></div>
+      <div class="stat" id="pl-s"></div>
+      <div class="caption" id="pl-cap"></div>
+    </div>
+    <pre class="code sm">def main():
+    n = int(input())
+    k = list(map(int, input().split()))
+    en_ventana = set()
+    izq = mejor = 0
+    for der in range(n):
+        while k[der] in en_ventana:
+            en_ventana.remove(k[izq])
+            izq += 1
+        en_ventana.add(k[der])
+        mejor = max(mejor, der - izq + 1)
+    print(mejor)
+
+main()</pre>
+  </div>
+  <aside class="notes"><p>Con n = 2·10⁵ tardó 0.05 s (PyPy 3.11, Apple M4). Otra forma guarda en un dict la última posición de cada canción y salta izq de una vez a esa posición + 1, si está dentro de la ventana.</p></aside>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Sesión 2</div>
+  <h2>Problemas de la práctica</h2>
+  <ul>
+    <li><a href="https://cses.fi/problemset/task/1646">CSES 1646 · Static Range Sum Queries</a></li>
+    <li><a href="https://cses.fi/problemset/task/1652">CSES 1652 · Forest Queries</a></li>
+    <li><a href="https://cses.fi/problemset/task/1640">CSES 1640 · Sum of Two Values</a></li>
+    <li><a href="https://cses.fi/problemset/task/1660">CSES 1660 · Subarray Sums I</a></li>
+    <li><a href="https://cses.fi/problemset/task/1661">CSES 1661 · Subarray Sums II</a></li>
+    <li><a href="https://cses.fi/problemset/task/1141">CSES 1141 · Playlist</a> (reto)</li>
+  </ul>
+  <p class="small muted">Los problemas que no se resuelvan en la sesión pasan al taller de la semana.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Resumen</div>
+  <h2>Reglas para rangos</h2>
+  <ol>
+    <li>Suma de un rango: <code>p[b] - p[a - 1]</code>, con <code>p = list(accumulate(x, initial=0))</code>.</li>
+    <li>En 2D se resta arriba y a la izquierda, y se suma la esquina.</li>
+    <li>Sumar u de a a b: <code>d[a] += u</code> y <code>d[b + 1] -= u</code>; al final, sumas prefijas de d.</li>
+    <li>Contar subarreglos con suma x: un dict con las sumas prefijas vistas, empezando en <code>{0: 1}</code>.</li>
+    <li>Dos índices que solo avanzan recorren el arreglo en O(n).</li>
+    <li>La ventana de tamaño variable necesita valores positivos.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  const { h, $, stepper } = Curso;
+  const cell = (cls, txt, attrs) => h("div", Object.assign({ class: "cell " + (cls || "") }, attrs || {}), txt === undefined ? "" : String(txt));
+  const withIdx = (c, i, cls) => { c.append(h("span", { class: cls || "idx", text: i })); return c; };
+  const ptr = (c, t) => { c.append(h("span", { class: "ptr", text: t })); return c; };
+
+  // ---------- sumas prefijas 1D ----------
+  (function () {
+    const x = [3, 2, 4, 5, 1, 1, 5, 3], p = [0];
+    x.forEach((v) => p.push(p[p.length - 1] + v));
+    for (let i = 1; i <= x.length; i++) {
+      $("#pf-a").append(h("option", { value: i, text: i, selected: i === 2 }));
+      $("#pf-b").append(h("option", { value: i, text: i, selected: i === 4 }));
+    }
+    function draw() {
+      let a = +$("#pf-a").value, b = +$("#pf-b").value;
+      if (a > b) { const t = a; a = b; b = t; }
+      const ex = $("#pf-x"), ep = $("#pf-p"); ex.innerHTML = ep.innerHTML = "";
+      x.forEach((v, k) => ex.append(withIdx(cell(k + 1 >= a && k + 1 <= b ? "sel" : "", v), k + 1)));
+      p.forEach((v, k) => ep.append(withIdx(cell(k === b ? "ok" : k === a - 1 ? "bad" : "", v), k)));
+      $("#pf-cap").innerHTML = "x<sub>" + a + "</sub> + … + x<sub>" + b + "</sub> = p[" + b + "] − p[" + (a - 1) + "] = " + p[b] + " − " + p[a - 1] + " = <b>" + (p[b] - p[a - 1]) + "</b>";
+    }
+    $("#pf-a").onchange = $("#pf-b").onchange = draw;
+    draw();
+  })();
+
+  // ---------- sumas prefijas 2D ----------
+  (function () {
+    const G = [".*..", "*.**", "**..", "****"], n = 4;
+    const P = Array.from({ length: n + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 1; i <= n; i++) for (let j = 1; j <= n; j++) P[i][j] = P[i - 1][j] + P[i][j - 1] - P[i - 1][j - 1] + (G[i - 1][j - 1] === "*" ? 1 : 0);
+    const Q = [[2, 2, 3, 4], [3, 1, 3, 1], [1, 1, 2, 2]];
+    Q.forEach((q, k) => $("#p2-q").append(h("option", { value: k, text: q.join(" ") })));
+    let st = null;
+    function frames(q) {
+      const [y1, x1, y2, x2] = q;
+      const terms = [
+        { s: +1, i: y2, j: x2, txt: "+P[" + y2 + "][" + x2 + "]", what: "todo el rectángulo desde (1, 1)" },
+        { s: -1, i: y1 - 1, j: x2, txt: "−P[" + (y1 - 1) + "][" + x2 + "]", what: "las filas de arriba" },
+        { s: -1, i: y2, j: x1 - 1, txt: "−P[" + y2 + "][" + (x1 - 1) + "]", what: "las columnas de la izquierda" },
+        { s: +1, i: y1 - 1, j: x1 - 1, txt: "+P[" + (y1 - 1) + "][" + (x1 - 1) + "]", what: "la esquina, que se restó dos veces" }
+      ];
+      const fr = [{ q, t: null, total: 0, used: [], msg: "Rectángulo de la consulta: filas " + y1 + " a " + y2 + ", columnas " + x1 + " a " + x2 + "." }];
+      let total = 0; const used = [];
+      terms.forEach((t) => {
+        total += t.s * P[t.i][t.j]; used.push(t.txt + " = " + (t.s > 0 ? "" : "−") + P[t.i][t.j]);
+        fr.push({ q, t, total, msg: t.txt + " = " + P[t.i][t.j] + ": " + t.what + ". Van <b>" + total + "</b>." });
+      });
+      fr.push({ q, t: null, total, done: true, msg: "Árboles en el rectángulo: <b>" + total + "</b>." });
+      return fr;
+    }
+    function render(f) {
+      const [y1, x1, y2, x2] = f.q, g = $("#p2-g"), t = $("#p2-t");
+      g.innerHTML = t.innerHTML = "";
+      g.style.gridTemplateColumns = "repeat(" + (n + 1) + ", 46px)";
+      t.style.gridTemplateColumns = "repeat(" + (n + 1) + ", 46px)";
+      for (let k = 0; k <= n; k++) g.append(cell("head", k ? k : ""));
+      for (let i = 1; i <= n; i++) for (let j = 1; j <= n; j++) {
+        if (j === 1) g.append(cell("head", i));
+        let cls = G[i - 1][j - 1] === "*" ? "tree" : "";
+        if (f.t && i <= f.t.i && j <= f.t.j) cls += f.t.s > 0 ? " sel" : " bad";
+        if (i >= y1 && i <= y2 && j >= x1 && j <= x2) cls += " q";
+        g.append(cell(cls, G[i - 1][j - 1] === "*" ? "♣" : ""));
+      }
+      for (let i = 0; i <= n; i++) for (let j = 0; j <= n; j++) {
+        const on = f.t && f.t.i === i && f.t.j === j;
+        t.append(cell(on ? (f.t.s > 0 ? "ok" : "bad") : (i === 0 || j === 0) ? "dim" : "", P[i][j]));
+      }
+      $("#p2-cap").innerHTML = f.msg;
+    }
+    function load() { const fr = frames(Q[+$("#p2-q").value]); if (st) st.setFrames(fr); else st = stepper($("#p2"), fr, render, { delay: 1400 }); }
+    $("#p2-q").onchange = load;
+    load();
+  })();
+
+  // ---------- arreglo de diferencias ----------
+  (function () {
+    const n = 8, U = [[2, 5, 3], [4, 8, 1], [1, 3, 2]];
+    const d = Array(n + 2).fill(0), fr = [];
+    fr.push({ d: d.slice(), a: null, u: -1, hl: [], msg: "d empieza en cero. Hay que aplicar tres cambios." });
+    U.forEach(([a, b, u], k) => {
+      d[a] += u; d[b + 1] -= u;
+      fr.push({ d: d.slice(), a: null, u: k, hl: [a, b + 1], msg: "Sumar " + u + " de " + a + " a " + b + ": d[" + a + "] += " + u + " y d[" + (b + 1) + "] −= " + u + "." });
+    });
+    const val = Array(n + 1).fill(null); val[0] = 0;
+    for (let i = 1; i <= n; i++) {
+      val[i] = val[i - 1] + d[i];
+      fr.push({ d: d.slice(), a: val.slice(), u: 3, hl: [i], cur: i, msg: "valor[" + i + "] = valor[" + (i - 1) + "] + d[" + i + "] = " + val[i - 1] + " + " + d[i] + " = <b>" + val[i] + "</b>" });
+    }
+    fr[fr.length - 1].msg += ". Es lo mismo que aplicar cada cambio casilla por casilla.";
+    stepper($("#df"), fr, (f) => {
+      const tu = $("#df-u"); tu.innerHTML = "";
+      tu.append(h("tr", null, ["a", "b", "u"].map((s) => h("th", { text: s }))));
+      U.forEach((r, k) => tu.append(h("tr", { class: k === f.u ? "cur" : "" }, r.map((v) => h("td", { text: v })))));
+      const ed = $("#df-d"), ea = $("#df-a"); ed.innerHTML = ea.innerHTML = "";
+      for (let i = 1; i <= n + 1; i++) ed.append(withIdx(cell(f.hl.includes(i) ? "cur" : "", f.d[i]), i));
+      for (let i = 1; i <= n; i++) ea.append(withIdx(cell(f.a && f.a[i] !== null ? (i === f.cur ? "ok" : "sel") : "dim", f.a && f.a[i] !== null ? f.a[i] : ""), i));
+      $("#df-cap").innerHTML = f.msg;
+    }, { delay: 1100 });
+  })();
+
+  // ---------- prefijas con dict ----------
+  (function () {
+    const a = [2, -1, 3, 5, -2], x = 7;
+    const fr = [{ j: -1, p: 0, d: [[0, 1]], c: 0, look: null, msg: "Antes de empezar: p = 0 y el dict tiene {0: 1}." }];
+    let p = 0, c = 0; const d = new Map([[0, 1]]);
+    a.forEach((v, j) => {
+      p += v;
+      const need = p - x, hit = d.get(need) || 0;
+      c += hit;
+      d.set(p, (d.get(p) || 0) + 1);
+      fr.push({ j, p, d: Array.from(d.entries()), c, look: hit ? need : null,
+        msg: "p = " + p + ". Se busca p − x = " + need + ": " + (hit ? "aparece " + hit + " vez, así que hay un subarreglo que termina aquí con suma 7." : "no aparece.") + " Luego se agrega p = " + p + "." });
+    });
+    fr[fr.length - 1].msg += " Total: <b>" + c + "</b>.";
+    stepper($("#pd"), fr, (f) => {
+      const ea = $("#pd-a"); ea.innerHTML = "";
+      a.forEach((v, k) => ea.append(withIdx(cell(k === f.j ? "cur" : k < f.j ? "sel" : "", v), k + 1)));
+      const t = $("#pd-d"); t.innerHTML = "";
+      t.append(h("tr", null, h("th", { text: "suma prefija" }), h("th", { text: "veces" })));
+      f.d.forEach(([k, v]) => t.append(h("tr", { class: k === f.look ? "hit" : k === f.p && f.j >= 0 ? "cur" : "" }, h("td", { text: k }), h("td", { text: v }))));
+      $("#pd-s").innerHTML = "p = " + f.p + "<br>cuenta = " + f.c;
+      $("#pd-cap").innerHTML = f.msg;
+    }, { delay: 1500 });
+  })();
+
+  // ---------- two pointers ----------
+  (function () {
+    const vals = [8, 3, 11, 5, 1, 9, 6], a = vals.slice().sort((u, v) => u - v);
+    [13, 17, 21].forEach((x) => $("#tp-x").append(h("option", { value: x, text: x })));
+    let st = null;
+    function frames(x) {
+      let i = 0, j = a.length - 1; const fr = [{ i, j, msg: "i en el menor y j en el mayor." }];
+      while (i < j) {
+        const s = a[i] + a[j];
+        if (s === x) { fr.push({ i, j, found: true, msg: a[i] + " + " + a[j] + " = " + s + ": <b>encontrados</b>." }); return fr; }
+        if (s < x) { fr.push({ i: i + 1, j, out: [i], msg: a[i] + " + " + a[j] + " = " + s + " < " + x + ": se descarta " + a[i] + " e i avanza." }); i++; }
+        else { fr.push({ i, j: j - 1, msg: a[i] + " + " + a[j] + " = " + s + " > " + x + ": se descarta " + a[j] + " y j retrocede." }); j--; }
+      }
+      fr.push({ i, j, none: true, msg: "i = j: no quedan parejas. La respuesta es <b>IMPOSSIBLE</b>." });
+      return fr;
+    }
+    function render(f) {
+      const el = $("#tp-a"); el.innerHTML = "";
+      a.forEach((v, k) => {
+        const c = cell(f.found && (k === f.i || k === f.j) ? "ok" : k < f.i || k > f.j ? "dim" : k === f.i || k === f.j ? "cur" : "sel", v);
+        if (k === f.i && k === f.j) ptr(c, "i j"); else if (k === f.i) ptr(c, "i"); else if (k === f.j) ptr(c, "j");
+        el.append(c);
+      });
+      $("#tp-cap").innerHTML = f.msg;
+    }
+    function load() { const fr = frames(+$("#tp-x").value); if (st) st.setFrames(fr); else st = stepper($("#tp"), fr, render, { delay: 1200 }); }
+    $("#tp-x").onchange = load;
+    load();
+  })();
+
+  // ---------- ventana de tamaño variable ----------
+  (function () {
+    const a = [2, 4, 1, 2, 7], x = 7;
+    const fr = [{ izq: 0, der: -1, s: 0, c: 0, msg: "Ventana vacía." }];
+    let izq = 0, s = 0, c = 0;
+    for (let der = 0; der < a.length; der++) {
+      s += a[der];
+      fr.push({ izq, der, s, c, msg: "Entra " + a[der] + " por la derecha: suma = " + s + "." });
+      while (s > x) {
+        s -= a[izq]; izq++;
+        fr.push({ izq, der, s, c, msg: s + a[izq - 1] + " > " + x + ": sale " + a[izq - 1] + " por la izquierda. Suma = " + s + "." });
+      }
+      if (s === x) { c++; fr.push({ izq, der, s, c, hit: true, msg: "Suma = " + x + ": se cuenta la ventana [" + a.slice(izq, der + 1).join(", ") + "]." }); }
+    }
+    fr.push({ izq, der: a.length - 1, s, c, msg: "Fin. Total: <b>" + c + "</b> subarreglos." });
+    stepper($("#vw"), fr, (f) => {
+      const el = $("#vw-a"); el.innerHTML = "";
+      a.forEach((v, k) => {
+        const inw = k >= f.izq && k <= f.der;
+        const c = cell(inw ? (f.hit ? "ok" : "sel") : k < f.izq ? "dim" : "", v);
+        withIdx(c, k + 1);
+        if (k === f.izq && k === f.der) ptr(c, "izq der"); else if (k === f.izq && f.der >= 0) ptr(c, "izq"); else if (k === f.der) ptr(c, "der");
+        el.append(c);
+      });
+      $("#vw-s").innerHTML = "suma = " + f.s + " · cuenta = " + f.c;
+      $("#vw-cap").innerHTML = f.msg;
+    }, { delay: 1100 });
+  })();
+
+  // ---------- Playlist ----------
+  (function () {
+    const a = [1, 2, 1, 3, 2, 7, 4, 2];
+    const fr = [{ izq: 0, der: -1, set: [], best: 0, msg: "Ventana vacía." }];
+    let izq = 0, best = 0; const S = new Set();
+    for (let der = 0; der < a.length; der++) {
+      while (S.has(a[der])) {
+        S.delete(a[izq]); izq++;
+        fr.push({ izq, der: der - 1, set: Array.from(S), best, msg: a[der] + " ya está en la ventana: sale " + a[izq - 1] + " por la izquierda." });
+      }
+      S.add(a[der]);
+      const len = der - izq + 1, nb = len > best;
+      best = Math.max(best, len);
+      fr.push({ izq, der, set: Array.from(S), best, msg: "Entra " + a[der] + ". La ventana mide " + len + (nb ? ", la mayor hasta ahora." : ".") });
+    }
+    fr[fr.length - 1].msg += " Respuesta: <b>" + best + "</b>.";
+    stepper($("#pl"), fr, (f) => {
+      const el = $("#pl-a"); el.innerHTML = "";
+      a.forEach((v, k) => {
+        const c = cell(k >= f.izq && k <= f.der ? (k === f.der ? "cur" : "sel") : k < f.izq ? "dim" : "", v);
+        withIdx(c, k + 1);
+        if (k === f.izq && k === f.der) ptr(c, "izq der"); else if (k === f.izq && f.der >= f.izq) ptr(c, "izq"); else if (k === f.der) ptr(c, "der");
+        el.append(c);
+      });
+      $("#pl-s").innerHTML = "set = {" + f.set.join(", ") + "} · mejor = " + f.best;
+      $("#pl-cap").innerHTML = f.msg;
+    }, { delay: 1100 });
+  })();
+})();
+</script>
+</body>
+</html>

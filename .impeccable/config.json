@@ -38,6 +38,96 @@
         ],
         "createdAt": "2026-11-05T16:07:37.277Z",
         "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-4) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-09-prefijas/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-10-greedy/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-11-busqueda-completa/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-12-grafos/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-12-grafos/s2-bfs.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-13-grafos-ii/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-14-dp/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-15-rangos/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "docs/semana-16-evaluacion/guia.html"
+        ],
+        "createdAt": "2026-11-16T06:00:00.000Z",
+        "reason": "Claude: the .eyebrow label is the course deck's established design (docs/assets/curso.css, used on every slide of weeks 1-8) and carries content such as problem source and part number"
+      },
+      {
+        "rule": "oversized-h1",
+        "value": "*",
+        "files": [
+          "docs/semana-09-prefijas/s1-teoria.html"
+        ],
+        "createdAt": "2026-11-16T05:53:51.408Z",
+        "reason": "Claude: cover title is the official week name from PROGRAMA.md, set with the shared .cover h1 style from docs/assets/curso.css used by every week's cover; on the 1280x720 slide it wraps to 2 lines (168px) at the bottom with no overlap and no other content competing"
       }
     ]
   }
