@@ -247,6 +247,16 @@ svg.graph .gw { font-family: var(--font-mono); font-size: 15px; text-anchor: mid
 @keyframes bq-empuja { from { transform: translateX(0); } to { transform: translateX(-8px); } }
 @keyframes bq-salta { from { transform: translateY(0); } to { transform: translateY(-18px); } }
 @keyframes bq-chispa { 0% { transform: translate(0, 0) scale(.2); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(160deg) scale(1); opacity: 0; } }
+.bloque.presenta { --bq: var(--mark); --bq-osc: #c99400; }
+.bloque .bq-palo { stroke: var(--bq-osc); stroke-width: 13; stroke-linecap: round; fill: none; transform-box: fill-box; }
+.bloque .bq-palo-i { transform-origin: 100% 100%; animation: bq-agita-i .45s .7s ease-in-out 4 alternate both; }
+.bloque .bq-palo-d { transform-origin: 0% 100%; animation: bq-agita-d .45s .7s ease-in-out 4 alternate both; }
+.bloque.animo .bq-cuerpo { animation: bq-entra .7s cubic-bezier(.3, 1.4, .5, 1) both, bq-salta .45s .8s ease-in-out 2 alternate; }
+.bloque .bq-hoja { transform-box: fill-box; transform-origin: center bottom; animation: bq-asoma .4s .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+.bloque.asiente .bq-cuerpo { animation: bq-asiente .4s ease-in-out; }
+@keyframes bq-agita-i { from { transform: rotate(10deg); } to { transform: rotate(-14deg); } }
+@keyframes bq-agita-d { from { transform: rotate(-10deg); } to { transform: rotate(14deg); } }
+@keyframes bq-asiente { 0%, 100% { transform: none; } 40% { transform: translateY(5px) scale(1.04, .95); } 70% { transform: translateY(-3px); } }
 .bq-flota { position: absolute; z-index: 2; }
 .idea-q:has(.bq-idea) { grid-template-columns: auto 1fr; column-gap: 22px; align-items: center; }
 .bq-idea { grid-row: span 2; width: 100px; }
@@ -285,8 +295,13 @@ aside.notes { display: none; }
 .prob-io dd { margin: 0; font-size: calc(27px * var(--k, 1)); }
 .prob-ex { display: grid; gap: 8px; align-content: start; }
 .prob-ex .ex-lab { font-family: var(--font-mono); font-size: 16px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
-.prob-ex pre { margin: 0 0 10px; font-family: var(--font-mono); font-size: calc(28px * var(--k, 1)); line-height: 1.4; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 18px; overflow: auto; }
+.prob-ex pre { margin: 0 0 10px; font-family: var(--font-mono); font-size: calc(28px * var(--ke, 1)); line-height: 1.4; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 18px; overflow: auto; }
 .prob-link { font-size: 17px; color: var(--muted); }
+.prob-ex.lado { grid-template-columns: 1fr 1fr; column-gap: 14px; grid-auto-flow: dense; }
+.prob-ex .ex-par { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.prob-ex .ex-par > div { display: grid; gap: 8px; align-content: start; }
+.prob-ex.lado > :nth-child(4n+1), .prob-ex.lado > :nth-child(4n+2) { grid-column: 1; }
+.prob-ex.lado > :nth-child(4n+3), .prob-ex.lado > :nth-child(4n+4) { grid-column: 2; }
 
 /* diapositiva de idea: una pregunta para el grupo y la idea en pasos (fragmentos) */
 .idea { display: grid; gap: 24px; align-content: start; max-width: 1060px; }

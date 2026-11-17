@@ -53,6 +53,8 @@
       bPrev.disabled = bFirst.disabled = k === 0;
       bNext.disabled = bLast.disabled = k === frames.length - 1;
       render(frames[k], k, frames.length);
+      const sl = container.closest && container.closest(".slide");
+      if (sl && sl.classList.contains("active")) asentir(sl);
     }
     function play() {
       if (timer) return stop();
@@ -151,6 +153,22 @@
       pup = { dx: -5, dy: 1, r: 5.5 };
       brazo = '<rect class="bq-brazo" x="-6" y="70" width="26" height="12" rx="6"/>';
     }
+    if (pose === "lee") {
+      pup = { dx: -4, dy: 5, r: 5 };
+      boca = '<path d="M60 97 L72 96" stroke="' + TINTA + '" stroke-width="4" stroke-linecap="round"/>';
+      extra = '<g class="bq-hoja"><rect x="4" y="88" width="42" height="32" rx="3" fill="#fff" stroke="' + TINTA + '" stroke-width="2.5"/>' +
+        '<path d="M11 97 H39 M11 104 H39 M11 111 H31" stroke="' + TINTA + '" stroke-width="2.2" stroke-linecap="round"/></g>';
+    }
+    if (pose === "presenta" || pose === "animo") {
+      ojos = '<path d="M34 70 Q44 58 54 70 M66 70 Q76 58 86 70" stroke="' + TINTA + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
+      pup = null;
+      boca = '<path d="M46 86 Q60 104 74 86 Z" fill="' + TINTA + '"/>';
+      brazo = '<path class="bq-palo bq-palo-i" d="M20 66 L2 34"/><path class="bq-palo bq-palo-d" d="M100 66 L118 34"/>';
+    }
+    if (pose === "observa") {
+      pup = { dx: -3, dy: 4, r: 5.5 };
+      boca = '<ellipse cx="60" cy="95" rx="5" ry="5.5" fill="' + TINTA + '"/>';
+    }
     if (pose === "celebra") {
       ojos = '<path d="M34 70 Q44 58 54 70 M66 70 Q76 58 86 70" stroke="' + TINTA + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
       pup = null;
@@ -169,15 +187,28 @@
   function poseDe(sl) {
     const fija = sl.dataset.bloque;
     if (fija) return fija === "no" ? null : fija;
-    if (sl.classList.contains("section")) return null;
+    if (sl.classList.contains("section")) return "presenta";
     if (sl.classList.contains("cover")) return "saludo";
     const etiqueta = (($(".eyebrow", sl) || {}).textContent || "").trim();
     if ($(".idea-q", sl)) return "pensando";
     if ($(".tb.slow", sl)) return "alerta";
     if (/Reto\s*$/.test(etiqueta) && $(".prob-ex", sl)) return "reto";
+    if ($(".prob-ex", sl)) return "lee";
     if (/^Soluci[oó]n/.test(etiqueta) && $("pre.code", sl)) return "senalar";
     if (/^Resumen/.test(etiqueta)) return "celebra";
+    if (/^Plan de la sesi[oó]n/.test(etiqueta) && $("table", sl)) return "lee";
+    if (/^(Sesi[oó]n 2|Taller|Tarea)/.test(etiqueta)) return "animo";
+    if ($(".controls", sl)) return "observa";
     return null;
+  }
+
+  // cuando una animación paso a paso avanza, el Bloque de esa diapositiva asiente
+  function asentir(sl) {
+    const info = sl && sl._bloque;
+    if (!info || info.b.style.display === "none") return;
+    info.b.classList.remove("asiente");
+    void info.b.getBoundingClientRect();
+    info.b.classList.add("asiente");
   }
 
   function ponerBloques() {
@@ -185,8 +216,8 @@
       const pose = poseDe(sl);
       if (!pose) return;
       const b = h("div", { class: "bloque " + pose, "aria-hidden": "true", html: bloqueSVG(pose) });
-      if (pose === "pensando" && $(".idea-q", sl)) { b.classList.add("bq-idea"); $(".idea-q", sl).prepend(b); return; }
-      if (pose === "celebra" && $("h2", sl)) { b.classList.add("bq-titulo"); $("h2", sl).append(b); return; }
+      if (pose === "pensando" && $(".idea-q", sl)) { b.classList.add("bq-idea"); $(".idea-q", sl).prepend(b); sl._bloque = { b, pose, fijo: true }; return; }
+      if (pose === "celebra" && $("h2", sl)) { b.classList.add("bq-titulo"); $("h2", sl).append(b); sl._bloque = { b, pose, fijo: true }; return; }
       b.classList.add("bq-flota");
       sl.append(b);
       sl._bloque = { b, pose };
@@ -200,7 +231,7 @@
     const base = sl.getBoundingClientRect(), s = base.width / 1280, out = [];
     const agregar = (r) => { if (r.width > 0 && r.height > 0) out.push({ x: (r.left - base.left) / s, y: (r.top - base.top) / s, w: r.width / s, h: r.height / s }); };
     $$(TEXTOS, sl).forEach((el) => {
-      if (el.closest(".bloque") || (ignorar && ignorar.contains(el))) return;
+      if (el.closest(".bloque")) return;
       const rg = document.createRange();
       rg.selectNodeContents(el);
       Array.from(rg.getClientRects()).forEach(agregar);
@@ -216,23 +247,33 @@
     const info = sl._bloque;
     if (!info) return;
     const { b, pose } = info;
+    b.classList.remove("asiente");
+    if (info.fijo) return;
     // elementos junto a los que puede pararse, en orden de preferencia
     let objetivos = [];
     if (pose === "saludo") objetivos = $$(".grid-deco", sl);
     if (pose === "alerta") objetivos = $$(".tb.slow", sl).sort((p, q) => q.getBoundingClientRect().width - p.getBoundingClientRect().width);
     if (pose === "reto") objetivos = $$(".prob-ex", sl);
+    if (pose === "lee") objetivos = $$(".prob-ex", sl).concat($$("table", sl));
     if (pose === "senalar") objetivos = $$("pre.code", sl);
-    const W = pose === "saludo" ? 116 : 92, H = W * 132 / 140;
+    if (pose === "observa") objetivos = $$(".controls", sl);
+    if (pose === "presenta" || pose === "animo") objetivos = [sl];
+    const W = { saludo: 116, presenta: 150, observa: 80 }[pose] || 92, H = W * 132 / 140;
     b.style.width = W + "px";
+    // esquina inferior derecha de la diapositiva, como último recurso para algunos gestos
+    const esquina = ["presenta", "animo", "lee", "observa"].includes(pose) ? [[1280 - W - 70, 720 - H - 44]] : [];
     let p = null;
     for (const t of objetivos) {
-      const { rects, s, base } = ocupados(sl, t);
+      const { rects, s, base } = ocupados(sl, t === sl ? null : t);
       const q = t.getBoundingClientRect();
       const r = { x: (q.left - base.left) / s, y: (q.top - base.top) / s, w: q.width / s, h: q.height / s };
+      // sobre un bloque de código o una barra los pies se apoyan un poco dentro del borde
+      const pie = t.matches && t.matches("pre, .tb") ? 6 : -2;
       // de pie sobre el borde superior (a la derecha o a la izquierda), al lado derecho o al lado izquierdo
-      const opciones = pose === "saludo"
-        ? [[r.x - W - 18, r.y + r.h - H + 6], [r.x + r.w - W, r.y + r.h + 10]]
-        : [[r.x + r.w - W - 6, r.y - H + 6], [r.x + 6, r.y - H + 6], [r.x + r.w + 10, r.y + r.h - H], [r.x - W - 10, r.y + r.h - H]];
+      const opciones = t === sl ? esquina
+        : pose === "saludo" ? [[r.x - W - 18, r.y + r.h - H + 6], [r.x + r.w - W, r.y + r.h + 10]]
+        : pose === "observa" ? [[r.x + r.w + 12, r.y + r.h - H + 10], [r.x + r.w - W - 6, r.y - H + 6]].concat(esquina)
+        : [[r.x + r.w - W - 6, r.y - H + pie], [r.x + 6, r.y - H + pie], [r.x + r.w + 10, r.y + r.h - H], [r.x - W - 10, r.y + r.h - H]].concat(esquina);
       const libre = ([x, y]) => x >= 8 && y >= 8 && x + W <= 1272 && y + H <= 712 &&
         rects.every((o) => x + W <= o.x + 2 || x >= o.x + o.w - 2 || y + H <= o.y + 2 || y >= o.y + o.h - 2);
       p = opciones.find(libre);
@@ -287,13 +328,31 @@
       fitProblem(slides[cur]);
       document.dispatchEvent(new CustomEvent("slidechange", { detail: { index: cur, slide: slides[cur] } }));
     }
-    // un enunciado largo reduce su letra hasta caber en la diapositiva
+    // un enunciado que no cabe reduce la letra de la columna más alta: primero los ejemplos
+    // (--ke) y después el texto (--k), para que el enunciado se lea grande
     function fitProblem(sl) {
       const pr = $(".prob", sl);
       if (!pr) return;
-      let k = 1;
-      pr.style.setProperty("--k", k);
-      while (k > 0.6 && pr.scrollHeight > pr.clientHeight + 1) { k -= 0.03; pr.style.setProperty("--k", k); }
+      const tx = $(".prob-text", pr), ex = $(".prob-ex", pr);
+      const pres = ex ? $$("pre", ex) : [];
+      const largo = pres.length ? Math.max(...pres.map((p) => Math.max(...p.textContent.split("\n").map((l) => l.length)))) : 99;
+      const lineas = pres.reduce((t, p) => t + p.textContent.split("\n").length, 0);
+      // con ejemplos angostos (líneas de 10 caracteres o menos) el texto se lleva más ancho
+      pr.style.gridTemplateColumns = largo <= 10 ? "3fr 1.4fr" : "";
+      // ejemplos largos y angostos: entrada y salida lado a lado
+      if (ex) ex.classList.toggle("lado", pres.length >= 2 && pres.length % 2 === 0 && lineas >= 6 && largo <= 12);
+      let k = 1, ke = 1, vueltas = 0;
+      const poner = () => { pr.style.setProperty("--k", k); pr.style.setProperty("--ke", ke); };
+      const ancho = () => pres.some((p) => p.scrollWidth > p.clientWidth + 1);
+      poner();
+      while ((pr.scrollHeight > pr.clientHeight + 1 || ancho()) && vueltas++ < 60) {
+        const altoEx = ex ? ex.scrollHeight : 0, altoTx = tx ? tx.scrollHeight : 0;
+        if (ex && (altoEx >= altoTx || ancho()) && ke > 0.6) ke -= 0.03;
+        else if (k > 0.6) k -= 0.03;
+        else if (ke > 0.6) ke -= 0.03;
+        else break;
+        poner();
+      }
     }
     if (document.fonts) document.fonts.ready.then(() => fitProblem(slides[cur]));
     function next() {
@@ -359,6 +418,22 @@
       h("a", { href: "../index.html", text: "Volver al índice" })));
   }
 
+  // Expresiones cortas como "n − 1" o "1 ≤ n" no se parten entre dos líneas:
+  // los espacios alrededor del operador pasan a ser espacios que no se cortan.
+  function unirExpresiones() {
+    const op = /(\S+) ([−+×=≤≥<>≠]) (?=(\S+))/g;
+    const corto = (t) => t.replace(/[.,;:)]+$/, "").length <= 5;
+    const w = document.createTreeWalker(document.querySelector(".deck") || document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => n.parentElement.closest("pre, script, style, svg, textarea") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+    });
+    const nodos = [];
+    while (w.nextNode()) nodos.push(w.currentNode);
+    nodos.forEach((n) => {
+      const v = n.nodeValue.replace(op, (m, a, o, b) => (corto(a) && corto(b) ? a + " " + o + " " : m));
+      if (v !== n.nodeValue) n.nodeValue = v;
+    });
+  }
+
   function highlight() {
     if (!window.hljs) return;
     $$("pre.code").forEach((pre) => {
@@ -371,6 +446,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     if (bloqueada()) return mostrarAviso();
     highlight();
+    unirExpresiones();
     ponerBloques();
     document.addEventListener("slidechange", (e) => ubicarBloque(e.detail.slide));
     if (document.fonts) document.fonts.ready.then(() => { const a = $(".slide.active"); if (a) ubicarBloque(a); });

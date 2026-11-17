@@ -71,7 +71,7 @@
   <h2>Qué vamos a ver hoy</h2>
   <table class="t" style="font-size:22px">
     <tr><th>Min</th><th>Tema</th></tr>
-    <tr><td>0–15</td><td>Qué es la programación competitiva y formatos de competencia</td></tr>
+    <tr><td>0–15</td><td>Qué es un problema algorítmico y cómo se trabaja en el curso</td></tr>
     <tr><td>15–35</td><td>El juez en línea, veredictos y el grupo del curso</td></tr>
     <tr><td>35–50</td><td>Partes de un enunciado</td></tr>
     <tr><td>50–65</td><td>Leer la entrada, escribir la salida y errores de formato</td></tr>
@@ -83,11 +83,11 @@
 
 <!-- 3 -->
 <section class="slide">
-  <div class="eyebrow">Programación competitiva</div>
+  <div class="eyebrow">Problemas algorítmicos</div>
   <h2>Un problema, un programa y un juez</h2>
   <div class="cols c-60">
     <div class="stack">
-      <p>En programación competitiva se escribe un programa que resuelve un problema descrito en un enunciado.</p>
+      <p>Un problema algorítmico se describe en un enunciado y se resuelve con un programa.</p>
       <ul>
         <li class="frag">El programa lee la <strong>entrada</strong> estándar y escribe en la <strong>salida</strong> estándar.</li>
         <li class="frag">Un <strong>juez en línea</strong> ejecuta el programa con casos de prueba ocultos.</li>
@@ -110,52 +110,33 @@
 
 <!-- 4 -->
 <section class="slide">
-  <div class="eyebrow">Formatos</div>
-  <h2>ICPC, Codeforces y AtCoder</h2>
-  <table class="t">
-    <tr><th></th><th>ICPC</th><th>Codeforces (Div. 1 y 2)</th><th>AtCoder (ABC)</th></tr>
-    <tr><td><b>Quién</b></td><td>Equipos de 3, un computador</td><td>Individual</td><td>Individual</td></tr>
-    <tr><td><b>Duración</b></td><td>5 horas</td><td>2 a 2.5 horas</td><td>100 minutos</td></tr>
-    <tr><td><b>Ranking</b></td><td>Problemas resueltos, luego penalización</td><td>Puntos; el valor de cada problema baja con el tiempo</td><td>Puntos fijos por problema, luego tiempo</td></tr>
-    <tr><td><b>Envío rechazado</b></td><td>+20 min de penalización</td><td>−50 puntos en ese problema</td><td>+5 min de penalización</td></tr>
-  </table>
-  <p class="small muted">Las rondas Div. 3, Div. 4 y Educational de Codeforces usan reglas tipo ICPC. En todos los formatos, un envío rechazado en un problema que nunca se resuelve no suma penalización.</p>
-  <aside class="notes"><p>No hace falta memorizar los detalles. La idea es que entiendan que enviar sin probar cuesta penalización.</p></aside>
+  <div class="eyebrow">Cómo se trabaja</div>
+  <h2>Práctica y evaluación en el juez</h2>
+  <div class="cols c-60">
+    <div class="stack">
+      <ul>
+        <li class="frag"><strong>Sesión 2:</strong> un contest corto en el juez con 4 a 6 problemas (2 fáciles, 2 medios y 1 o 2 de reto).</li>
+        <li class="frag"><strong>Taller semanal:</strong> problemas para el trabajo autónomo, incluidos los que no se resolvieron en clase.</li>
+        <li class="frag"><strong>Contests calificados:</strong> 90 minutos en el juez. La nota depende de los problemas aceptados.</li>
+      </ul>
+    </div>
+    <div class="box soft stack small frag">
+      <h3>De dónde salen los problemas</h3>
+      <p>CSES, AtCoder y Codeforces. Los tres aceptan PyPy y tienen los enunciados en inglés.</p>
+      <p>El grupo del curso en el juez reúne los problemas de cada semana.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Un envío rechazado se puede corregir y volver a enviar. En un contest cada intento fallido gasta tiempo, así que conviene probar con casos propios antes de enviar.</p></aside>
 </section>
 
 <!-- 5 -->
-<section class="slide">
-  <div class="eyebrow">Ranking ICPC</div>
-  <h2>Cómo se calcula la penalización</h2>
-  <div class="cols c-60">
-    <div class="stack">
-      <table class="t score">
-        <tr><th>Equipo</th><th>A</th><th>B</th><th>C</th><th class="r frag">Resueltos</th><th class="r frag">Penalización</th></tr>
-        <tr><td>Rojo</td><td class="ok">+ 25'</td><td class="ok">+1 40'</td><td class="no">−2</td><td class="r frag">2</td><td class="r frag">85</td></tr>
-        <tr><td>Azul</td><td class="ok">+2 30'</td><td class="ok">+ 50'</td><td></td><td class="r frag">2</td><td class="r frag">120</td></tr>
-        <tr><td>Verde</td><td class="ok">+ 10'</td><td class="no">−3</td><td class="ok">+ 100'</td><td class="r frag">2</td><td class="r frag">110</td></tr>
-      </table>
-      <p class="small"><code>+1 40'</code> significa: resuelto en el minuto 40, con 1 envío rechazado antes.</p>
-    </div>
-    <div class="box soft stack small frag">
-      <p><b>Penalización</b> = suma, en los problemas resueltos, del minuto del AC + 20 por cada rechazo previo.</p>
-      <p>Rojo: 25 + (40 + 20) = <b>85</b></p>
-      <p>Azul: (30 + 40) + 50 = <b>120</b></p>
-      <p>Verde: 10 + 100 = <b>110</b>. Los 3 rechazos en B no cuentan.</p>
-      <p>Orden final: Rojo, Verde, Azul.</p>
-    </div>
-  </div>
-  <aside class="notes"><p>Preguntar al grupo el orden antes de revelar la columna. Muchos piensan que Verde pierde por los 3 rechazos en B.</p></aside>
-</section>
-
-<!-- 6 -->
 <section class="slide section">
   <div class="eyebrow">Parte 2</div>
   <h2>El juez en línea</h2>
   <p>Qué hace con el código y qué significa cada veredicto.</p>
 </section>
 
-<!-- 7 -->
+<!-- 6 -->
 <section class="slide">
   <div class="eyebrow">Juez en línea</div>
   <h2>Qué pasa después de enviar</h2>
@@ -174,7 +155,7 @@
   <aside class="notes"><p>Mostrar en el juez real un envío y la página de resultado por caso.</p></aside>
 </section>
 
-<!-- 8 -->
+<!-- 7 -->
 <section class="slide">
   <div class="eyebrow">Veredictos</div>
   <h2>Qué significa cada veredicto</h2>
@@ -190,7 +171,7 @@
   <aside class="notes"><p>Un TLE no dice si la respuesta era correcta. Un WA en el caso 1 casi siempre es un error de formato o de lectura.</p></aside>
 </section>
 
-<!-- 9 -->
+<!-- 8 -->
 <section class="slide">
   <div class="eyebrow">Simulador</div>
   <h2>Seis envíos para el mismo problema</h2>
@@ -211,7 +192,7 @@
   </aside>
 </section>
 
-<!-- 10 -->
+<!-- 9 -->
 <section class="slide">
   <div class="eyebrow">Grupo del curso</div>
   <h2>Cómo se usa el juez en este curso</h2>
@@ -233,14 +214,14 @@
   <aside class="notes"><p>Completar el enlace del grupo antes de clase. Hacer en vivo el registro en vJudge y el primer envío.</p></aside>
 </section>
 
-<!-- 11 -->
+<!-- 10 -->
 <section class="slide section">
   <div class="eyebrow">Parte 3</div>
   <h2>Partes de un enunciado</h2>
   <p>Dónde está cada dato que necesita el programa.</p>
 </section>
 
-<!-- 12 -->
+<!-- 11 -->
 <section class="slide">
   <div class="eyebrow">Enunciado</div>
   <h2>Anatomía de un enunciado</h2>
@@ -262,7 +243,7 @@ Salida:  3 10 5 16 8 4 2 1</pre></div>
   <aside class="notes"><p>Recorrer las cinco partes. Preguntar: ¿qué dato de las restricciones nos dice que la respuesta puede pasar de 10⁶? (los valores intermedios crecen: con n = 704 511 se llega a 56 991 483 520).</p></aside>
 </section>
 
-<!-- 13 -->
+<!-- 12 -->
 <section class="slide">
   <div class="eyebrow">Restricciones</div>
   <h2>Qué dicen las restricciones</h2>
@@ -279,14 +260,14 @@ Salida:  3 10 5 16 8 4 2 1</pre></div>
   <aside class="notes"><p>En la semana 2 se usa la tabla de restricciones contra complejidad. Hoy basta con que lean las restricciones antes de programar.</p></aside>
 </section>
 
-<!-- 14 -->
+<!-- 13 -->
 <section class="slide section">
   <div class="eyebrow">Parte 4</div>
   <h2>Entrada y salida en Python</h2>
   <p>Cómo leer la entrada, cómo escribir la salida y los errores de formato más comunes.</p>
 </section>
 
-<!-- 15 -->
+<!-- 14 -->
 <section class="slide">
   <div class="eyebrow">Entrada y salida</div>
   <h2>Leer y escribir en Python</h2>
@@ -307,7 +288,7 @@ main()</pre>
   <aside class="notes"><p>Pedir que guarden este esquema como archivo base. En la semana 4 se ve una forma más rápida de leer y escribir, que hace falta cuando la entrada tiene 10⁵ líneas o más.</p></aside>
 </section>
 
-<!-- 17 -->
+<!-- 15 -->
 <section class="slide">
   <div class="eyebrow">Lectura</div>
   <h2>Formatos de entrada comunes</h2>
@@ -331,7 +312,7 @@ for _ in range(t):
   <p class="small warn-line">Error frecuente: <code>n, k = input().split()</code> deja n y k como strings. Hay que convertirlos: <code>n, k = map(int, input().split())</code>.</p>
 </section>
 
-<!-- 18 -->
+<!-- 16 -->
 <section class="slide">
   <div class="eyebrow">Salida</div>
   <h2>Errores de formato de salida</h2>
@@ -345,14 +326,14 @@ for _ in range(t):
   <aside class="notes"><p>Codeforces y AtCoder comparan por palabras e ignoran espacios sobrantes al final. No conviene depender de eso: hay jueces que comparan carácter por carácter.</p></aside>
 </section>
 
-<!-- 19 -->
+<!-- 17 -->
 <section class="slide section">
   <div class="eyebrow">Parte 5</div>
   <h2>Problemas de la práctica</h2>
   <p>Weird Algorithm, Missing Number, Repetitions e Increasing Array.</p>
 </section>
 
-<!-- 20 -->
+<!-- 18 -->
 <section class="slide">
   <div class="eyebrow">Problema · CSES 1068</div>
   <h2>Weird Algorithm</h2>
@@ -411,7 +392,7 @@ main()</pre>
   <aside class="notes"><p>Probar n = 27: hace 111 pasos y llega a 9232. La simulación es directa; el error típico es imprimir floats o imprimir un valor por línea.</p></aside>
 </section>
 
-<!-- 21 -->
+<!-- 19 -->
 <section class="slide">
   <div class="eyebrow">Problema · CSES 1083</div>
   <h2>Missing Number</h2>
@@ -435,10 +416,11 @@ main()</pre>
   <h2>Missing Number</h2>
   <div class="idea">
     <div class="idea-q"><span class="idea-lab">Pregunta para el grupo</span><p>Si sabemos cuánto suman los números de 1 a n, ¿cómo encontramos el que falta?</p></div>
-    <div class="idea-a frag">La suma de 1 a n es n(n + 1)/2. Si se le resta la suma de los números dados, queda el que falta.</div>
-    <div class="idea-a frag">Es una sola pasada sobre los datos: O(n).</div>
+    <div class="idea-a frag">La suma de 1 a n tiene fórmula, la suma de Gauss: 1 + 2 + … + n = n(n + 1)/2.</div>
+    <div class="idea-a frag">Sale de sumar la lista con ella misma al revés: 1 + n, 2 + (n − 1), …, n + 1. Son n parejas que suman n + 1, y cada número quedó contado dos veces.</div>
+    <div class="idea-a frag">A esa suma se le resta la suma de los números dados y queda el que falta. Es una sola pasada sobre los datos: O(n).</div>
   </div>
-  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p></aside>
+  <aside class="notes"><p>Dejar uno o dos minutos para que el grupo responda. Después avanzar con → para mostrar la idea paso a paso.</p><p>Con n = 5: 1 + 5, 2 + 4, 3 + 3, 4 + 2 y 5 + 1 son 5 parejas de 6, o sea 30, y la mitad es 15. n(n + 1) siempre es par, así que <code>//</code> da el valor exacto. Según la anécdota, Gauss sumó así de 1 a 100 en la escuela: 50 parejas de 101, o sea 5050.</p></aside>
 </section>
 
 <section class="slide">
@@ -455,7 +437,7 @@ main()</pre>
         <div class="cell ok"><span class="idx">5</span>5</div>
       </div>
       <div class="box soft small frag" style="margin-top:8px">
-        <p>Suma de 1 a n: <code>n(n+1)/2 = 15</code></p>
+        <p>Suma de Gauss, de 1 a n: <code>n(n+1)/2 = 15</code></p>
         <p>Suma de los dados: <code>2+3+1+5 = 11</code></p>
         <p>Falta: <code>15 − 11 = 4</code></p>
       </div>
@@ -474,7 +456,7 @@ main()</pre>
   <aside class="notes"><p>Con n = 2·10⁵, la suma llega a unos 2·10¹⁰. En Python no hay desbordamiento. Mencionar la alternativa con XOR como curiosidad (se ve en la semana 8).</p></aside>
 </section>
 
-<!-- 22 -->
+<!-- 20 -->
 <section class="slide">
   <div class="eyebrow">Problema · CSES 1069</div>
   <h2>Repetitions</h2>
@@ -530,7 +512,7 @@ main()</pre>
   <aside class="notes"><p>Probar con ATTCGGGA y con un string de un solo carácter.</p></aside>
 </section>
 
-<!-- 23 -->
+<!-- 21 -->
 <section class="slide">
   <div class="eyebrow">Problema · CSES 1094</div>
   <h2>Increasing Array</h2>
@@ -590,7 +572,7 @@ main()</pre>
   <aside class="notes"><p>Preguntar por qué subir al mínimo necesario es óptimo: subir más solo obliga a subir más a los siguientes. Es la primera idea greedy del curso.</p></aside>
 </section>
 
-<!-- 24 -->
+<!-- 22 -->
 <section class="slide">
   <div class="eyebrow">Sesión 2</div>
   <h2>Problemas de la práctica</h2>
@@ -616,7 +598,7 @@ main()</pre>
   <aside class="notes"><p>Orden sugerido: los tres de AtCoder para calentar (formato de entrada), luego los cuatro de CSES. Al final explicar Increasing Array si fue el menos resuelto.</p></aside>
 </section>
 
-<!-- 25 -->
+<!-- 23 -->
 <section class="slide">
   <div class="eyebrow">Resumen</div>
   <h2>Antes de enviar</h2>

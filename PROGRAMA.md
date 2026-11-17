@@ -1,6 +1,6 @@
 # Algoritmia y Estructuras de Datos Avanzadas
 
-Programa de asignatura (enfoque de programación competitiva en Python) · 16 semanas · 2 sesiones por semana de 1.5 h (3 h semanales, 48 h presenciales)
+Programa de asignatura (diseño y análisis de algoritmos en Python) · 16 semanas · 2 sesiones por semana de 1.5 h (3 h semanales, 48 h presenciales)
 
 ---
 
@@ -96,7 +96,7 @@ Los problemas son de CSES salvo que se indique otra cosa. **EDPC** es el AtCoder
 **Objetivo:** que el estudiante envíe soluciones correctas y sepa leer un enunciado.
 
 **S1, teoría**
-- Qué es la programación competitiva. Formatos ICPC, Codeforces y AtCoder: ranking y penalización por tiempo.
+- Qué es un problema algorítmico: enunciado, programa y juez. Cómo se trabaja en el curso: contest corto en la S2, taller semanal y contests calificados.
 - Jueces en línea y veredictos: AC, WA, TLE, MLE, RE, CE. Uso del grupo del curso en el juez en línea.
 - Partes de un enunciado: historia, entrada, salida, restricciones y ejemplos.
 - Errores típicos de formato de salida: espacios sobrantes y saltos de línea.
