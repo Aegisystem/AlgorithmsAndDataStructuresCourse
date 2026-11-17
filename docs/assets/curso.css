@@ -212,6 +212,46 @@ svg.graph .gn.c4 circle { fill: var(--tle-soft); stroke: var(--tle); }
 svg.graph .gn.dim { opacity: .35; }
 svg.graph .gw { font-family: var(--font-mono); font-size: 15px; text-anchor: middle; dominant-baseline: central; fill: var(--ink); paint-order: stroke; stroke: var(--stage); stroke-width: 6px; }
 
+/* Bloque, la mascota del curso (curso.js la ubica en cada diapositiva) */
+.bloque { --bq: var(--accent); --bq-osc: #142e8f; display: block; pointer-events: none; }
+.bloque svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bloque .bq-caja { fill: var(--bq); }
+.bloque .bq-pie, .bloque .bq-brazo { fill: var(--bq-osc); }
+.bloque.pensando { --bq: var(--mark); --bq-osc: #c99400; }
+.bloque.alerta { --bq: #e08a1e; --bq-osc: var(--tle); }
+.bloque.reto { --bq: #7b3fc4; --bq-osc: var(--re); }
+.bloque.celebra { --bq: #1d9a52; --bq-osc: var(--ac); }
+.bloque .bq-cuerpo, .bloque .bq-ojos, .bloque .bq-brazo, .bloque .bq-extra, .bloque .bq-sombra, .bloque .bq-chispa, .bloque .bq-gota { transform-box: fill-box; }
+.bloque .bq-cuerpo { transform-origin: 50% 100%; animation: bq-entra .7s cubic-bezier(.3, 1.4, .5, 1) both; }
+.bloque .bq-sombra { transform-origin: center; fill: rgba(15, 22, 38, .14); animation: bq-sombra .7s ease-out both; }
+.bloque .bq-ojos { transform-origin: center; animation: bq-parpadeo 4.2s 1s infinite; }
+.bloque .bq-extra { transform-origin: center bottom; animation: bq-asoma .4s .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+.bloque.saludo .bq-brazo { transform-origin: 0% 100%; animation: bq-saluda .5s .7s ease-in-out 4 alternate both; }
+.bloque.pensando .bq-cuerpo { animation: bq-entra .7s cubic-bezier(.3, 1.4, .5, 1) both, bq-ladea 2.4s .8s ease-in-out infinite alternate; }
+.bloque.alerta .bq-cuerpo { animation: bq-entra .7s cubic-bezier(.3, 1.4, .5, 1) both, bq-tiembla .12s .8s linear 10; }
+.bloque.alerta .bq-gota { animation: bq-gota 1.6s .8s ease-in infinite; }
+.bloque.reto .bq-cuerpo { animation: bq-entra .7s cubic-bezier(.3, 1.4, .5, 1) both, bq-confia 1.8s .8s ease-in-out infinite alternate; }
+.bloque.senalar .bq-brazo { transform-origin: 100% 50%; animation: bq-empuja .6s .8s ease-in-out infinite alternate; }
+.bloque.celebra .bq-cuerpo { animation: bq-entra .7s cubic-bezier(.3, 1.4, .5, 1) both, bq-salta .55s .8s ease-in-out 3 alternate; }
+.bloque .bq-chispa { transform-origin: center; animation: bq-chispa 1.1s .8s ease-out both; }
+@keyframes bq-entra { 0% { transform: translateY(34px) scale(1.15, .7); opacity: 0; } 45% { transform: translateY(-26px) scale(.92, 1.08); opacity: 1; }
+  72% { transform: translateY(0) scale(1.1, .88); } 88% { transform: scale(.97, 1.03); } 100% { transform: none; } }
+@keyframes bq-sombra { 0% { transform: scale(.4); opacity: 0; } 45% { transform: scale(.7); opacity: .6; } 100% { transform: none; opacity: 1; } }
+@keyframes bq-parpadeo { 0%, 93%, 100% { transform: none; } 96% { transform: scaleY(.1); } }
+@keyframes bq-asoma { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes bq-saluda { from { transform: rotate(-18deg); } to { transform: rotate(16deg); } }
+@keyframes bq-ladea { from { transform: rotate(0deg); } to { transform: rotate(-7deg); } }
+@keyframes bq-tiembla { 0% { transform: translateX(-2px) rotate(-1deg); } 50% { transform: translateX(2px) rotate(1deg); } 100% { transform: translateX(-2px); } }
+@keyframes bq-gota { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+@keyframes bq-confia { from { transform: rotate(0deg); } to { transform: rotate(5deg) translateX(3px); } }
+@keyframes bq-empuja { from { transform: translateX(0); } to { transform: translateX(-8px); } }
+@keyframes bq-salta { from { transform: translateY(0); } to { transform: translateY(-18px); } }
+@keyframes bq-chispa { 0% { transform: translate(0, 0) scale(.2); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(160deg) scale(1); opacity: 0; } }
+.bq-flota { position: absolute; z-index: 2; }
+.idea-q:has(.bq-idea) { grid-template-columns: auto 1fr; column-gap: 22px; align-items: center; }
+.bq-idea { grid-row: span 2; width: 100px; }
+.bq-titulo { display: inline-block; width: 70px; vertical-align: -14px; margin-left: 18px; }
+
 /* barra inferior y notas */
 .hud {
   position: fixed; left: 0; right: 0; bottom: 0; height: 4px; background: transparent; z-index: 5;
@@ -272,7 +312,7 @@ body.presenting .pager { display: none; }
   .deck { position: static; display: block; }
   .slide { position: relative; display: flex !important; left: 0; top: 0; margin: 0; transform: none !important; box-shadow: none; border-radius: 0; page-break-after: always; }
   .frag { opacity: 1; transform: none; }
-  .hud, .pager, .notes-panel, .help-panel, .controls { display: none !important; }
+  .hud, .pager, .notes-panel, .help-panel, .controls, .bq-flota { display: none !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }

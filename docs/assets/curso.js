@@ -116,6 +116,134 @@
     });
   }
 
+  // ---------- Bloque, la mascota del curso ----------
+  // Un cuadrito de la cuadrícula con ojos. Aparece en algunos tipos de diapositiva, junto
+  // al elemento al que se refiere, y anima su entrada cada vez que se muestra la diapositiva.
+  // Una diapositiva puede fijar el gesto con data-bloque="saludo|pensando|alerta|reto|senalar|celebra"
+  // o quitarlo con data-bloque="no".
+  const TINTA = "#0f1626";
+  function bloqueSVG(pose) {
+    let ojos = '<ellipse cx="44" cy="68" rx="10" ry="12" fill="#fff"/><ellipse cx="76" cy="68" rx="10" ry="12" fill="#fff"/>';
+    let pup = { dx: 2, dy: 2, r: 5.5 };
+    let boca = '<path d="M50 92 Q60 101 70 92" stroke="' + TINTA + '" stroke-width="4" stroke-linecap="round" fill="none"/>';
+    let extra = "", brazo = "", cejas = "";
+    const signo = (x, y, t, size, fill) => '<g class="bq-extra"><text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="' + size + '" fill="' + fill + '" stroke="' + TINTA + '" stroke-width="' + (fill === TINTA ? 0 : 2) + '" paint-order="stroke">' + t + "</text></g>";
+    if (pose === "saludo") brazo = '<rect class="bq-brazo" x="104" y="44" width="13" height="34" rx="6.5"/>';
+    if (pose === "pensando") {
+      pup = { dx: 4, dy: -4, r: 5 };
+      boca = '<path d="M53 94 L67 92" stroke="' + TINTA + '" stroke-width="4" stroke-linecap="round"/>';
+      extra = signo(104, 22, "?", 40, TINTA);
+    }
+    if (pose === "alerta") {
+      ojos = '<ellipse cx="44" cy="66" rx="12" ry="14" fill="#fff"/><ellipse cx="76" cy="66" rx="12" ry="14" fill="#fff"/>';
+      pup = { dx: 0, dy: 0, r: 4 };
+      boca = '<ellipse cx="60" cy="95" rx="6" ry="7.5" fill="' + TINTA + '"/>';
+      extra = '<path class="bq-gota" d="M104 26 Q111 38 104 44 Q97 38 104 26 Z" fill="#7cc4ff" stroke="' + TINTA + '" stroke-width="2"/>';
+      cejas = '<path d="M33 46 L52 50 M87 46 L68 50" stroke="' + TINTA + '" stroke-width="4" stroke-linecap="round"/>';
+    }
+    if (pose === "reto") {
+      pup = { dx: 1, dy: 3, r: 5.5 };
+      boca = '<path d="M50 94 Q62 97 71 88" stroke="' + TINTA + '" stroke-width="4" stroke-linecap="round" fill="none"/>';
+      cejas = '<path d="M33 54 L54 60 M87 52 L66 56" stroke="' + TINTA + '" stroke-width="5" stroke-linecap="round"/>';
+      extra = signo(106, 26, "★", 30, "#ffc21a");
+    }
+    if (pose === "senalar") {
+      pup = { dx: -5, dy: 1, r: 5.5 };
+      brazo = '<rect class="bq-brazo" x="-6" y="70" width="26" height="12" rx="6"/>';
+    }
+    if (pose === "celebra") {
+      ojos = '<path d="M34 70 Q44 58 54 70 M66 70 Q76 58 86 70" stroke="' + TINTA + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
+      pup = null;
+      boca = '<path d="M46 86 Q60 104 74 86 Z" fill="' + TINTA + '"/>';
+      const cols = ["#1c3fbf", "#ffc21a"];
+      extra = [[-48, -40], [-30, -62], [0, -70], [30, -62], [50, -40], [62, -10]].map(([dx, dy], i) =>
+        '<rect class="bq-chispa" style="--dx:' + dx + "px;--dy:" + dy + 'px" x="56" y="30" width="9" height="9" rx="2" fill="' + cols[i % 2] + '"/>').join("");
+    }
+    const pupilas = pup ? '<g class="bq-pupilas"><circle cx="' + (44 + pup.dx) + '" cy="' + (70 + pup.dy) + '" r="' + pup.r + '" fill="' + TINTA + '"/><circle cx="' + (76 + pup.dx) + '" cy="' + (70 + pup.dy) + '" r="' + pup.r + '" fill="' + TINTA + '"/></g>' : "";
+    return '<svg viewBox="-10 0 140 132" aria-hidden="true"><ellipse class="bq-sombra" cx="60" cy="125" rx="38" ry="5"/>' +
+      '<g class="bq-cuerpo"><rect class="bq-pie" x="30" y="108" width="20" height="14" rx="5"/><rect class="bq-pie" x="70" y="108" width="20" height="14" rx="5"/>' + brazo +
+      '<rect class="bq-caja" x="14" y="28" width="92" height="88" rx="16"/><rect x="24" y="36" width="24" height="8" rx="4" fill="#fff" opacity=".35"/>' +
+      cejas + '<g class="bq-ojos">' + ojos + pupilas + "</g>" + boca + "</g>" + extra + "</svg>";
+  }
+
+  function poseDe(sl) {
+    const fija = sl.dataset.bloque;
+    if (fija) return fija === "no" ? null : fija;
+    if (sl.classList.contains("section")) return null;
+    if (sl.classList.contains("cover")) return "saludo";
+    const etiqueta = (($(".eyebrow", sl) || {}).textContent || "").trim();
+    if ($(".idea-q", sl)) return "pensando";
+    if ($(".tb.slow", sl)) return "alerta";
+    if (/Reto\s*$/.test(etiqueta) && $(".prob-ex", sl)) return "reto";
+    if (/^Soluci[oó]n/.test(etiqueta) && $("pre.code", sl)) return "senalar";
+    if (/^Resumen/.test(etiqueta)) return "celebra";
+    return null;
+  }
+
+  function ponerBloques() {
+    $$(".slide").forEach((sl) => {
+      const pose = poseDe(sl);
+      if (!pose) return;
+      const b = h("div", { class: "bloque " + pose, "aria-hidden": "true", html: bloqueSVG(pose) });
+      if (pose === "pensando" && $(".idea-q", sl)) { b.classList.add("bq-idea"); $(".idea-q", sl).prepend(b); return; }
+      if (pose === "celebra" && $("h2", sl)) { b.classList.add("bq-titulo"); $("h2", sl).append(b); return; }
+      b.classList.add("bq-flota");
+      sl.append(b);
+      sl._bloque = { b, pose };
+    });
+  }
+
+  // rectángulos de texto y de elementos visibles, en coordenadas de la diapositiva (1280 × 720)
+  const TEXTOS = "h1, h2, h3, p, li, dt, dd, td, th, .caption, .idea-lab, .idea-a, .ex-lab, .course, .meta, .tv, .lab, .stat, .q";
+  const CAJAS = "pre, .cells, .grid, svg, img, .tb, .controls, .bars, .box, .tl, .nl, .fw, .callstack, .pegs, .board, input, select, button";
+  function ocupados(sl, ignorar) {
+    const base = sl.getBoundingClientRect(), s = base.width / 1280, out = [];
+    const agregar = (r) => { if (r.width > 0 && r.height > 0) out.push({ x: (r.left - base.left) / s, y: (r.top - base.top) / s, w: r.width / s, h: r.height / s }); };
+    $$(TEXTOS, sl).forEach((el) => {
+      if (el.closest(".bloque") || (ignorar && ignorar.contains(el))) return;
+      const rg = document.createRange();
+      rg.selectNodeContents(el);
+      Array.from(rg.getClientRects()).forEach(agregar);
+    });
+    $$(CAJAS, sl).forEach((el) => {
+      if (el.closest(".bloque") || el.closest(".grid-deco") || (ignorar && (ignorar === el || ignorar.contains(el)))) return;
+      agregar(el.getBoundingClientRect());
+    });
+    return { rects: out, s, base };
+  }
+
+  function ubicarBloque(sl) {
+    const info = sl._bloque;
+    if (!info) return;
+    const { b, pose } = info;
+    // elementos junto a los que puede pararse, en orden de preferencia
+    let objetivos = [];
+    if (pose === "saludo") objetivos = $$(".grid-deco", sl);
+    if (pose === "alerta") objetivos = $$(".tb.slow", sl).sort((p, q) => q.getBoundingClientRect().width - p.getBoundingClientRect().width);
+    if (pose === "reto") objetivos = $$(".prob-ex", sl);
+    if (pose === "senalar") objetivos = $$("pre.code", sl);
+    const W = pose === "saludo" ? 116 : 92, H = W * 132 / 140;
+    b.style.width = W + "px";
+    let p = null;
+    for (const t of objetivos) {
+      const { rects, s, base } = ocupados(sl, t);
+      const q = t.getBoundingClientRect();
+      const r = { x: (q.left - base.left) / s, y: (q.top - base.top) / s, w: q.width / s, h: q.height / s };
+      // de pie sobre el borde superior (a la derecha o a la izquierda), al lado derecho o al lado izquierdo
+      const opciones = pose === "saludo"
+        ? [[r.x - W - 18, r.y + r.h - H + 6], [r.x + r.w - W, r.y + r.h + 10]]
+        : [[r.x + r.w - W - 6, r.y - H + 6], [r.x + 6, r.y - H + 6], [r.x + r.w + 10, r.y + r.h - H], [r.x - W - 10, r.y + r.h - H]];
+      const libre = ([x, y]) => x >= 8 && y >= 8 && x + W <= 1272 && y + H <= 712 &&
+        rects.every((o) => x + W <= o.x + 2 || x >= o.x + o.w - 2 || y + H <= o.y + 2 || y >= o.y + o.h - 2);
+      p = opciones.find(libre);
+      if (p) break;
+    }
+    if (!p) { b.style.display = "none"; return; }
+    b.style.display = "";
+    b.style.left = p[0] + "px";
+    b.style.top = p[1] + "px";
+  }
+
   // ---------- motor del mazo ----------
   function initDeck() {
     const slides = $$(".slide");
@@ -243,6 +371,9 @@
   document.addEventListener("DOMContentLoaded", () => {
     if (bloqueada()) return mostrarAviso();
     highlight();
+    ponerBloques();
+    document.addEventListener("slidechange", (e) => ubicarBloque(e.detail.slide));
+    if (document.fonts) document.fonts.ready.then(() => { const a = $(".slide.active"); if (a) ubicarBloque(a); });
     initDeck();
   });
 })();
