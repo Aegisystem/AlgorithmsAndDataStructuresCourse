@@ -133,9 +133,9 @@ table.t td.r, table.t th.r { text-align: right; }
 .v { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; padding: 2px 10px; border-radius: 6px;
   font-family: var(--font-mono); font-weight: 700; font-size: 18px; letter-spacing: .03em; }
 .v.ac { background: var(--ac-soft); color: var(--ac); }
-.v.wa { background: var(--wa-soft); color: var(--wa); }
-.v.tle { background: var(--tle-soft); color: var(--tle); }
-.v.mle { background: var(--tle-soft); color: var(--tle); }
+.v.wa { background: var(--wa-soft); color: #951812; }
+.v.tle { background: var(--tle-soft); color: #844a00; }
+.v.mle { background: var(--tle-soft); color: #844a00; }
 .v.re { background: var(--re-soft); color: var(--re); }
 .v.ce { background: var(--soft); color: var(--muted); }
 .v.wait { background: var(--soft); color: var(--muted); font-weight: 500; }

@@ -31,7 +31,7 @@
   .statement { border: 1px solid var(--line); border-radius: 8px; padding: 18px 22px; background: var(--stage); font-size: 19px; display: grid; gap: 10px; }
   .statement [data-part] { border-radius: 6px; padding: 4px 8px; margin: 0 -8px; transition: background .2s, box-shadow .2s; }
   .statement [data-part].lit { background: var(--mark); color: var(--mark-ink); }
-  .statement h4 { margin: 0; font-family: var(--font-display); font-size: 19px; }
+  .statement h3 { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 700; }
   .statement pre { margin: 4px 0 0; font-family: var(--font-mono); font-size: 17px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 150px; overflow: auto; }
   .chip { font-family: var(--font-mono); font-size: 17px; padding: 3px 9px; border-radius: 6px; background: var(--soft); }
@@ -227,12 +227,12 @@
   <h2>Anatomía de un enunciado</h2>
   <div class="cols c-60 fill">
     <div class="statement" id="stm">
-      <div data-part="historia"><h4>Weird Algorithm (CSES), versión resumida</h4>
+      <div data-part="historia"><h3>Weird Algorithm (CSES), versión resumida</h3>
         Un algoritmo recibe un entero positivo n. Si n es par, lo divide entre 2. Si n es impar, lo multiplica por 3 y le suma 1. Repite hasta que n sea 1. Debe simular el algoritmo para un n dado.</div>
-      <div data-part="entrada"><h4>Entrada</h4>Una única línea con el entero n.</div>
-      <div data-part="salida"><h4>Salida</h4>Imprimir en una línea todos los valores que toma n, separados por espacios.</div>
-      <div data-part="restricciones"><h4>Restricciones</h4>1 ≤ n ≤ 10⁶</div>
-      <div data-part="ejemplo"><h4>Ejemplo</h4><pre>Entrada: 3
+      <div data-part="entrada"><h3>Entrada</h3>Una única línea con el entero n.</div>
+      <div data-part="salida"><h3>Salida</h3>Imprimir en una línea todos los valores que toma n, separados por espacios.</div>
+      <div data-part="restricciones"><h3>Restricciones</h3>1 ≤ n ≤ 10⁶</div>
+      <div data-part="ejemplo"><h3>Ejemplo</h3><pre>Entrada: 3
 Salida:  3 10 5 16 8 4 2 1</pre></div>
     </div>
     <div class="stack">
